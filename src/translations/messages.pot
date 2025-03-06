@@ -1,0 +1,1250 @@
+# Translations template for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-01-15 16:27-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+
+# for Javascript code
+msgid "Main occupant's name cannot be blank"
+msgstr "Nome do principal ocupante é obrigatório"
+
+#: templates/fines.html
+msgid "Fines"
+msgstr "Multas"
+
+msgid "Open/Close the List of Fines Already Issued"
+msgstr "Abrir/Fechar a Lista de Multas Já Emitidas"
+
+msgid "Issue a New Fine"
+msgstr "Emitir Uma Nova Multa"
+
+msgid "select one"
+msgstr "escolha um"
+
+msgid "User"
+msgstr "Usuário"
+
+msgid "Amount"
+msgstr "Valor"
+
+msgid "Due Date"
+msgstr "Vencimento"
+
+msgid "Add This Fine and Notify User"
+msgstr "Adicionar Esta Multa e Notificar Usuário"
+
+msgid "delete"
+msgstr "deletar"
+
+msgid "mark"
+msgstr "marcar"
+
+msgid "remind"
+msgstr "lembrete"
+
+msgid "unpaid"
+msgstr "a receber"
+
+msgid "List of fines and payments to receive"
+msgstr "Lista de multas e pagamentos a receber"
+
+msgid "delete this fine"
+msgstr "deletar esta multa"
+
+msgid "mark this as paid"
+msgstr "marcar multa como paga"
+
+msgid "send reminder to user"
+msgstr "enviar lembrete ao usuário"
+
+
+#: templates/reservations.html
+msgid "Reservations of Common Areas"
+msgstr "Reservas de Áreas Comuns"
+
+msgid "Reservations"
+msgstr "Reservas"
+
+
+#: templates/home-root.html
+msgid "Welcome to the CondoSpace App"
+msgstr "Bem-vindo ao CondoSpace App"
+
+msgid "Want to See Some of the Benefits in Using CondoSpace?"
+msgstr "Quer Ver Alguns dos Benefícios de Usar o CondoSpace?"
+
+msgid "This is the home page of the Condominium Web Application."
+msgstr "Esta é a página raiz da Aplicação de Condomínio na Web"
+
+msgid "If your condominium is already registered with CondoSpace App, type the following in the address bar"
+msgstr "Se o seu condomínio já está registrado na CondoSpace App, digite o seguinte na linha de endereço do navegador"
+
+msgid "http://condospace.app/[your-condo-id]"
+msgstr "http://condospace.app/[id-do-seu-condo]"
+
+msgid "Otherwise, enter the data below to register your condominium with us"
+msgstr "Senão, entre os dados abaixo para registrar o seu condomínio no CondoSpace"
+
+msgid "See the <a href='about'>About page</a> for how it works, and to see the benefits."
+msgstr "Veja a <a href='about'>página About</a> para saber como funciona, e ver os benefícios."
+
+msgid "Admin Id"
+msgstr "Usuário Admin"
+
+msgid "Admin Password"
+msgstr "Senha Admin"
+
+msgid "Admin Name"
+msgstr "Nome do Admin"
+
+msgid "Admin Email"
+msgstr "Email do Admin"
+
+msgid "Admin Phone"
+msgstr "Celular do Admin"
+
+msgid "Preferred Language"
+msgstr "Lingua Preferida"
+
+msgid "Condominium Name"
+msgstr "Nome do Condomínio"
+
+msgid "Tagline"
+msgstr "Lema"
+
+msgid "Condominium Id"
+msgstr "Id do Condomínio"
+
+msgid "Condominium Address"
+msgstr "Endereço do Condomínio"
+
+msgid "Condominium City & State"
+msgstr "Cidade e Estado do Condomínio"
+
+msgid "Register Your Condo"
+msgstr "Registre o Seu Condo"
+
+msgid "Follow Us on Social Media"
+msgstr "Siga-nos nas Mídias Sociais"
+
+msgid "Example: Peace of mind lives here"
+msgstr "Exemplo: Paz mental começa aqui"
+
+msgid "For example, if your condominium name is Bela Vista Condominium, this would be belavista"
+msgstr "Por exemplo, se o seu condomínio chama-se Condomínio Bela Vista, este seria belavista"
+
+msgid "Email must exist because that is where we will send you the Login credentials."
+msgstr "O email precisa existir porque é onde você receberá as credenciais para se logar."
+
+msgid "Home Page Condo Picture"
+msgstr "Foto Para Página Principal"
+
+msgid "Use a default picture"
+msgstr "Use uma foto padrão"
+
+msgid "Ex. Signature Heights Condominium"
+msgstr "Ex. Condomínio Bela Vista"
+
+msgid "Your full name"
+msgstr "Seu nome completo"
+
+msgid "Ex. 508 891-3472"
+msgstr "Ex. 11 97546-3421"
+
+msgid "Cannot have spaces in it"
+msgstr "Não pode conter espaços"
+
+msgid "Address of the condominium"
+msgstr "Endereço do Condomínio"
+
+msgid "City, State of the condominium location"
+msgstr "Cidade, Estado do condomínio"
+
+msgid "For example, enter Syracuse, NY"
+msgstr "Por exemplo, digite Limeira, SP"
+
+msgid "ZIP of the condominium"
+msgstr "CEP do condomínio"
+
+msgid "UNLICENSED"
+msgstr "NÃO-LICENCIADO"
+
+#: templates/home.html:52
+msgid "Home"
+msgstr "Início"
+
+msgid "Setup"
+msgstr "Cadastrar"
+
+msgid "My Profile"
+msgstr "Meu Perfil"
+
+msgid "Announcements"
+msgstr "Anúncios"
+
+msgid "Documents"
+msgstr "Documentos"
+
+msgid "Maintenance"
+msgstr "Manutenção"
+
+msgid "Pictures"
+msgstr "Fotos"
+
+msgid "Listings"
+msgstr "À Venda"
+
+msgid "Login"
+msgstr "Logar"
+
+msgid "Logout"
+msgstr "Sair"
+
+msgid "About"
+msgstr "Sobre"
+
+msgid "This picture as well as the logo picture must be changed"
+msgstr "Tanto a foto abaixo quanto o logo sobre o menu devem ser mudados"
+
+
+#: templates/about.html
+msgid "Here's where we are:"
+msgstr "Eis a nossa localização:"
+
+msgid "Feel free to explore our site and see what you could be missing."
+msgstr "Fique à vontade para explorar nosso site e ver o que você pode estar perdendo."
+
+msgid "Hope to see you soon!"
+msgstr "Esperamos te encontrar em breve!"
+
+msgid "Software Version and Date"
+msgstr "Versão e Data do Software"
+
+
+#: templates/about-root.html
+msgid "We are an innovative software company which specializes in practical software for small and medium size businesses."
+msgstr "Nós somos uma empresa de software inovadora que se especializou em produzir software prático para pequenas e médias empresas."
+
+msgid "Contact us using the email below so we can show you all the benefits of having your condominium website hosted in our servers."
+msgstr "Contate-nos no email abaixo para mostrarmos todos os benefícios de ter o website do seu condomínio hospedado nos nossos servidores."
+
+msgid "Because our software is a Web Based Application, it gives the Association the benefit of having both a web presence and the storage/management of documents and administration of Condominium tasks, all in a very user-friendly and effective manner."
+msgstr "Devido ser uma aplicação na Web, este app traz para a Associação o benefício de ter tanto uma presença online bem como ter o armazenamento de documentos e tarefas de administração, tudo de maneira amigável e eficaz."
+
+msgid "The best way is to register your condominium with us right now by going to the home page."
+msgstr "A melhor maneira é registrar o seu Condomínio ou Associação conosco por ir para a home page."
+
+msgid "That way you can have full access to all features to see if it works for you."
+msgstr "Desta maneira você terá completo acesso à todos os recursos e poderá ver se atende as suas necessidades."
+
+msgid "Alternatively, you can go to the 'demo' website <a href='https://condospace.app/ametista' target='blank'>https://condospace.app/ametista</a>, with limited experience because, that way, you will only see what everyone in the public sees."
+msgstr "Outra opção (menos desejável) é ir para a página do site demo <a href='https://condospace.app/ametista' target='blank'>https://condospace.app/ametista</a>, com experiência limitada, porque acessando deste modo você verá apenas o que o grande público ver."
+
+msgid "Ability to issue Fines"
+msgstr "Módulo de cobrança de multas"
+
+msgid "Make reservations of common areas (soon)"
+msgstr "Fazer reservas de áreas comuns (breve)"
+
+msgid "Here's how it works"
+msgstr "Eis como funciona"
+
+msgid "Some of the benefits"
+msgstr "Alguns dos benefícios"
+
+msgid "Sense of belonging and community"
+msgstr "Senso de Pertencimento e Comunidade"
+
+msgid "Resident Census Card"
+msgstr "Ficha Individual do Morador"
+
+msgid "Communication between Association and Residents"
+msgstr "Melhor comunicação entre o condomínio e os moradores"
+
+msgid "Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc."
+msgstr "Fácil acesso aos documentos em formato PDF, tais como Regimento Interno, Regras, Relatórios Financeiros, etc."
+
+msgid "Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be http://condospace.app/hilltop"
+msgstr "Presença online: Suponha que o seu condomínio seja chamado Condomínio Alto das Esmeraldas, o seu completo endereço online poderia ser https://condospace.app/esmeraldas"
+
+msgid "Ability to list apartments for sale with pictures (especially useful for FSBOs)"
+msgstr "Habilidade de listar apartamentos ou outros objetos de grande valor para venda (muito útil para quem quer vender sem corretor)"
+
+msgid "Why wait? It's much more affordable than you think. Register your condo today and start using the app."
+msgstr "Por que esperar? É mais barato do que você imagina. Registre o seu condomínio hoje mesmo e comece a usar o aplicativo."
+
+
+#: templates/alisting.html
+msgid "Listings"
+msgstr "À Venda"
+
+
+#: templates/announcs.html
+msgid "Announcements"
+msgstr "Anúncios"
+
+
+#: templates/docs.html
+msgid "Open View Documents"
+msgstr "Documentos Abertos ao Público"
+
+msgid "If there are documents below, clicking it will open a second tab."
+msgstr "Se houver documentos na lista abaixo, clicar num documento abrirá um outro tab."
+
+msgid "Bylaws"
+msgstr "Regimento Interno"
+
+msgid "Other Documents"
+msgstr "Outros Documentos"
+
+msgid "View Documents"
+msgstr "Ver Documentos"
+
+msgid "Financial Statements"
+msgstr "Relatórios Financeiros"
+
+msgid "Links to sites or documents hosted elsewhere"
+msgstr "Links para documentos hospedados em outros locais"
+
+msgid "No bylaws documents uploaded yet."
+msgstr "Nenhum documento de regimento interno ainda."
+
+msgid "No documents uploaded yet."
+msgstr "Nenhum documento aqui ainda."
+
+msgid "No links added yet."
+msgstr "Nenhum link adicionado ainda."
+
+msgid "No statement uploaded for this year yet."
+msgstr "Nenhum relatório ainda para este ano."
+
+msgid "Open/Close To Add a Financial Statement"
+msgstr "Abrir/Fechar Para Adicionar Um Novo Relatório Financeiro"
+
+msgid "Upload This Financial Statement"
+msgstr "Subir Este Relatório Financeiro"
+
+msgid "Month"
+msgstr "Mês"
+
+msgid "Open/Close To Upload a Bylaws"
+msgstr "Abrir/Fechar Para Subir um Regimento Interno"
+
+msgid "Open/Close To Upload a Document"
+msgstr "Abrir/Fechar Para Subir um Documento"
+
+msgid "Open/Close To Add a New Link"
+msgstr "Abrir/Fechar Para Adicionar Um Novo Link"
+
+msgid "Choose a document"
+msgstr "Escolha um documento"
+
+
+#: templates/pics.html
+msgid "Condominium Common Areas"
+msgstr "Áreas Comuns do Condomínio"
+
+msgid "Events"
+msgstr "Eventos"
+
+msgid "No Events"
+msgstr "Sem Eventos"
+
+msgid "Add a New Event"
+msgstr "Adicionar Um Novo Evento"
+
+msgid "Event Info"
+msgstr "Informação do Evento"
+
+msgid "Title"
+msgstr "Título"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Choose the Folder Where Your Pictures Are"
+msgstr "Escolha a Pasta Onde as Suas Fotos Estão"
+
+msgid "Picture Files"
+msgstr "Arquivos de Fotos"
+
+msgid "Upload pictures & Create this new event"
+msgstr "Subir fotos & Criar um novo evento"
+
+msgid "No condominium pictures yet. Ask the Admin to add pics."
+msgstr "Nenhuma foto ainda. Peça para o Admin adicionar fotos."
+
+msgid "No events yet."
+msgstr "Nenhum evento ainda."
+
+msgid "Delete This Event"
+msgstr "Deletar Este Evento"
+
+msgid "Click to Add a New Picture"
+msgstr "Clique Para Adicionar Uma Nova Foto"
+
+msgid "Click to Add a New Event"
+msgstr "Clique Para Adicionar Um Novo Evento"
+
+msgid "Event Pictures"
+msgstr "Fotos do Evento"
+
+msgid "No such event found"
+msgstr "Evento não encontrado"
+
+
+#: templates/listings.html
+msgid "Current Listings"
+msgstr "Lista de Ítems"
+
+msgid "No listings found for this unit"
+msgstr "Nenhum ítem para esta unidade"
+
+msgid "Add a New Listing"
+msgstr "Adicionar um novo ítem"
+
+msgid "Listing Info"
+msgstr "Informação do ítem"
+
+msgid "Select a Unit"
+msgstr "Selecione um Usuário"
+
+msgid "Select a Unit/User"
+msgstr "Selecione um Apartamento/Usuário"
+
+msgid "Title"
+msgstr "Título"
+
+msgid "Contact"
+msgstr "Contato"
+
+msgid "Price"
+msgstr "Preço"
+
+msgid "contact"
+msgstr "contato"
+
+msgid "price"
+msgstr "preço"
+
+msgid "Upload pictures & Create this new listing"
+msgstr "Subir fotos & Criar um novo ítem"
+
+msgid "No listings yet."
+msgstr "Nenhum ítem à venda ainda."
+
+msgid "Delete This Listing"
+msgstr "Deletar Este Ítem"
+
+msgid "Click to Add a New Listing"
+msgstr "Clique Para Adicionar Um Novo Item"
+
+
+
+#: templates/login.html and logout.html
+msgid "User Id"
+msgstr "Usuário"
+
+msgid "Password"
+msgstr "Senha"
+
+msgid "Show Password"
+msgstr "Mostrar Senha"
+
+msgid "Log In"
+msgstr "Entrar"
+
+msgid "Login is required to access the page you want"
+msgstr "É preciso logar para acessar a página que você quer"
+
+msgid "Retrieve Password"
+msgstr "Recuperar Senha"
+
+msgid "User Id. Example: UnitA23"
+msgstr "Código do Usuário. Exemplo: AptA23"
+
+msgid "Retrieve Login Info"
+msgstr "Recuperar Informação de Login"
+
+msgid ": User Id not found in the system. Please enter a valid user id."
+msgstr ": Usuário não encontrado no banco de dados. Informe um usuário válido."
+
+msgid "An email will be sent to the email on file for the user id entered above"
+msgstr "Um email será enviado para o endereço de email registrado para o usuário informado acima"
+
+msgid "Forgot My Password"
+msgstr "Esqueci a Minha Senha"
+
+
+# used in the PDF creation
+msgid "Main Occupant"
+msgstr "Morador Principal"
+
+msgid "Other Occupants"
+msgstr "Outros Moradores"
+
+msgid "Emergency Contact"
+msgstr "Contato de Emergência"
+
+msgid "Rental Info"
+msgstr "Apto de Aluguel"
+
+msgid "Additional Info"
+msgstr "Informações Adicionais"
+
+msgid "Vehicles"
+msgstr "Veículos"
+
+msgid "Notes"
+msgstr "Notas"
+
+msgid "NONE"
+msgstr "NENHUM"
+
+msgid "BLANK"
+msgstr "BRANCO"
+
+msgid "Yes"
+msgstr "Sim"
+
+msgid "No"
+msgstr "Não"
+
+msgid "Owner name"
+msgstr "Nome proprietário"
+
+msgid "This unit is not a rental"
+msgstr "Este apto não é aluguel"
+
+msgid "Reports having no vehicles"
+msgstr "Reporta não ter veículos"
+
+msgid "Uses oxygen equipment"
+msgstr "Usa equip. de oxygênio"
+
+msgid "Has limited mobility"
+msgstr "Têm mobilidade limitada"
+
+msgid "Assistance services routine visits"
+msgstr "Visitas freq. de serviços de assist."
+
+msgid "Has pets"
+msgstr "Tem pets"
+
+msgid "Main water shut off type"
+msgstr "Tipo fechamento de válvula"
+
+msgid "Last update by resident"
+msgstr "Últ. atualizção pelo morador"
+
+msgid "Insurance carrier"
+msgstr "Seguradora"
+
+msgid "Number of bicycles in garage"
+msgstr "Número bicicletas na garagem"
+
+
+#: templates/setup.html
+msgid "Create an Apartment/Unit and Its Current Occupant"
+msgstr "Criar Um Apartamento ou Unidade, e o Morador Atual"
+
+msgid "Only a user registered as Admin will see this Setup section"
+msgstr "Apenas um usuário com privilégios de Admin tem acesso a área de Cadastrar"
+
+msgid "Open/Close the List of Units/Users Already in the System"
+msgstr "Clique Para Mostrar ou Esconder a Lista de Moradores Já Cadastrados"
+
+msgid "User Id"
+msgstr "Cod. Usuário"
+
+msgid "Password"
+msgstr "Senha"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Unit"
+msgstr "Apto"
+
+msgid "Resident's Name"
+msgstr "Nome do Morador"
+
+msgid "Resident's Email"
+msgstr "Email do Morador"
+
+msgid "Resident's Phone"
+msgstr "Telefone do Morador"
+
+msgid "Owner's Name"
+msgstr "Nome do Proprietário"
+
+msgid "Owner's Email"
+msgstr "Email do Proprietário"
+
+msgid "Owner's Phone"
+msgstr "Telefone do Proprietário"
+
+msgid "Start Date"
+msgstr "Data Início"
+
+msgid "Initial Password"
+msgstr "Senha Inicial"
+
+msgid "Resident type"
+msgstr "Tipo de Residente"
+
+msgid "Board Member"
+msgstr "Sub-síndico"
+
+msgid "Secretary"
+msgstr "Secretária"
+
+msgid "Resident"
+msgstr "Morador"
+
+msgid "The unit is the same as the user id, which the resident will enter in the Login page."
+msgstr "Campo Apt é o mesmo que Usuário, que será usado na página de Login."
+
+msgid "You may name your units the way you think is best."
+msgstr "Você poderá adotar o padrão que você achar melhor."
+
+msgid "For example, if your condominium has multiple towers, such as tower A, B and C, you may adopt the following naming convention"
+msgstr "Por exemplo, se o seu condomínio tem múltiplas torres, como torre A, B e C, você poderá adotar o seguinte padrão de nomes"
+
+msgid "For units in the first floor of tower A: UnitA11, UnitA12, UnitA13, etc."
+msgstr "Para apts no primeiro piso da torre A: AptA11, AptA12, AptA13, etc."
+
+msgid "For units in the third floor of tower B: UnitB31, UnitB32, UnitB33, etc."
+msgstr "Para apts no terceiro piso da torre B: AptB31, AptB32, AptB33, etc."
+
+msgid "The sections below marked with * are required to be filled."
+msgstr "As seções abaixo marcadas com * são de preenchimento obrigatório."
+
+msgid "Main Occupant Contact"
+msgstr "Contato do Ocupante Principal"
+
+msgid "Must contain the info for one person only, which is the head of household (usually the unit owner if this isn't a rental unit)"
+msgstr "Deve conter a informação de apenas uma pessoa, que é o chefe de família (normalmente o proprietário do apartamento se não for apt de aluguel)"
+
+msgid "Emergency Contact"
+msgstr "Contato de Emergência"
+
+msgid "If possible, this should be someone who lives outside the complex, or in a building other than this unit's."
+msgstr "Se possível, o contato deve ser alguém que more fora do complexo, ou alguém que more em outra torre."
+
+msgid "For Rental Unit Only"
+msgstr "Apenas Para Apt de Aluguel"
+
+msgid "If this unit is a rental, you might want to fill this section"
+msgstr "Se este for um apt de aluguel, você talvez queira preencher esta seção"
+
+msgid "Upload a Link"
+msgstr "Subir um Link"
+
+msgid "Upload a Bylaws"
+msgstr "Subir um Regimento Interno"
+
+msgid "Upload a Document"
+msgstr "Subir um Documento"
+
+msgid "Upload a Public Document"
+msgstr "Subir um Documento Público"
+
+msgid "Upload a Common Area Picture"
+msgstr "Subir uma Foto de Área Comum"
+
+msgid "Upload the Home Picture"
+msgstr "Subir a Foto Página Principal"
+
+msgid "Upload the Logo Picture"
+msgstr "Subir a Foto do Logo"
+
+msgid "Upload"
+msgstr "Subir"
+
+msgid "Name"
+msgstr "Nome"
+
+msgid "Notes"
+msgstr "Notas"
+
+msgid "Phone"
+msgstr "Telefone"
+
+msgid "Resident Since"
+msgstr "Morador Desde"
+
+msgid "Other Occupants"
+msgstr "Outros Ocupantes"
+
+msgid "Has key to unit"
+msgstr "Tem chave do apt"
+
+msgid "This unit is a rental"
+msgstr "Este apt é de aluguel"
+
+msgid "Owner's Name"
+msgstr "Nome do Proprietário"
+
+msgid "Owner's Email"
+msgstr "Email do Proprietário"
+
+msgid "Owner's Phone"
+msgstr "Telefone do Proprietário"
+
+msgid "Owner's Full Mailing Address"
+msgstr "Endereço Completo do Proprietário"
+
+msgid "Additional Info"
+msgstr "Informações Adicionais"
+
+msgid "Use oxygen equipment"
+msgstr "Usa equipamento de oxigênio"
+
+msgid "Have limited mobility"
+msgstr "Têm dificuldade de movimento"
+
+msgid "Medical or assistance service visits the unit on a routine basis"
+msgstr "Pessoal de assistência médica faz visitas constantes ao apartamento"
+
+msgid "Have pets"
+msgstr "Tem pets"
+
+msgid "Knob"
+msgstr "Giratória"
+
+msgid "Lever"
+msgstr "Manopla"
+
+msgid "Number of bicycles in the garage"
+msgstr "Número de bicicletas na garagem"
+
+msgid "Home insurance policy carrier"
+msgstr "Seguradora do apartamento"
+
+msgid "Unit's main water shut off valve type"
+msgstr "Tipo de válvula do principal fechamento de água"
+
+msgid "I don't know"
+msgstr "Não sei"
+
+msgid "Vehicle Information"
+msgstr "Informações dos Veículos"
+
+msgid "Unit occupants have no cars"
+msgstr "Nenhum ocupante tem carro"
+
+msgid "Vehicle 1: Make and Model"
+msgstr "Veículo 1: Marca e Modelo"
+
+msgid "Vehicle 2: Make and Model"
+msgstr "Veículo 2: Marca e Modelo"
+
+msgid "Plate"
+msgstr "Placa"
+
+msgid "Color"
+msgstr "Cor"
+
+msgid "Year"
+msgstr "Ano"
+
+msgid "Write below any note or extra information you feel is important"
+msgstr "Escreva abaixo qualquer informação adicional que você acha importante"
+
+msgid "Use This Section Exclusively for Deletion of Unit"
+msgstr "Use Esta Seção Somente Para Remover Um Apartamento"
+
+msgid "Unit / User Id"
+msgstr "Apt / Usuário"
+
+msgid "Delete Unit from Database"
+msgstr "Remover Apartamento do Banco de Dados"
+
+msgid "Add This Unit to Database"
+msgstr "Adicionar Este Apartamento ao Banco de Dados"
+
+msgid "Residents"
+msgstr "Moradores"
+
+msgid "Generate List of Residents"
+msgstr "Gerar Lista de Moradores"
+
+msgid "Update"
+msgstr "Modificar"
+
+msgid "CC in emails sent from the condominium"
+msgstr "Copiar em emails enviados pelo condomínio"
+
+
+#: templates/profile.html
+msgid "View and Update Resident Profile"
+msgstr "Visualizar e/ou Alterar o Perfil do Morador"
+
+msgid "Last Update by Resident"
+msgstr "Última Alteração Pelo Morador"
+
+msgid "Administrative Data"
+msgstr "Dados Administrativos"
+
+msgid "If your unit is a rental, you're required to fill this section"
+msgstr "Se este for um apt de aluguel, o preenchimento desta seção é obrigatório"
+
+msgid "Save to Database"
+msgstr "Gravar no Banco de Dados"
+
+msgid "Change Password"
+msgstr "Mudar Senha"
+
+msgid "Current Password"
+msgstr "Senha Atual"
+
+msgid "New Password"
+msgstr "Nova Senha"
+
+msgid "Repeat Password"
+msgstr "Repita a Senha"
+
+
+#: templates/upload.html
+msgid "Upload or Update System Files"
+msgstr "Subir ou Modificar Arquivos de Sistema"
+
+msgid "Update General Settings"
+msgstr "Modificar Configurações"
+
+msgid "Delete documents"
+msgstr "Remover documentos"
+
+msgid "General settings"
+msgstr "Configurações diversas"
+
+msgid "Coming soon"
+msgstr "Em breve"
+
+msgid "General Maintenance"
+msgstr "Modificações em Geral"
+
+msgid "Description"
+msgstr "Descrição"
+
+msgid "Public Documents"
+msgstr "Documentos Públicos"
+
+msgid "Pictures"
+msgstr "Fotos"
+
+msgid "Links to Documents Elsewhere"
+msgstr "Links Para Documentos em Outros Sites"
+
+msgid "Bylaws Document"
+msgstr "Regimento Interno"
+
+msgid "Click Here to Open/Close the File Deletion Section"
+msgstr "Clique Aqui Para Abrir/Fechar a Seção de Deleção de Arquivo"
+
+msgid "Click Here to Open/Close the Announcement Maintenance Section"
+msgstr "Clique Aqui Para Abrir/Fechar a Seção de Manutenção de Anúncio"
+
+msgid "Click Here to Open/Close the User Maintenance Section"
+msgstr "Clique Aqui Para Abrir/Fechar a Seção de Ficha de Moradores"
+
+msgid "Click Here to Open/Close the Bulk Email Section"
+msgstr "Clique Aqui Para Abrir/Fechar a Seção de Envio de Email Coletivo"
+
+msgid "The form below is <b>optional</b>"
+msgstr "O form abaixo é <b>opcional</b>"
+
+msgid "It should be used only when you want to send an email message to all registered residents after an upload is made"
+msgstr "Deve ser usado somente quando você quiser enviar email para todos os moradores registrados"
+
+msgid "Email Title"
+msgstr "Título do Email"
+
+msgid "Email Text"
+msgstr "Texto do Email"
+
+msgid "To <b>add an announcement</b>: type the text at the top of the box below."
+msgstr "<b>Para adicionar um anúncio</b>: digite o texto na primeira linha do box abaixo."
+
+msgid "The most recent announcement appears first in the list."
+msgstr "O anúncio mais recente aparece primeiro na lista."
+
+msgid "To <b>delete an announcement</b>: delete the corresponding line(s) from the box below."
+msgstr "<b>Para deletar um anúncio</b>: delete do box abaixo as linhas correspondentes."
+
+msgid "Save Announcements"
+msgstr "Atualizar Anúncios"
+
+msgid "Generate Census Forms PDF"
+msgstr "Gerar PDF Ficha dos Moradores"
+
+msgid "Download Census Forms PDF"
+msgstr "Baixar PDF Ficha dos Moradores"
+
+msgid "Census Forms PDF Last Generated"
+msgstr "Último PDF Ficha dos Moradores Criado em"
+
+msgid "Reset the current password and send it to current owner and the authorized recipient below if provided."
+msgstr "Reinicializar a senha corrent and enviá-la para o morador atual e para o email abaixo se informado."
+
+msgid "Authorized Recipient Email"
+msgstr "Email de Recipiente Autorizado"
+
+msgid "feature enabled later"
+msgstr "recurso habilitado posteriormente"
+
+msgid "Address"
+msgstr "Endereço"
+
+msgid "ZIP"
+msgstr "CEP"
+
+msgid "City & State"
+msgstr "Cidade & Estado"
+
+msgid "Home Page Content"
+msgstr "Conteúdo da Pagina Principal"
+
+msgid "About Page Content"
+msgstr "Conteúdo da Pagina Sobre"
+
+msgid "Text"
+msgstr "Texto"
+
+msgid "Update Settings"
+msgstr "Atualizar Configurações"
+
+msgid "Multiline text"
+msgstr "Texto de múltiplas linhas"
+
+msgid "Fine Payment Request Text"
+msgstr "Texto da Solicitação de Pagamento de Multa"
+
+msgid "PIX Key"
+msgstr "Chave PIX"
+
+msgid "Email Title"
+msgstr "Título do Email"
+
+msgid "Email Text"
+msgstr "Texto do Email"
+
+msgid "Title of the fine notification email"
+msgstr "Título do email de notificação da multa"
+
+msgid "Body of the fine notification email"
+msgstr "Corpo do email de notificação da multa"
+
+msgid "The text of the email sent to the user may be configured"
+msgstr "O corpo do email enviado ao morador pode ser configurado"
+
+msgid "here"
+msgstr "aqui"
+
+
+
+#: venv/lib/python3.10/site-packages/click/_termui_impl.py:495
+msgid "{editor}: Editing failed"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/_termui_impl.py:499
+msgid "{editor}: Editing failed: {e}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/_unicodefun.py:19
+msgid ""
+"Click will abort further execution because Python was configured to use "
+"ASCII as encoding for the environment. Consult "
+"https://click.palletsprojects.com/unicode-support/ for mitigation steps."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/_unicodefun.py:55
+msgid ""
+"Additional information: on this system no suitable UTF-8 locales were "
+"discovered. This most likely requires resolving by reconfiguring the "
+"locale system."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/_unicodefun.py:64
+msgid ""
+"This system supports the C.UTF-8 locale which is recommended. You might "
+"be able to resolve your issue by exporting the following environment "
+"variables:"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/_unicodefun.py:74
+msgid ""
+"This system lists some UTF-8 supporting locales that you can pick from. "
+"The following suitable locales were discovered: {locales}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/_unicodefun.py:92
+msgid ""
+"Click discovered that you exported a UTF-8 locale but the locale system "
+"could not pick up from it because it does not exist. The exported locale "
+"is {locale!r} but it is not supported."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1104
+msgid "Aborted!"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1288
+#: venv/lib/python3.10/site-packages/click/decorators.py:435
+msgid "Show this message and exit."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1317
+#: venv/lib/python3.10/site-packages/click/core.py:1343
+msgid "(Deprecated) {text}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1360
+msgid "Options"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1386
+msgid "Got unexpected extra argument ({args})"
+msgid_plural "Got unexpected extra arguments ({args})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1398
+msgid "DeprecationWarning: The command {name!r} is deprecated."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1616
+msgid "Commands"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1648
+msgid "Missing command."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:1726
+msgid "No such command {name!r}."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2274
+msgid "Value must be an iterable."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2296
+msgid "Takes {nargs} values but 1 was given."
+msgid_plural "Takes {nargs} values but {len} were given."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2718
+msgid "env var: {var}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2741
+msgid "(dynamic)"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2751
+msgid "default: {default}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/core.py:2760
+msgid "required"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/decorators.py:339
+#, python-format
+msgid "%(prog)s, version %(version)s"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/decorators.py:404
+msgid "Show the version and exit."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:43
+#: venv/lib/python3.10/site-packages/click/exceptions.py:79
+msgid "Error: {message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:71
+msgid "Try '{command} {option}' for help."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:120
+msgid "Invalid value: {message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:122
+msgid "Invalid value for {param_hint}: {message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:178
+msgid "Missing argument"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:180
+msgid "Missing option"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:182
+msgid "Missing parameter"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:184
+msgid "Missing {param_type}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:191
+msgid "Missing parameter: {param_name}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:211
+msgid "No such option: {name}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:225
+msgid "Did you mean {possibility}?"
+msgid_plural "(Possible options: {possibilities})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:261
+msgid "unknown error"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/exceptions.py:268
+msgid "Could not open file {filename!r}: {message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/parser.py:231
+msgid "Argument {name!r} takes {nargs} values."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/parser.py:413
+msgid "Option {name!r} does not take a value."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/parser.py:473
+msgid "Option {name!r} requires an argument."
+msgid_plural "Option {name!r} requires {nargs} arguments."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/shell_completion.py:313
+msgid "Shell completion is not supported for Bash versions older than 4.4."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/shell_completion.py:320
+msgid "Couldn't detect Bash version, shell completion is not supported."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:161
+msgid "Repeat for confirmation"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:178
+msgid "Error: The value you entered was invalid."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:180
+msgid "Error: {e.message}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:191
+msgid "Error: The two entered values do not match."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:245
+msgid "Error: invalid input"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/termui.py:796
+msgid "Press any key to continue..."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:258
+msgid ""
+"Choose from:\n"
+"\t{choices}"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:292
+msgid "{value!r} is not {choice}."
+msgid_plural "{value!r} is not one of {choices}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:382
+msgid "{value!r} does not match the format {format}."
+msgid_plural "{value!r} does not match the formats {formats}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:402
+msgid "{value!r} is not a valid {number_type}."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:458
+msgid "{value} is not in the range {range}."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:599
+msgid "{value!r} is not a valid boolean."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:623
+msgid "{value!r} is not a valid UUID."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:801
+msgid "file"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:803
+msgid "directory"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:805
+msgid "path"
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:851
+msgid "{name} {filename!r} does not exist."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:860
+msgid "{name} {filename!r} is a file."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:868
+msgid "{name} {filename!r} is a directory."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:876
+msgid "{name} {filename!r} is not writable."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:884
+msgid "{name} {filename!r} is not readable."
+msgstr ""
+
+#: venv/lib/python3.10/site-packages/click/types.py:950
+msgid "{len_type} values are required, but {len_value} was given."
+msgid_plural "{len_type} values are required, but {len_value} were given."
+msgstr[0] ""
+msgstr[1] ""
+

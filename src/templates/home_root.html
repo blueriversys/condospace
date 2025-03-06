@@ -1,0 +1,180 @@
+{% extends "layout_root.html" %}
+
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/root.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16694882041"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-16694882041');
+    </script>
+{% endblock %}
+
+
+{% block body %}
+<div class="main">
+
+    <nav id="sidebar">  
+        <div class="sidebar-logo-area">
+            <img class="logo-div" src="img/bluelogo.png">
+            <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+        </div>
+
+        <ul class="list-unstyled components">
+            {% if info_data['language'] == 'en' %}
+                <li class="active"><a class="nav-link" href="register_en"><i class="fa fa-fw fa-home"></i> Home</a></li>
+                <li><a class="nav-link" href="about_en"><i class="fa fa-fw fa-info"></i> About</a></li>
+            {% elif info_data['language'] == 'pt' %}
+                <li class="active"><a class="nav-link" href="register_pt"><i class="fa fa-fw fa-home"></i> Home</a></li>
+                <li><a class="nav-link" href="about_pt"><i class="fa fa-fw fa-info"></i> Sobre</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="content">
+        {% include "mobile_root.html" %}
+
+        <div class="section-title" data-aos="zoom-out">
+            <h2>Home</h2>
+        </div>
+        
+        <div class="container-md my-5">
+            <div class="about-body">
+                <div class="shadow p-3 mb-2 bg-white rounded">
+                    <h4>{{_("Welcome to the CondoSpace App")}}</h4>
+
+                    <div class="spacer"></div>
+
+                    <div class="center">
+                        <button class="button larger-button" style="font-size: 18px; max-width: 800px;" data-toggle="collapse" data-target="#benefits_section" aria-expanded="false" aria-controls="collapseExample">
+                          <i class="fa fa-dollar"></i>&nbsp;&nbsp;{{_("Want to See Some of the Benefits in Using CondoSpace?")}}
+                        </button>
+                    </div>
+
+                    <div id="benefits_section" class="app-container collapse">
+                        <div class="registration-box" style="font-size: 18px;">
+                            <b>{{_("Some of the benefits")}}:</b>
+                            <ol>
+                                <li>{{_("Sense of belonging and community")}}</li>
+                                <li>{{_("Resident Census Card")}}</li>
+                                <li>{{_("Ability to issue Fines")}}</li>
+                                <li>{{_("Make reservations of common areas (soon)")}}</li>
+                                <li>{{_("Communication between Association and Residents")}}</li>
+                                <li>{{_("Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.")}}</li>
+                                <li>{{_("Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be http://condospace.app/hilltop")}}</li>
+                                <li>{{_("Ability to list apartments for sale with pictures (especially useful for FSBOs)")}}</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="registration-form">
+                        <form id="contact_form">
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("Admin Name")}}:</span>
+                                <input type="text" class="form-control col-lg-6" id="name" placeholder='{{_("Your full name")}}'>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("Admin Email")}}:</span>
+                                <input type="text" class="form-control col-lg-4" id="email" placeholder="Email">
+                                <span style="line-height: 40px; padding-left: 3px;" title='{{_("Email must exist because that is where we will send you the Login credentials.")}}'><i class="fa fa-question-circle-o"></i></span>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("Admin Phone")}}:</span>
+                                <input type="text" class="form-control col-lg-4" id="phone" placeholder='{{_("Ex. 508 891-3472")}}'>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                  <span class="input-group-addon col-lg-3 form-label">{{_("Preferred Language")}}:</span>
+                                  <select id="pref-language" name="pref-language" style="font-size: 18px;">
+                                  {% if info_data['language'] == 'en' %}
+                                        <option value="en" selected>English</option>
+                                        <option value="pt">Português</option>
+                                  {% elif info_data['language'] == 'pt' %}
+                                        <option value="en">English</option>
+                                        <option value="pt" selected>Português</option>
+                                  {% endif %}
+                                  </select>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("Condominium Name")}}:</span>
+                                <input type="text" class="form-control col-lg-4" id="condo-name" placeholder='{{_("Ex. Signature Heights Condominium")}}'>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("Tagline")}}:</span>
+                                <input type="text" class="form-control col-lg-4" id="condo-tagline" placeholder='{{_("Example: Peace of mind lives here")}}'>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("Condominium Id")}}:</span>
+                                <input type="text" class="form-control col-lg-2" id="condo-id" onBlur="condoIdOnBlur()" placeholder='{{_("Cannot have spaces in it")}}'>
+                                <span style="line-height: 40px; padding-left: 3px;" title="{{_('For example, if your condominium name is Bela Vista Condominium, this would be belavista')}}"><i class="fa fa-question-circle-o"></i></span>
+                                <span style="line-height: 40px; padding-left: 3px;"><i id="condo_id_group" style="display: none;"></i></span>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("Condominium Address")}}:</span>
+                                <input type="text" class="form-control col-lg-5" id="condo-address" placeholder='{{_("Address of the condominium")}}'>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("ZIP")}}:</span>
+                                <input type="text" class="form-control col-lg-2" id="condo-zip" placeholder='{{_("ZIP of the condominium")}}'>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("City & State")}}:</span>
+                                <input type="text" class="form-control col-lg-4" id="condo-location" placeholder='{{_("City, State of the condominium location")}}'>
+                                <span style="line-height: 40px; padding-left: 3px;" title='{{_("For example, enter Syracuse, NY")}}'><i class="fa fa-question-circle-o"></i></span>
+                            </div>
+
+                            <div class="input-group mb-2" style="font-size: 18px;">
+                                <span class="input-group-addon col-lg-3 form-label">{{_("Home Page Condo Picture")}}:</span>
+                                <input type="checkbox" style="" id="use-default-img" onClick="useDefaultImgClicked()" name="use-default-img">
+                                <label for="use-default-img"  style="">{{_("Use a default picture")}}</label><br>
+                                <input type="file" class="col-lg-4" id="condo-img-file" onChange="pictureSelectAction('condo-img-file', 'condo-img')">
+                                <img id="condo-img" src="" width="80" height="50" style="border-radius: 4px; left-margin: 2px; display: none;">
+                            </div>
+
+                            <div class="spacer"></div>
+
+                            <div class="center">
+                                <button type="button" class="btn create-account" onClick="sendCondoRegistrationForm()">{{_("Register Your Condo")}}</button>
+                            </div>
+                        </form>
+
+                        <div style="margin: 40px;"></div>
+
+                        <div class="social-media">
+                            <h5>{{_("Follow Us on Social Media")}}</h5>
+                            <div class="social-icons">
+                                <a href="https://instagram.com/blueriversys"><i class="fa fa-instagram" title="Instagram"></i></a>
+                                <a href="#"><i class="fa fa-facebook" title="Facebook"></i></a>
+                                <a href="#"><i class="fa fa-google" title="Google"></i></a>
+                                <a href="#"><i class="fa fa-twitter" title="Twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<input type="hidden" id="loggedin-lang" value={{info_data['language']}}>
+
+{% endblock %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/home_root.js') }}"></script>
+{% endblock %}
+

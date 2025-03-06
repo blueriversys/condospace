@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <script src="jquery-3.3.1.slim.min.js"></script>
+<!--
+        <link href="bootstrap-5.3.3.min.css" rel="stylesheet">
+        <script src="bootstrap-5.3.3.bundle.min.js"></script>
+        <script src="bootbox-6.0.0.all.min.js"> </script>
+-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css">
+<!--        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.3.4/bootbox.min.js"></script>
+
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+
+    <body>
+
+        <div>
+            <button onclick="showAlert1()">Click to show an alert box</button>
+        </div>
+
+        <div>
+            <button onclick="deleteAccount()">Delete the resident? Click to show a confirm box</button>
+        </div>
+
+        <div>
+            <button onclick="withIconAndTitle()">Destroy the sun and other stars, confirm with icon</button>
+        </div>
+
+        <div>
+            <button onclick="withLocale()">Destroy the sun and other stars (Locale), confirm</button>
+        </div>
+
+        <div>
+            <button onclick="promptWithFields()">Input prompts with fields</button>
+        </div>
+
+        <div>
+            <button onclick="showSpinnerDuringAction()">Simulate loading data from a database, dialog</button>
+        </div>
+
+        <div>
+            <button onclick="showDialog()">Show a custom dialog</button>
+        </div>
+
+        <div>
+            <button onclick="showDialog1()">Show a custom dialog1</button>
+        </div>
+
+        <div>
+            <button onclick="showDialog2('red')">Show a custom dialog2, red text</button>
+        </div>
+
+        <div>
+            <button onclick="showDialog2('blue')">Show a custom dialog2, blue text</button>
+        </div>
+
+        <div>
+            <button onclick="showSpinner()">Show Spinner, no close button, auto closing after a few secs)</button>
+        </div>
+
+        <div>
+            <button onclick="showMessage('This message will show for 5 secs', 5000)">Auto dismiss message box</button>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <div>
+            <button onclick="showAlert('danger', 'This is just an alert')">Make an alert to appear</button>
+        </div>
+
+        <script>
+            //let locale = $('#choose-locale').val();
+
+            function showAlert(type, message) {
+                  const alertContainer = document.getElementById('alert-container');
+                  const alertDiv = document.createElement('div');
+                  alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show');
+                  alertDiv.setAttribute('role', 'alert');
+                  alertDiv.innerHTML = `
+                    ${message}
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                  `;
+                  alertContainer.appendChild(alertDiv);
+            }
+
+            function showAlert1() {
+                bootbox.alert("This is an alert.");
+            }
+
+            function deleteAccount() {
+                bootbox.confirm({
+                    message: "Are you sure you want to delete the account?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-danger'
+                        }
+                    },
+                    callback: function (resp) {
+                        if (resp) {
+                            bootbox.alert('You chose to delete the account.');
+                        }
+                        else {
+                            bootbox.alert('You chose NOT to delete the account.');
+                        }
+                    }
+                });
+            }
+
+            function withIconAndTitle() {
+                bootbox.confirm({
+                    title: "Destroy planet?",
+                    message: "Do you want to activate the Deathstar now? This cannot be undone.",
+                    buttons: {
+                        cancel: {
+                            label: '<i class="fa fa-times"></i> Cancel',
+                            className: 'btn-danger'
+                        },
+                        confirm: {
+                            label: '<i class="fa fa-check"></i> Confirm',
+                            className: 'btn-success'
+                        }
+                    },
+                    callback: function (result) {
+                        console.log('This was logged in the callback: ' + result);
+                    }
+                });
+            }
+
+            function withLocale() {
+                bootbox.confirm({
+                    message: "This confirm uses the selected locale. Were the labels what you expected?",
+                    locale: 'pt-BR',
+                    callback: function (result) {
+                        console.log('This was logged in the callback: ' + result);
+                    }
+                });
+            }
+
+            function promptWithFields() {
+                bootbox.prompt({
+                    title: "This is a prompt with a date input + email",
+                    inputType: 'email',
+                    callback: function (result) {
+                        console.log(result);
+                    }
+                });
+            }
+
+            function showSpinnerDuringAction() {
+                let dialog = bootbox.dialog({
+                    title: 'Simulating a response from the server, takes 5 secs...',
+                    message: '<p><i class="fa fa-spinner fa-spin" style="font-size:24px"></i> Loading...</p>'
+                });
+
+                dialog.init(function(){
+                    setTimeout(function(){
+                        dialog.find('.bootbox-body').html('After 5secs, the server has responded!');
+                    }, 5000);
+                });
+            }
+
+            function showSmallerAlert() {
+                let dialog = bootbox.dialog({
+                    title: 'The name and email of the resident are all required',
+                    message: '<button class="btn btn-success small>'
+                });
+            }
+
+            function showSpinner() {
+                let dialog = bootbox.dialog({
+                    message: '<div class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading for 3 secs...</div>',
+                    closeButton: false
+                });
+
+                dialog.init(function() {
+                    setTimeout(function() {
+                        dialog.modal('hide');
+                    }, 5000);
+                });
+            }
+
+            function showMessage(message, milliseconds) {
+                var dialog = bootbox.dialog({
+                    message: message, closeButton: false, backdrop:false, onEscape:true, className: 'bb-alternate-modal'
+                });
+
+                setTimeout(function(){
+                    dialog.modal('hide');
+                }, milliseconds);
+            }
+
+            function showDialog() {
+                var dialog = bootbox.dialog({
+                    title: 'my dialog title',
+                    message: "<button class='btn btn-success float-right' style='text-align: right;'>OK</button>",
+                    closeButton: false,
+                    backdrop: false,
+                    onEscape: true
+                });
+            }
+
+            function showDialog1() {
+                var dialog = bootbox.dialog({
+                    message: "The fields Name, Email and Phone are all required.",
+                    closeButton: false,
+                    backdrop: false,
+                    onEscape: true,
+                    buttons: {
+                            ok: {
+                                label: "OK",
+                                className: 'btn-info',
+                                callback: function(){
+                                    //alert('Custom OK clicked');
+                                }
+                            }
+                    }
+                });
+            }
+
+            function showDialog2(text_color) {
+                const msg = `<label style='color:${text_color};'>The fields Name, email and phone are all required.</label>`;
+                console.log(msg);
+                var dialog = bootbox.dialog({
+                    message: msg,
+                    closeButton: false,
+                    backdrop: false,
+                    onEscape: true,
+                    buttons: {
+                            ok: {
+                                label: "OK",
+                                className: 'btn-info',
+                                callback: function(){
+                                    //alert('Custom OK clicked');
+                                }
+                            }
+                    }
+                });
+            }
+
+        </script>
+
+        <style>
+<!--            .my-popup .modal-footer {-->
+<!--                padding:10px;-->
+<!--                border-top: none;-->
+<!--                text-align:center;-->
+<!--            }-->
+
+            .my-popup .modal-body {
+                 padding: 10px;
+                 color: blue;
+                 background: lightblue;
+                 border-radius: 8px;
+                 border-color: black;
+                 border-size: 2px;
+              }
+
+            .modal.bb-alternate-modal .modal-content {
+                  background: lightblue;
+                  width:  600px;
+                  height: 160px;
+                  border: 3px solid black;
+            }
+
+            .button-right {
+                float: right;
+            }
+        </style>
+
+    </body>
+</html>
+
+
+

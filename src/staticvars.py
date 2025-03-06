@@ -1,0 +1,13 @@
+
+USER_TYPE_ADMIN = 0
+USER_TYPE_BOARD = 1
+USER_TYPE_SECRETARY = 2
+USER_TYPE_RESIDENT = 3
+
+# this is passed to templates from server.py
+user_types = {
+    'ADMIN': USER_TYPE_ADMIN,
+    'BOARD': USER_TYPE_BOARD,
+    'SECRETARY': USER_TYPE_SECRETARY,
+    'RESIDENT': USER_TYPE_RESIDENT
+}
