@@ -170,6 +170,13 @@ button:disabled, button[disabled] {
     display: block;
 }
 
+.small-pic {
+    width: 120px;
+    height: 80px;
+    border-radius: 4px;
+    box-shadow: 4px 4px 2px lightgray;*/
+}
+
 /*
   Now that I am creating the ERROR div dynamically, this might just work rather than using logic for fading
 .error-message {

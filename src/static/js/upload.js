@@ -108,8 +108,8 @@ function updateSystemSettings() {
         return;
     }
 
-    if ( !isInteger(condo_zip) ) {
-       showMsgBox( gettext('ZIP must be size 5 or 8 and only digits') );
+    if ( condo_zip.length == 0 ) {
+       showMsgBox( gettext('ZIP is a required field') );
        return;
     }
 

@@ -108,7 +108,6 @@ function showMsgBoxError(text) {
 
 function showMsgBoxColor(text_color, text) {
     const msg = `<label style='color:${text_color};'>${text}</label>`;
-    console.log(msg);
     var dialog = bootbox.dialog({
         message: msg,
         closeButton: false,
@@ -125,6 +124,23 @@ function showMsgBoxColor(text_color, text) {
         }
     });
 }
+
+function showConfirmMsgBox(text) {
+    outer_resp = false;
+    bootbox.confirm({
+        message: text,
+        buttons: {
+            confirm: { label: 'Yes', className: 'btn-success' },
+            cancel:  { label: 'No',  className: 'btn-danger' }
+        },
+        callback: function (resp) {
+            outer_resp = resp; // returns true or false
+        }
+    });
+    console.log(outer_resp); // returns true or false
+    return outer_resp;
+}
+
 
 function showFadingMsg(msg) {
     showFadingMsgParam(ERROR_MSG, msg);  // default is ERROR_MSG
@@ -762,18 +778,28 @@ function uploadPictureFiles(name, fileControl, barControl) {
     if (name === UPLOAD_LISTING) {
         unit = document.getElementById('unit').value;
         title = document.getElementById('title').value;
-        contact = document.getElementById('contact').value;
+        email = document.getElementById('email').value;
+        phone = document.getElementById('phone').value;
         price = document.getElementById('price').value;
-        if (unit.trim().length == 0) {
+
+        // "none" is the initial value of the field
+        if (unit.trim().length == 0 || unit === 'none') {
             showMsgBox( gettext('Unit is a required field') );
             return;
         }
+
         if (title.trim().length == 0) {
             showMsgBox( gettext('Title is a required field') );
             return;
         }
-        if (contact.trim().length == 0) {
-            showMsgBox( gettext('Contact is a required field') );
+
+        if ( !document.getElementById('email').checkValidity() ) {
+            showMsgBox( gettext('Email field content is invalid') );
+            return;
+        }
+
+        if (phone.trim().length == 0) {
+            showMsgBox( gettext('Phone is a required field') );
             return;
         }
         if (price.trim().length == 0) {
@@ -785,6 +811,11 @@ function uploadPictureFiles(name, fileControl, barControl) {
     if (name === UPLOAD_EVENT_PICTURE) {
         title = document.getElementById('title').value;
         event_date = document.getElementById('event_date').value;
+        date = new Date(event_date);
+        event_y = date.getFullYear();
+        event_m = date.getMonth()+1;
+        event_d = date.getDate()+1;
+
         if (title.trim().length == 0) {
             showMsgBox( gettext('Title is a required field') );
             return;
@@ -818,13 +849,16 @@ function uploadPictureFiles(name, fileControl, barControl) {
     if (name === UPLOAD_LISTING) {
         formData.append("unit", unit);
         formData.append("title", title);
-        formData.append("contact", contact);
+        formData.append("email", email);
+        formData.append("phone", phone);
         formData.append("price", price);
     }
     else
     if (name === UPLOAD_EVENT_PICTURE) {
         formData.append("title", title);
-        formData.append("date", event_date);
+        formData.append("event_y", event_y);
+        formData.append("event_m", event_m);
+        formData.append("event_d", event_d);
     }
 
     //create XHR object to send request
@@ -874,9 +908,10 @@ function uploadPictureFiles(name, fileControl, barControl) {
     request.send(formData);
 }
 
-function deletePictureFiles(name, key) {
-    resp = confirm('Confirm you want to delete '+key);
-    if (resp == false) {
+function deletePictureFiles(name, user_id, key) {
+    resp = confirm( gettext("Are you sure you want to delete entry") + ' ' + key + '?' );
+
+    if ( !resp ) {
         return;
     }
 
@@ -887,7 +922,8 @@ function deletePictureFiles(name, key) {
     if (name === 'listing') {
         post_url = "/" + window.loggedin_tenant_global + "/delete_listing";
         request.open('POST', post_url, true)
-        requestObj.unit = key;
+        requestObj.user_id = user_id;
+        requestObj.listing_id = key;
     }
     else
     if (name === 'eventpics') {
@@ -1030,7 +1066,24 @@ function uploadLink() {
     request.send(jsonStr);
 }
 
-
 function isInteger(strNumber) {
   return !isNaN(parseInt(strNumber)) && isFinite(strNumber);
 }
+
+function retrieveUser(user_id) {
+  var request = new XMLHttpRequest();
+  post_url = "/" + window.loggedin_tenant_global + "/getresident";
+  request.open('POST', post_url, true)
+
+  var requestObj = new Object();
+  requestObj.type = 'user';
+  requestObj.tenant = window.loggedin_tenant_global;
+  requestObj.id = user_id;
+
+  // const person = {firstName:"John", lastName:"Doe", age:50, eyeColor:"blue"};
+  jsonStr = '{ "request": ' + JSON.stringify(requestObj) + '}';
+  request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  request.send(jsonStr);
+  return request;
+}
+

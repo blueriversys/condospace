@@ -24,7 +24,7 @@ map.set("Invalid content in number of bikes", new Map().set("pt", "Número de bi
 map.set("Year of vehicle 1 must be 1900 or later", new Map().set("pt", "Ano do veículo 1 tem que ser a partir de 1900"));
 map.set("Year of vehicle 2 must be 1900 or later", new Map().set("pt", "Ano do veículo 2 tem que ser a partir de 1900"));
 map.set("Please select the folder where your pictures are", new Map().set("pt", "Selecione a pasta onde suas fotos estão"));
-map.set("Unit is a required field", new Map().set("pt", "Usuário/Apt é um campo obrigatório"));
+map.set("Unit is a required field", new Map().set("pt", "Usuário/Apto é um campo obrigatório"));
 map.set("Title is a required field", new Map().set("pt", "Título é um campo obrigatório"));
 map.set("Contact is a required field", new Map().set("pt", "Contato é um campo obrigatório"));
 map.set("Price is a required field", new Map().set("pt", "Preço é um campo obrigatório"));
@@ -89,8 +89,9 @@ map.set("pictures successfully uploaded", new Map().set("pt", "fotos subiram com
 map.set("Condo Id entered already exists in the system.", new Map().set("pt", "Id do Condomínio informado já existe no sistema."));
 map.set("Success! We sent login info as well as instructions to the email provided.", new Map().set("pt", "Sucesso! Enviamos suas credenciais bem como instruções para o email informado."));
 map.set("One moment, as we register your condominium on our database...", new Map().set("pt", "Um momento, para registrarmos o seu condomínio no nosso banco de dados..."));
-
-
+map.set("Email field content is invalid", new Map().set("pt", "Conteúdo do campo Email é inválido"));
+map.set("Are you sure you want to delete entry", new Map().set("pt", "Tem certeza que quer deletar item"));
+map.set("ZIP is a required field", new Map().set("pt", "Campo CEP é obrigatório"));
 
 
 function gettext(text) {

@@ -32,6 +32,7 @@ curl -XGET -F "text=Welcome"  -H 'Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en
 """
 
 import staticvars
+#from supporting_programs.image_test import img_bytes
 from users import User, UsersRepository
 from pdf import PDF
 from datetime import timedelta, datetime
@@ -55,7 +56,7 @@ from PIL import Image
 from io import BytesIO
 from redmail import gmail
 from flask_babel import Babel, gettext, lazy_gettext, _
-
+from flask_babel import format_decimal
 ''' for simulation of long running tasks '''
 from threading import Thread, Lock
 from time import sleep
@@ -423,10 +424,10 @@ def custom_static(tenant, filename):
     file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/pics/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
-@app.route('/<tenant>/listings/<unit>/pics/<filename>')
-def custom_static_listing(tenant, unit, filename):
-    #print(f"in custom_static_listing(): tenant: {tenant}, unit {unit}, filename {filename}")
-    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{unit}/pics/{filename}")
+@app.route('/<tenant>/listings/<unit>/<listing_id>/pics/<filename>')
+def custom_static_listing(tenant, unit, listing_id, filename):
+    print(f"in custom_static_listing(): tenant: {tenant}, unit {unit}, filename {filename}")
+    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
 @app.route('/<tenant>/event/eventpics/<title>/pics/<filename>')
@@ -539,7 +540,7 @@ def setup(tenant):
 
 
 #------------------------------------------------------------------------------------------
-#   Payment related routes
+#   Fine related routes
 #------------------------------------------------------------------------------------------
 @app.route('/<tenant>/fines')
 @login_required
@@ -1038,6 +1039,11 @@ def pics(tenant):
         return render_template("pics.html", pics=pictures, events=None, user_types=staticvars.user_types, info_data=get_info_data(tenant))
 
     events = get_json_from_file(f"{get_tenant()}/{EVENT_PICS_FILE}")
+
+    # convert from epoch to string date format
+    for event_key, event_data in events['event_pictures'].items():
+        event_data['date'] = get_string_from_epoch(event_data['date'])
+
     lock.release()
     return render_template("pics.html", pics=pictures, events=events['event_pictures'].items(), user_types=staticvars.user_types, info_data=info_data)
 
@@ -1135,9 +1141,10 @@ def get_resident_json(tenant):
         lock.release()
         return return_obj
 
-    print_process("/getresident start", json_obj['request']['id'], False)
+    #print_process("/getresident start", json_obj['request']['id'], False)
     load_users(tenant)
     if json_obj['request']['type'] == 'user':
+        print(f"user id to retrieve: {json_obj['request']['id']}")
         user = users_repository.get_user_by_userid(tenant, json_obj['request']['id'])
     else:
         return_obj = json.dumps({'response': {'status': 'error'}})
@@ -1184,7 +1191,7 @@ def get_resident_json(tenant):
     }
 
     return_obj = json.dumps({'response': {'status': 'success', 'pid': os.getpid(), 'resident':resident}})
-    print_process("/getresident finis", json_obj['request']['id'])
+    #print_process("/getresident finis", json_obj['request']['id'])
     lock.release()
     return return_obj
 
@@ -1437,6 +1444,29 @@ def change_userid():
     return return_obj
 
 
+#-----------------------------------------------------------------------------------------------------
+#     Listing routines
+#-----------------------------------------------------------------------------------------------------
+@app.route('/<tenant>/listing/<unit>/<listing_id>')
+def get_one_listing(tenant, unit, listing_id):
+    lock.acquire()
+    print(f"get_one_listing()")
+    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+    info_data = get_info_data(tenant)
+    alisting = None
+    pictures = None
+
+    if unit in listings['listings']:
+        alisting = listings['listings'][unit]['items'][listing_id]
+        alisting['listing_id'] = listing_id
+        alisting['date'] = get_string_from_epoch(alisting['date'])
+        alisting['price'] = format_decimal(alisting['price'])
+        pictures = get_files(f"{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics", '')
+
+    lock.release()
+    return render_template("alisting.html", unit=unit, listing=alisting, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
+
+
 @app.route('/<tenant>/upload_listing', methods=['POST'])
 def upload_listing(tenant):
     lock.acquire()
@@ -1448,15 +1478,16 @@ def upload_listing(tenant):
         return_obj = json.dumps({'response': {'status': 'success'}})
         return return_obj
 
+    img_bytes = None
     cover_found = False
     cover_name = ''
+    user_id = request.form["unit"]
 
-    # upload the files first
+    # this is to find the cover file name, if any
     for file in upload_files:
         if file.filename.startswith("cover"):
             cover_found = True
             cover_name = file.filename
-        aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{request.form['unit']}/pics/{file.filename}", file.read())
 
     if cover_found is False:
         upload_files[0].stream.seek(0)
@@ -1467,33 +1498,128 @@ def upload_listing(tenant):
         if w > h:
             nw = 200
             p = 200 / w
-            nh = int(h*p)
+            nh = int(h * p)
         else:
             nh = 150
             p = 150 / h
-            nw = int(w*p)
+            nw = int(w * p)
         resized_img = cover_image.resize((nw, nh), Image.Resampling.LANCZOS)
         img_bytes = image_to_byte_array(resized_img, img_format)
         cover_name = "cover.jpg" if img_format == 'JPEG' else "cover.png"
-        aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{request.form['unit']}/pics/{cover_name}", img_bytes)
+        upload_files[0].stream.seek(0)
 
+    new_listing = { "title": request.form["title"], "email": request.form["email"], "phone": request.form["phone"],
+                    "price": int(request.form["price"]), "cover_file": cover_name, "date": get_epoch_from_now() }
 
-    # read, update and upload the listings.json file
+    # read the LISTINGS_FILE to add an additional condo to it
     if aws.is_file_found(f"{get_tenant()}/{LISTINGS_FILE}"):
         listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
-        new_listing = {'title': f'{request.form["title"]}', 'contact': f'{request.form["contact"]}',
-                       'price': int(request.form['price']), 'cover_file': f'{cover_name}'}
-        listings['listings'][request.form["unit"]] = new_listing
-    else:
-        new_listing = {'title': f'{request.form["title"]}', 'contact': f'{request.form["contact"]}',
-                       'price': int(request.form['price']), 'cover_file': f'{cover_name}'}
-        new_listing_dict = {request.form["unit"]: new_listing}
-        listings = {"listings": new_listing_dict}
 
+        # find the last listing_id for the user
+        if user_id in listings['listings']:
+            listing_id = 0
+            for id, value in listings['listings'][user_id]['items'].items():
+                id = int(id)
+                listing_id = id if id > listing_id else listing_id
+            listing_id += 1
+            listings['listings'][user_id]['items'][listing_id] = new_listing
+        else:
+            listing_id = 0
+            listings['listings'][user_id] = { 'items':  { listing_id: new_listing } }
+    else:
+        listing_id = 0
+        listings = { 'listings': {
+            user_id: { "items": { listing_id: new_listing } } } }
+
+    aws.upload_text_obj(f"{tenant}/{LISTINGS_FILE}", json.dumps(listings))
+
+    # here we know the listing_id, let's upload the files
+    for file in upload_files:
+        aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{user_id}/{listing_id}/pics/{file.filename}", file.read())
+
+    if cover_found is False and img_bytes is not None:
+        print(f"there is no cover, uploading the one we created: {cover_name}")
+        aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{user_id}/{listing_id}/pics/{cover_name}", img_bytes)
+    else:
+        print(f"problem processing the cover file")
+
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
+
+@app.route('/<tenant>/listings')
+def get_listings(tenant):
+    lock.acquire()
+    print(f"get_listings()")
+    if not aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
+        lock.release()
+        return render_template("listings.html", units=get_unit_list(), listings=None,
+                               user_types=staticvars.user_types, info_data=get_info_data(tenant))
+
+    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+
+    listings_arr = []
+
+    for key, value_a in listings['listings'].items():
+        #print(f"key: {key}     items: {value_a}")
+        for listing_id, value_c in value_a['items'].items():
+            value_c['price'] = format_decimal(format(value_c['price']))
+            value_c['date'] = get_string_from_epoch(value_c['date'])
+            listings_arr.append( {'user_id': key, 'listing_id': listing_id, 'title': value_c['title'], 'email': value_c['email'], 'phone': value_c['phone'],
+                                  'price': value_c['price'], 'cover_file': value_c['cover_file'], 'date': value_c['date']} )
+
+    lock.release()
+    return render_template("listings.html",
+                           units=get_unit_list(), listings=listings_arr,
+                           user_types=staticvars.user_types, info_data=get_info_data(tenant))
+
+
+@app.route('/<tenant>/delete_listing', methods=['POST'])
+def delete_listing(tenant):
+    lock.acquire()
+    print(f"here in delete_listing(): {tenant}")
+
+    page, check_code = check_security(tenant)
+    if check_code != SECURITY_SUCCESS_CODE:
+        lock.release()
+        return page
+
+    user_id = request.get_json()['request']['user_id']
+    listing_id = request.get_json()['request']['listing_id']
+    pictures = aws.get_file_list_folder(tenant, f"{UNPROTECTED_FOLDER}/listings/{user_id}/{listing_id}/pics")
+    for pic_name in pictures:
+        pic_name = pic_name[ len(BUCKET_PREFIX + "/"): ]
+        aws.delete_object(pic_name)
+
+    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+    del listings['listings'][user_id]['items'][listing_id]
     aws.upload_text_obj(f"{tenant}/{LISTINGS_FILE}", json.dumps(listings))
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
+
+
+#-----------------------------------------------------------------------------------------------------
+#     Picture event routines
+#-----------------------------------------------------------------------------------------------------
+@app.route('/<tenant>/event/<title>')
+def get_event_pics(tenant, title):
+    lock.acquire()
+    print(f"in get_event_pics(): tenant: {tenant}")
+    pictures = get_files(f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
+    events = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
+    info_data = get_info_data(tenant)
+    if title not in events['event_pictures']:
+        event = None
+        pictures = None
+    else:
+        event = events['event_pictures'][title]
+        event['date'] = get_string_from_epoch(event['date'])
+        print(f"info do evento: {event}")
+    lock.release()
+    return render_template("event.html", title=title, event=event, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
+
 
 @app.route('/<tenant>/upload_event_pics', methods=['POST'])
 def upload_event_pics(tenant):
@@ -1561,16 +1687,19 @@ def upload_event_pics(tenant):
             nw = int(w*p)
         img_format, new_img_bytes = reduce_image_enh(img_bytes, nw, nh)
         cover_name = "cover.jpg" if img_format == 'JPEG' else "cover.png"
-        #print(f"cover name {cover_name},   orig size: {cover_image.size},  reduced size: {len(img_bytes)}")
-        print(f"nao achou cover, novo size: {nw}x{nh}")
         aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/eventpics/{folder_name}/pics/{cover_name}", new_img_bytes)
+
+    event_date = f"{request.form['event_y']}-{request.form['event_m']}-{request.form['event_d']}"
+    print(f"event_date: {event_date}")
+    event_date_epoch = get_epoch_from_string(event_date)
+    print(f"event_date epoch: {event_date_epoch}")
 
     if aws.is_file_found(f"{tenant}/{EVENT_PICS_FILE}"):
         event_pics = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
-        new_event = {'title': f'{request.form["title"]}', 'date': f'{request.form["date"]}', 'cover_file': f'{cover_name}' }
+        new_event = {'title': f'{request.form["title"]}', 'date': event_date_epoch, 'cover_file': f'{cover_name}' }
         event_pics['event_pictures'][folder_name] = new_event
     else:
-        new_event = {'title': f'{request.form["title"]}', 'date': f'{request.form["date"]}', 'cover_file': f'{cover_name}' }
+        new_event = {'title': f'{request.form["title"]}', 'date': event_date_epoch, 'cover_file': f'{cover_name}' }
         # new_event_dict = {folder_name: new_event}
         event_pics = {"event_pictures": { f"{folder_name}": new_event } }
 
@@ -1578,76 +1707,6 @@ def upload_event_pics(tenant):
     aws.upload_text_obj(f"{tenant}/{EVENT_PICS_FILE}", json.dumps(event_pics))
 
     # prepare response
-    return_obj = json.dumps({'response': {'status': 'success'}})
-    lock.release()
-    return return_obj
-
-
-@app.route('/<tenant>/listing/<unit>')
-def listing(tenant, unit):
-    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
-    info_data = get_info_data(tenant)
-    alisting = None
-    pictures = None
-    if unit in listings['listings']:
-        alisting = listings['listings'][unit]
-        pictures = get_files(f"{UNPROTECTED_FOLDER}/listings/{unit}/pics", '')
-    return render_template("alisting.html", unit=unit, listing=alisting, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
-
-
-@app.route('/<tenant>/event/<title>')
-def event_picture(tenant, title):
-    print(f"in event_picture(): tenant: {tenant}")
-    pictures = get_files(f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
-    events = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
-    info_data = get_info_data(tenant)
-    if title not in events['event_pictures']:
-        event = None
-        pictures = None
-    else:
-        event = events['event_pictures'][title]
-        print(f"info do evento: {event}")
-    return render_template("event.html", title=title, event=event, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
-
-
-@app.route('/<tenant>/listings')
-def listings(tenant):
-    lock.acquire()
-    if not aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
-        lock.release()
-        return render_template("listings.html", units=get_unit_list(), listings=None,
-                               user_types=staticvars.user_types, info_data=get_info_data(tenant))
-
-    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
-    for key, value in listings['listings'].items():
-        if value['price'] > 999:
-            value['price'] = '{:,.2f}'.format(value['price'])
-    lock.release()
-    return render_template("listings.html", units=get_unit_list(), listings=listings['listings'].items(),
-                           user_types=staticvars.user_types, info_data=get_info_data(tenant))
-
-
-@app.route('/<tenant>/delete_listing', methods=['POST'])
-def delete_listing(tenant):
-    lock.acquire()
-    print(f"here in delete_listing(): {tenant}")
-
-    page, check_code = check_security(tenant)
-    if check_code != SECURITY_SUCCESS_CODE:
-        lock.release()
-        return page
-
-    unit = request.get_json()['request']['unit']
-    pictures = aws.get_file_list_folder(tenant, f"{UNPROTECTED_FOLDER}/listings/{unit}/pics")
-    for pic_name in pictures:
-        aws.delete_object(pic_name[10:])
-
-    #aws.delete_object(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{unit}/pics")
-    #aws.delete_object(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{unit}")
-
-    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
-    listings['listings'].pop(unit, None)
-    aws.upload_text_obj(f"{tenant}/{LISTINGS_FILE}", json.dumps(listings))
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -2378,11 +2437,13 @@ def get_epoch_from_now():
     return calendar.timegm(datetime.now().timetuple())
 
 def get_epoch_from_string(date_string):
-    date_format = "%d-%m-%Y"
+    date_format = "%Y-%m-%d"
     datetime_object = datetime.strptime(date_string, date_format)
     epoch_timestamp = int(time.mktime(datetime_object.timetuple()))
     return epoch_timestamp
 
+# TODO: a future improvement must be to convert this taking the language param into consideration
+# rather than simply converting to DD-MM-YYYY
 def get_string_from_epoch(epoch_timestamp):
     return datetime.fromtimestamp(int(epoch_timestamp)).strftime('%d-%m-%Y')
 
