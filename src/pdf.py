@@ -89,7 +89,7 @@ class PDF(FPDF):
             first = False
 
     def print_resident(self, resident):
-        self.print_unit_header(f"{gettext('Unit')}: {resident.userid}")
+        self.print_unit_header(f"{resident.userid}")
         self.set_text_color(60, 60, 60)
 
         self.ln(2)
