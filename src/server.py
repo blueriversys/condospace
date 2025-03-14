@@ -1437,6 +1437,56 @@ def change_userid():
     return return_obj
 
 
+#-----------------------------------------------------------------------------------------------------
+#     Listing routines
+#-----------------------------------------------------------------------------------------------------
+@app.route('/<tenant>/listings')
+def get_listings(tenant):
+    lock.acquire()
+    print(f"get_listings()")
+    if not aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
+        lock.release()
+        return render_template("listings.html", units=get_unit_list(), listings=None,
+                               user_types=staticvars.user_types, info_data=get_info_data(tenant))
+
+    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+
+    listings_arr = []
+
+    for key, value_a in listings['listings'].items():
+        #print(f"key: {key}     items: {value_a}")
+        for listing_id, value_c in value_a['items'].items():
+            value_c['price'] = format_decimal(format(value_c['price']))
+            value_c['date'] = get_string_from_epoch(value_c['date'])
+            listings_arr.append( {'user_id': key, 'listing_id': listing_id, 'title': value_c['title'], 'email': value_c['email'], 'phone': value_c['phone'],
+                                  'price': value_c['price'], 'cover_file': value_c['cover_file'], 'date': value_c['date']} )
+
+    lock.release()
+    return render_template("listings.html",
+                           units=get_unit_list(), listings=listings_arr,
+                           user_types=staticvars.user_types, info_data=get_info_data(tenant))
+
+
+@app.route('/<tenant>/listing/<unit>/<listing_id>')
+def get_one_listing(tenant, unit, listing_id):
+    lock.acquire()
+    print(f"get_one_listing()")
+    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+    info_data = get_info_data(tenant)
+    alisting = None
+    pictures = None
+
+    if unit in listings['listings']:
+        alisting = listings['listings'][unit]['items'][listing_id]
+        alisting['listing_id'] = listing_id
+        alisting['date'] = get_string_from_epoch(alisting['date'])
+        alisting['price'] = format_decimal(alisting['price'])
+        pictures = get_files(f"{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics", '')
+
+    lock.release()
+    return render_template("alisting.html", unit=unit, listing=alisting, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
+
+
 @app.route('/<tenant>/upload_listing', methods=['POST'])
 def upload_listing(tenant):
     lock.acquire()
@@ -1447,6 +1497,8 @@ def upload_listing(tenant):
         print("no files were received")
         return_obj = json.dumps({'response': {'status': 'success'}})
         return return_obj
+
+    print("step 1")
 
     img_bytes = None
     cover_found = False
@@ -1517,6 +1569,30 @@ def upload_listing(tenant):
     lock.release()
     return return_obj
 
+
+@app.route('/<tenant>/delete_listing', methods=['POST'])
+def delete_listing(tenant):
+    lock.acquire()
+    print(f"here in delete_listing(): {tenant}")
+
+    page, check_code = check_security(tenant)
+    if check_code != SECURITY_SUCCESS_CODE:
+        lock.release()
+        return page
+
+    user_id = request.get_json()['request']['user_id']
+    listing_id = request.get_json()['request']['listing_id']
+    pictures = aws.get_file_list_folder(tenant, f"{UNPROTECTED_FOLDER}/listings/{user_id}/{listing_id}/pics")
+    for pic_name in pictures:
+        pic_name = pic_name[ len(BUCKET_PREFIX + "/"): ]
+        aws.delete_object(pic_name)
+
+    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+    del listings['listings'][user_id]['items'][listing_id]
+    aws.upload_text_obj(f"{tenant}/{LISTINGS_FILE}", json.dumps(listings))
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
 
 @app.route('/<tenant>/upload_event_pics', methods=['POST'])
 def upload_event_pics(tenant):

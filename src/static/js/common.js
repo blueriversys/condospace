@@ -762,18 +762,28 @@ function uploadPictureFiles(name, fileControl, barControl) {
     if (name === UPLOAD_LISTING) {
         unit = document.getElementById('unit').value;
         title = document.getElementById('title').value;
-        contact = document.getElementById('contact').value;
+        email = document.getElementById('email').value;
+        phone = document.getElementById('phone').value;
         price = document.getElementById('price').value;
-        if (unit.trim().length == 0) {
+
+        // "none" is the initial value of the field
+        if (unit.trim().length == 0 || unit === 'none') {
             showMsgBox( gettext('Unit is a required field') );
             return;
         }
+
         if (title.trim().length == 0) {
             showMsgBox( gettext('Title is a required field') );
             return;
         }
-        if (contact.trim().length == 0) {
-            showMsgBox( gettext('Contact is a required field') );
+
+        if ( !document.getElementById('email').checkValidity() ) {
+            showMsgBox( gettext('Email field content is invalid') );
+            return;
+        }
+
+        if (phone.trim().length == 0) {
+            showMsgBox( gettext('Phone is a required field') );
             return;
         }
         if (price.trim().length == 0) {
@@ -785,6 +795,11 @@ function uploadPictureFiles(name, fileControl, barControl) {
     if (name === UPLOAD_EVENT_PICTURE) {
         title = document.getElementById('title').value;
         event_date = document.getElementById('event_date').value;
+        date = new Date(event_date);
+        event_y = date.getFullYear();
+        event_m = date.getMonth()+1;
+        event_d = date.getDate()+1;
+
         if (title.trim().length == 0) {
             showMsgBox( gettext('Title is a required field') );
             return;
@@ -818,13 +833,16 @@ function uploadPictureFiles(name, fileControl, barControl) {
     if (name === UPLOAD_LISTING) {
         formData.append("unit", unit);
         formData.append("title", title);
-        formData.append("contact", contact);
+        formData.append("email", email);
+        formData.append("phone", phone);
         formData.append("price", price);
     }
     else
     if (name === UPLOAD_EVENT_PICTURE) {
         formData.append("title", title);
-        formData.append("date", event_date);
+        formData.append("event_y", event_y);
+        formData.append("event_m", event_m);
+        formData.append("event_d", event_d);
     }
 
     //create XHR object to send request
