@@ -65,7 +65,7 @@ function gen_residents_pdf() {
         var json = JSON.parse(this.response);
 
         if (request.status >= 200 && request.status < 400) {
-            showMsgBox( gettext('Census Forms PDF has been created') );
+            showMsgBoxSuccess( gettext('Census Forms PDF has been created') );
         }
         else {
             showMsgBox( gettext('Error retrieving residents list') );
