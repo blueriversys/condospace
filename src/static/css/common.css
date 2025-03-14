@@ -128,6 +128,20 @@ button:disabled, button[disabled] {
     vertical-align: middle;
 }
 
+.small-btn.btn {
+    font-size: 11px;
+    padding: 2px 5px 2px 5px; /* top right bottom left */
+    height: 20px;
+    vertical-align: middle;
+}
+
+.large-btn.btn {
+    font-size: 13px;
+    padding: 2px 5px 2px 5px; /* top right bottom left */
+    height: 28px;
+    vertical-align: middle;
+}
+
 .selected-files {
     font: 16px Verdana, Arial, Helvetica, sans-serif;
     background: inherit;

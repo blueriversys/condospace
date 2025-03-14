@@ -75,8 +75,8 @@ msgid "Event date"
 msgstr "Data do evento"
 
 #: templates/reservations.html
-msgid "Reservations of Common Areas"
-msgstr "Reservas de Áreas Comuns"
+msgid "Reservation of Common Area"
+msgstr "Reserva de Área Comun"
 
 msgid "Reservations"
 msgstr "Reservas"

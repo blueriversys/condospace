@@ -2,6 +2,8 @@
 
 
 {% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reservations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 {% endblock %}
 
 
@@ -43,15 +45,246 @@
   </nav>
 
   <div class="content">
-    {% include "mobile-menu.html" %}
+      {% include "mobile-menu.html" %}
 
-    <div class="section-title" data-aos="zoom-out">
-      <h2>{{ _('Reservations of Common Areas') }}</h2>
+      <div class="section-title" data-aos="zoom-out">
+          <h2>{{ _('Reservation of Common Area') }}</h2>
+      </div>
+
+      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+          <div class="spacer"></div>
+
+          <div class="center">
+              <button class="button larger-button col-6" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_amenity_section" aria-expanded="false" aria-controls="collapseExample">
+                {{_("Add a New Amenity")}}
+              </button>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="app-container collapse" id="add_new_amenity_section">
+              <div class="profile-block">
+                  <fieldset>
+                      <legend>{{_('Existing Amenities')}}</legend>
+                      <div>
+                          {% for key, amenity in amenities %}
+                          <div class="row m-2">
+                              <div class="col-md-3 text-right align-self-center">
+                                  <img class="small-pic" style="margin-bottom: 5px;" src="amenities/{{key}}/amenity.jpg">
+                              </div>
+                              <div class="col-md-9 align-self-center" style="font-size: 14px; margin-bottom: 8px;">
+                                  {{key}}, {{amenity['descr']}}, Created by: {{amenity['created_by']}}, Created on: {{amenity['created_on']}}
+                                  {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                      <button class="btn btn-danger small-btn" id="del-listing-button" onclick="deleteAmenity('{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Amenity')}}</button>
+                                  {% endif  %}
+                              </div>
+                          </div>
+                          {% endfor %}
+                      </div>
+                  </fieldset>
+
+                  <div class="spacer"></div>
+              </div>
+
+              <div class="spacer"></div>
+
+              <div class="profile-block">
+                  <fieldset>
+                      <legend>{{_('Amenity Info')}}</legend>
+                      <div class="row flex h-100  align-self-center">
+                          <div class="col-5  align-self-center align-items-right" style="/*border: 1px solid blue;*/">
+                              <div class="form-group">
+                                  <label for="descr">Descricao:</label>
+                                  <input type="text" class="form-control" style="height: 26px;" id="descr" name="descricao">
+                              </div>
+                          </div>
+
+                          <div class="col-3 h-100 align-self-center" style="/*border: 1px solid blue;*/">
+                              <div class="row  float-right" style="margin-right: 3px;">
+                                  <div class="h-100 align-self-center">
+                                      <input type="checkbox" style="margin-right: 1px;" id="use-default-img" onClick="useDefaultImgClicked('button-div', 'img-div', 'dropdown-div')" name="use-default-img">
+                                      <label for="use-default-img">{{_("Use a default picture")}}</label>
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div class="col-4 h-100 align-self-center" id="img_group_1" style="display: block;">
+                              <div class="row">
+                                  <div id="button-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
+                                      <!-- <label for="amenity_img_file">Choose your picture</label> -->
+                                      <!-- style="display:none;"  -->
+                                      <!-- see here for more: -->
+                                      <span class="btn btn-primary btn-file">
+                                          Escolha sua imagem <input id="amenity_img_file" type="file" onChange="pictureSelectAction('amenity-img-file', 'amenity-img')">
+                                      </span>
+                                  </div>
+                                  <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                      <img id="amenity_img_1" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div class="col-4 h-100 align-self-center" id="img_group_2"  style="display: none;">
+                              <div class="row">
+                                  <div id="dropdown-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
+                                      <label for="default_img_id">{{_("Select one")}}:</label>
+                                      <select class="unit-dropdown" style="width: 120px; height: 24px;" id="default_img_id" name="default_img_id" onChange="defaultImageHandler();">
+                                          <option value="none" selected disabled hidden>{{_("Select one")}}</option>
+                                          <option value="/common/img/amenity_soccer_court.jpg">soccer court</option>
+                                          <option value="/common/img/amenity_tennis_court.jpg">tennis court</option>
+                                          <option value="/common/img/amenity_conference_room.jpg">conference room</option>
+                                          <option value="/common/img/amenity_ball_room.jpg">ball room</option>
+                                          <option value="/common/img/amenity_dance_room.jpg">dance room</option>
+                                      </select>
+                                  </div>
+                                  <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                      <img id="amenity_img_2" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </fieldset>
+
+                  <div class="spacer"></div>
+
+                  <div class="center">
+                      <button class="button larger-button" id="save_amenity_btn" onClick="saveAmenity();"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Save This Amenity')}}</button>
+                  </div>
+
+                  <div class="spacer"></div>
+              </div> <!-- closes closes profile-block -->
+          </div> <!-- app-container -->
+      {% endif %}
+
+
+
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+
+      {% set ns = namespace(counter=0) %}
+
+      {% for key, amenity in amenities %}
+      <div class="row" style="/*border: 1px solid blue;*/">
+          <div class="col-3 text-right align-self-center">
+              <img class="small-pic" style="margin-bottom: 5px;" src="amenities/{{key}}/amenity.jpg">
+          </div>
+          <div class="col-3 align-self-center" style="font-size: 14px; margin-bottom: 8px;">
+              {{amenity['descr']}}
+          </div>
+
+          <div class="col-3 align-self-center">
+              <button class="button larger-button center" style="height:26px;" type="button" data-toggle="collapse" data-target="#view_section_{{key}}" aria-expanded="false" aria-controls="collapseExample">
+                {{_("View Existing Reservations")}}
+              </button>
+          </div>
+      </div>
+
+      <div class="row mt-3"  style="/*border: 1px solid blue;*/">
+          <div class="col-12 app-container collapse" id="view_section_{{key}}">
+              {% if key|int() in reservations %}
+                  <div class="row flex mb-5">
+                          <div class="col-7 d-flex justify-content-end" style="/*border: 1px solid blue;*/"> <!-- justify-content-end requires d-flex -->
+                              <div class="justify-content-end">
+                                <table id="table_schedule_id" class="schedule-table">
+                                  {% for rsv in reservations[key|int()] %}
+                                  <tr>
+                                      <td>
+                                      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                          <button class="btn btn-danger small-btn" style="height: 20px;" id="del_rsv_button_{{ns.counter}}" onclick="deleteReservation('{{rsv['user_id']}}', '{{rsv['rsv_id']}}', '{{key|int()}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('delete')}}</button>
+                                      {% elif info_data['is_authenticated'] == true and current_user.userid == rsv['user_id'] %}
+                                          <button class="btn btn-danger small-btn" style="height: 20px;" id="del_rsv_button{{ns.counter}}" onclick="deleteReservation('{{rsv['user_id']}}', '{{rsv['rsv_id']}}', '{{key|int()}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('delete')}}</button>
+                                      {% endif  %}
+                                      </td>
+                                      <td style="padding-right: 8px;">{{rsv['user_id']}}</td>
+                                      <td style="padding-right: 8px;">{{rsv['name']}}</td>
+                                      <td id="td_date_id_{{ns.counter}}" class="schedule-td">{{rsv['date']['d']}}-{{rsv['date']['m']}}-{{rsv['date']['y']}}</td>
+                                      <td id="td_time_id_{{ns.counter}}" class="schedule-td">{{rsv['time_from']['h']}}:{{rsv['time_from']['m']}} - {{rsv['time_to']['h']}}:{{rsv['time_to']['m']}}</td>
+                                  </tr>
+                                  {% set ns.counter = ns.counter + 1 %}
+                                  {% endfor %}
+                                </table>
+                              </div>
+                          </div>
+                          <div class="col-3 align-self-center" style="/*border: 1px solid blue;*/">
+                              <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}});" data-target="#makeReservationModal" title="Make a reservation of this amenity">{{_("Make a Reservation")}}</button>
+                          </div>
+                  </div> <!-- closes row -->
+              {% else %}
+                  <div class="row flex mb-5">
+                      <div class="col d-flex justify-content-middle">
+                          <div class="col-7 d-flex justify-content-end" style="/*border: 1px solid blue;*/"> <!-- justify-content-end requires d-flex -->
+                              No reservation yet
+                          </div>
+                          <div class="col-3 align-self-center">
+                              <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}});" data-target="#makeReservationModal" title="Make a reservation of this amenity">{{_("Make a Reservation")}}</button>
+                          </div>
+                      </div>
+                  </div> <!-- closes row -->
+              {% endif %}
+          </div>
+      </div>
+
+      {% endfor %}
+
+
+    <div class="modal fade" id="makeReservationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Make a Reservation</h5>
+            <button id="modal-close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <label for="res_date">Desired Date:</label>
+              <input id="res_date" type="date">
+          </div>
+          <div class="modal-body">
+              <label for="res_time_from">Time From:</label>
+              <input id="res_time_from" type="time">
+          </div>
+          <div class="modal-body">
+              <label for="res_time_to">Time To:</label>
+              <input id="res_time_to" type="time">
+          </div>
+          <div class="modal-footer">
+              <button id='paid_btn' type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button id='cancel_btn' type="button" class="btn btn-primary" onClick='makeReservation()'>Make This Reservation</button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div>{{ _('Coming soon') }}!</div>
 
-  </div> 
+  </div>  <!-- closes profile-block -->
 
 </div> <!-- close main -->
+
+
+{% include "hidden_fields.html" %}
+
+{% set ns = namespace(counter=0) %}
+{% for amenity_id, rsv_array in reservations.items() %}
+    {% for rsv in rsv_array %}
+        <input type="hidden" id="amenity_id_{{ns.counter}}" value={{amenity_id}}>
+        <input type="hidden" id="user_id_{{ns.counter}}" value={{rsv['user_id']}}>
+        <input type="hidden" id="rsv_id_{{ns.counter}}" value={{rsv['rsv_id']}}>
+        <input type="hidden" id="date_y_{{ns.counter}}" value={{rsv['date']['y']}}>
+        <input type="hidden" id="date_m_{{ns.counter}}" value={{rsv['date']['m']}}>
+        <input type="hidden" id="date_d_{{ns.counter}}" value={{rsv['date']['d']}}>
+        <input type="hidden" id="time_from_h_{{ns.counter}}" value={{rsv['time_from']['h']}}>
+        <input type="hidden" id="time_from_m_{{ns.counter}}" value={{rsv['time_from']['m']}}>
+        <input type="hidden" id="time_to_h_{{ns.counter}}" value={{rsv['time_to']['h']}}>
+        <input type="hidden" id="time_to_m_{{ns.counter}}" value={{rsv['time_to']['m']}}>
+        {% set ns.counter = ns.counter + 1 %}
+    {% endfor %}
+{% endfor %}
+
+
 {% endblock %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/reservations.js') }}"></script>
+{% endblock %}
+
