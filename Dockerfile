@@ -46,4 +46,3 @@ RUN cat ./config/config.json
 # --error-logfile FILE (if flag not used, it spits to stderr by default)
 # --log-level LEVEL (LEVEL can be 'debug', 'info', 'warning', 'error' or 'critical')
 CMD ["gunicorn", "--workers=1", "--threads=4", "--keep-alive=65", "--bind=0.0.0.0:5000", "server:app"]
-

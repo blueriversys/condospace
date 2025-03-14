@@ -397,7 +397,7 @@ function populateTable(json, table_id, user_type_param) {
 
         var row = table.insertRow( -1 ); // -1 is insert as last
         var del_btn_cell = row.insertCell( - 1 ); // -1 is insert as last
-        var unit_cell = row.insertCell( - 1 ); // -1 is insert as last
+//        var unit_cell = row.insertCell( - 1 ); // -1 is insert as last
         var user_id_cell = row.insertCell( - 1 ); // -1 is insert as last
         var pass_cell = row.insertCell( - 1 ); // -1 is insert as last
         var user_type_cell = row.insertCell( - 1 ); // -1 is insert as last
@@ -415,7 +415,7 @@ function populateTable(json, table_id, user_type_param) {
             del_btn_cell.innerHTML = '<button id="delete" class="button small-button" onClick="' + click_str + '" title="delete user from database">delete</button>';
         }
 
-        var unit = json.residents[i].unit;
+//        var unit = json.residents[i].unit;
         var userid = json.residents[i].userid;
         var password = json.residents[i].password;
         var usertype = json.residents[i].usertype;
@@ -428,7 +428,7 @@ function populateTable(json, table_id, user_type_param) {
         var startdtMonth = json.residents[i].startdt.month;
         var startdtYear = json.residents[i].startdt.year;
 
-        unit_cell.innerHTML = unit;
+//        unit_cell.innerHTML = unit;
         user_id_cell.innerHTML = userid;
         pass_cell.innerHTML = password;
         user_type_cell.innerHTML = usertype;

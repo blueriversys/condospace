@@ -2441,31 +2441,31 @@ def register_condo():
         pix_key = "12345678"
         fine_title = "Notificação de Multa Condominial"
         fine_template = """
-        Prezado(a) {name},
+Prezado(a) {name},
     
-        Esta é uma notificação de que o senhor(a) tem uma multa por {descr},
-        a ser paga no valor de {amount}, com data de vencimento em {due_date}.
+Esta é uma notificação de que o senhor(a) tem uma multa por {descr},
+a ser paga no valor de {amount}, com data de vencimento em {due_date}.
     
-        O valor pode ser pago via PIX cuja chave é {pix}.
+O valor pode ser pago via PIX cuja chave é {pix}.
     
-        Muito obrigado.
+Muito obrigado.
     
-        Administração, {condo_name}.
-        """
+Administração, {condo_name}.
+"""
     elif pref_language == 'en':
         pix_key = ''
         fine_title = "Notification of Condominium Fine"
         fine_template = """
-        Dear {name},
-        This is a notification that you have been issued a fine in the amount of {amount},
-        with due date on {due_date}.
+Dear {name},
+This is a notification that you have been issued a fine in the amount of {amount},
+with due date on {due_date}.
 
-        The amount may be paid with credit card or via check.
+The amount may be paid with credit card or via check.
 
-        Thank you.
+Thank you.
 
-        Board of Directors of {condo_name}.
-        """
+Board of Directors of {condo_name}.
+"""
     else:
         pix_key = ''
         fine_title = ''
