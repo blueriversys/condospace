@@ -79,13 +79,18 @@
 
                     <div class="input-group mb-2">
                         <span class="input-group-addon col-lg-3 form-label">{{_("ZIP")}}:</span>
-                        <input type="text" class="form-control col-lg-5" id="condo-zip" placeholder='{{_("ZIP with 3 or 8 digits")}}'>
+                        <input type="text" class="form-control col-lg-5" id="condo-zip" placeholder='{{_("ZIP with 5 or 9 digits")}}'>
                     </div>
 
                     <div class="input-group mb-2">
-                        <span class="input-group-addon col-lg-3 form-label">{{_("City & State")}}:</span>
-                        <input type="text" class="form-control col-lg-4" id="condo-location" placeholder='{{_("City, State of the condominium location")}}'>
-                        <span style="line-height: 40px; padding-left: 3px;" title='{{_("For example, enter Syracuse, NY")}}'><i class="fa fa-question-circle-o"></i></span>
+                        <span class="input-group-addon col-lg-3 form-label">{{_("City")}}:</span>
+                        <input type="text" class="form-control col-lg-4" id="condo-city" placeholder='{{_("City of the condominium")}}'>
+<!--                        <span style="line-height: 40px; padding-left: 3px;" title='{{_("For example, enter Syracuse, NY")}}'><i class="fa fa-question-circle-o"></i></span> -->
+                    </div>
+
+                    <div class="input-group mb-2">
+                        <span class="input-group-addon col-lg-3 form-label">{{_("State")}}:</span>
+                        <input type="text" class="form-control col-lg-1" id="condo-state" placeholder='{{_("State of the condominium")}}'>
                     </div>
 
                     <fieldset>

@@ -54,15 +54,16 @@
       {% if listings is not none %}
           <div style="font-size: 16px;">
               <div>
-                  <ul style="font-size: 18px;">
-                  {% for key, listing in listings %}
-                      <li>
-                          <img src="listings/{{key}}/pics/{{listing['cover_file']}}" width="80" height="50">
-                          <a href="listing/{{key}}">{{listing['title']}}</a>, {{_('contact')}}: {{listing['contact']}}, {{_('price')}}: {{listing['price']}}
-                          {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-                              <button class="button" id="del-listing-button" onclick="deletePictureFiles('listing', '{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Listing')}}</button>
-                          {% endif  %}
-                      </li>
+                  <ul style="font-size: 16px;">
+                  {% for listing in listings %}
+                              <li>
+                                  <a href="listing/{{listing['user_id']}}/{{listing['listing_id']}}"><img class="small-pic" src="listings/{{listing['user_id']}}/{{listing['listing_id']}}/pics/{{listing['cover_file']}}"></a>
+                                  {{listing['listing_id']}},
+                                  <a href="listing/{{listing['user_id']}}/{{listing['listing_id']}}">{{listing['title']}}</a>, {{listing['date']}}, {{listing['email']}}, {{listing['phone']}}, {{listing['price']}}
+                                  {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                      <button class="button" id="del-listing-button" onclick="deletePictureFiles('listing', '{{listing['user_id']}}', '{{listing['listing_id']}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Listing')}}</button>
+                                  {% endif  %}
+                              </li>
                   {% endfor %}
                   </ul>
               </div>
@@ -84,8 +85,9 @@
                   <div>
                       <fieldset>
                           <legend>{{_('Listing Info')}}</legend>
-                          <label for="unit">{{_('Select a Unit')}}:</label>
-                          <select style="width: 100px;" id="unit" name="unit">
+                          <label for="unit">{{_('Unit')}}:</label>
+                          <select style="width: 100px;" id="unit" name="unit" onClick="handleUnitSelected();">
+                              <option value="none" selected disabled hidden>{{_("select one")}}</option>
                               {% for unit in units %}
                                   {% if not unit['userid'].startswith('admin') %}
                                       <option value="{{unit['userid']}}">{{unit['userid']}}</option>
@@ -93,14 +95,18 @@
                               {% endfor %}
                           </select>
                           <label class="separator-spacer"></label>
-                          <label for="title">{{_('Title')}}:</label>
+                          <label for="title">{{_('Description')}}:</label>
                           <input id="title" class="title-input" type="text" name="title">
                           <label class="separator-spacer"></label>
-                          <label for="contact">{{_('Contact')}}:</label>
-                          <input id="contact" class="contact-input" type="email" name="contact">
+                          <label for="email">{{_('Email')}}:</label>
+                          <input id="email" class="email-input" type="email" name="email" required>
                           <label class="separator-spacer"></label>
-                          <label for="price">{{_('Price')}}:</label>
-                          <input class="price-input" type="text" onkeypress="return isNumberKey(this, event)" id="price" name="price">
+                          <label for="phone">{{_('Phone')}}:</label>
+                          <input id="phone" class="phone-input" type="text" name="phone">
+                          <div>
+                              <label for="price">{{_('Price')}}:</label>
+                              <input class="price-input" type="text" onkeypress="return isNumberKey(this, event)" id="price" name="price" title='{{_("Enter an integer value, no decimal point")}}'>
+                          </div>
                       </fieldset>
                       <div class="spacer"></div>
                       <fieldset>
@@ -119,7 +125,7 @@
                       <div class="spacer"></div>
                       <div class="spacer"></div>
                       <div class="center">
-                          <button class="button larger-button disabled" id="upload_button" onclick="uploadPictureFiles('listing', 'files_cntrl', 'progress_bar')" disabled>
+                          <button class="button larger-button disabled" id="upload_button" type="submit" onclick="uploadPictureFiles('listing', 'files_cntrl', 'progress_bar')" disabled>
                           <i class="fa fa-upload"></i>&nbsp;&nbsp;{{_('Upload pictures & Create this new listing')}}</button>
                           <progress id="progress_bar" value="0" max="100"/>
                       </div>

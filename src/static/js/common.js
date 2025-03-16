@@ -108,7 +108,6 @@ function showMsgBoxError(text) {
 
 function showMsgBoxColor(text_color, text) {
     const msg = `<label style='color:${text_color};'>${text}</label>`;
-    console.log(msg);
     var dialog = bootbox.dialog({
         message: msg,
         closeButton: false,
@@ -125,6 +124,23 @@ function showMsgBoxColor(text_color, text) {
         }
     });
 }
+
+function showConfirmMsgBox(text) {
+    outer_resp = false;
+    bootbox.confirm({
+        message: text,
+        buttons: {
+            confirm: { label: 'Yes', className: 'btn-success' },
+            cancel:  { label: 'No',  className: 'btn-danger' }
+        },
+        callback: function (resp) {
+            outer_resp = resp; // returns true or false
+        }
+    });
+    console.log(outer_resp); // returns true or false
+    return outer_resp;
+}
+
 
 function showFadingMsg(msg) {
     showFadingMsgParam(ERROR_MSG, msg);  // default is ERROR_MSG
@@ -892,9 +908,10 @@ function uploadPictureFiles(name, fileControl, barControl) {
     request.send(formData);
 }
 
-function deletePictureFiles(name, key) {
-    resp = confirm('Confirm you want to delete '+key);
-    if (resp == false) {
+function deletePictureFiles(name, user_id, key) {
+    resp = confirm( gettext("Are you sure you want to delete entry") + ' ' + key + '?' );
+
+    if ( !resp ) {
         return;
     }
 
@@ -905,7 +922,8 @@ function deletePictureFiles(name, key) {
     if (name === 'listing') {
         post_url = "/" + window.loggedin_tenant_global + "/delete_listing";
         request.open('POST', post_url, true)
-        requestObj.unit = key;
+        requestObj.user_id = user_id;
+        requestObj.listing_id = key;
     }
     else
     if (name === 'eventpics') {
@@ -1048,7 +1066,24 @@ function uploadLink() {
     request.send(jsonStr);
 }
 
-
 function isInteger(strNumber) {
   return !isNaN(parseInt(strNumber)) && isFinite(strNumber);
 }
+
+function retrieveUser(user_id) {
+  var request = new XMLHttpRequest();
+  post_url = "/" + window.loggedin_tenant_global + "/getresident";
+  request.open('POST', post_url, true)
+
+  var requestObj = new Object();
+  requestObj.type = 'user';
+  requestObj.tenant = window.loggedin_tenant_global;
+  requestObj.id = user_id;
+
+  // const person = {firstName:"John", lastName:"Doe", age:50, eyeColor:"blue"};
+  jsonStr = '{ "request": ' + JSON.stringify(requestObj) + '}';
+  request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  request.send(jsonStr);
+  return request;
+}
+

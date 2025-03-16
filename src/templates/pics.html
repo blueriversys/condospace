@@ -99,10 +99,10 @@
                   <ul style="font-size: 18px;">
                   {% for key, event in events %}
                       <li>
-                          <img src="event/eventpics/{{key}}/pics/{{event['cover_file']}}">
-                          <a href="event/{{key}}">{{key}}</a>, date: {{event['date']}}
+                          <a href="event/{{key}}"><img class="small-pic" src="event/eventpics/{{key}}/pics/{{event['cover_file']}}"></a>
+                          <a href="event/{{key}}">{{key}}</a>, {{event['date']}}
                           {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-                              <button class="button" id="del-listing-button" onclick="deletePictureFiles('eventpics', '{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_("Delete This Event")}}</button>
+                              <button class="button" id="del-listing-button" onclick="deletePictureFiles('eventpics', '', '{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_("Delete This Event")}}</button>
                           {% endif  %}
                       </li>
                   {% endfor %}

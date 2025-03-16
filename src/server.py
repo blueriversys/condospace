@@ -32,6 +32,7 @@ curl -XGET -F "text=Welcome"  -H 'Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en
 """
 
 import staticvars
+#from supporting_programs.image_test import img_bytes
 from users import User, UsersRepository
 from pdf import PDF
 from datetime import timedelta, datetime
@@ -55,7 +56,7 @@ from PIL import Image
 from io import BytesIO
 from redmail import gmail
 from flask_babel import Babel, gettext, lazy_gettext, _
-
+from flask_babel import format_decimal
 ''' for simulation of long running tasks '''
 from threading import Thread, Lock
 from time import sleep
@@ -103,8 +104,9 @@ UNPROTECTED_FOLDER = f"{UPLOADED_FOLDER}/unprotected"
 CONFIG_FILE =   f"{CONFIG_FOLDER}/config.json"
 
 # all files in the "serverfiles" folder
-INFO_FILE =     f"info.json"
-FINES_FILE =  f"fines.json"
+INFO_FILE =     "info.json"
+FINES_FILE =  "fines.json"
+RESERVATIONS_FILE =  f"{UNPROTECTED_FOLDER}/reservations/reservations.json"
 LINKS_FILE =    f"{SERVER_FOLDER}/links.json"
 ANNOUNCS_FILE = f"{SERVER_FOLDER}/announcs.dat"
 LOG_FILE =      f"{SERVER_FOLDER}/messages.log"
@@ -423,10 +425,16 @@ def custom_static(tenant, filename):
     file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/pics/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
-@app.route('/<tenant>/listings/<unit>/pics/<filename>')
-def custom_static_listing(tenant, unit, filename):
-    #print(f"in custom_static_listing(): tenant: {tenant}, unit {unit}, filename {filename}")
-    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{unit}/pics/{filename}")
+@app.route('/<tenant>/listings/<unit>/<listing_id>/pics/<filename>')
+def custom_static_listing(tenant, unit, listing_id, filename):
+    print(f"in custom_static_listing(): tenant: {tenant}, unit {unit}, filename {filename}")
+    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics/{filename}")
+    return Response(response=file_obj, status=200, mimetype="image/jpg")
+
+@app.route('/<tenant>/reservations/<amenity_id>/<filename>')
+def custom_static_amenity(tenant, amenity_id, filename):
+    print(f"in custom_static_amenity(): tenant: {tenant}, amenity_id {amenity_id}, filename {filename}")
+    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/{amenity_id}/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
 @app.route('/<tenant>/event/eventpics/<title>/pics/<filename>')
@@ -451,7 +459,9 @@ def custom_logos(tenant, filename):
 
 @app.route('/common/<path:rel_path>')
 def common_static_images(rel_path):
-    return send_from_directory('static', rel_path)
+    print(f"in common_static_images(): rel_path: {rel_path}")
+#    return send_from_directory('static', rel_path)
+    return send_from_directory('static', f"{rel_path}")
 
 '''
   These are GET request routes
@@ -539,7 +549,374 @@ def setup(tenant):
 
 
 #------------------------------------------------------------------------------------------
-#   Payment related routes
+#   Reservations related routes
+#------------------------------------------------------------------------------------------
+@app.route('/<tenant>/reservations')
+@login_required
+def get_reservations(tenant):
+    lock.acquire()
+    print(f"here in get_reservations")
+
+    # page, check_code = check_security(tenant)
+    # if check_code != SECURITY_SUCCESS_CODE:
+    #     lock.release()
+    #     return page
+
+    amenities_dict = {}
+    rsv_dict = {}
+
+    # test if the amenities file exists
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        if 'amenities' in rsv_content:
+            amenities = rsv_content['amenities']
+            if len(amenities) > 0:
+                for key, amenity in amenities.items():
+                    amenity['created_on'] = get_string_from_epoch(amenity['created_on'])
+                amenities_dict = amenities.items()
+
+        if 'reservations' in rsv_content:
+            reservations = rsv_content['reservations']
+            if len(reservations) > 0:
+                for user_id, reservation in reservations.items():
+                    for rsv_id, rsv_data in reservation['reservations'].items():
+                        rsv_data['created_on'] = get_string_from_epoch(rsv_data['created_on'])
+                        rsv_name = users_repository.get_user_by_userid(tenant, user_id).name
+                        arr_entry = {"name": rsv_name, "user_id": user_id, "rsv_id": rsv_id, "date": rsv_data['date'],
+                                     "time_from": rsv_data['time_from'], "time_to": rsv_data['time_to']}
+                        amenity_id = rsv_data['amenity_id']
+                        if amenity_id in rsv_dict:
+                            rsv_dict[amenity_id].append(arr_entry)
+                        else:
+                            rsv_dict[amenity_id] = [arr_entry]
+
+
+#    print(f"\n\n rsv_dict: {rsv_dict} \n\n")
+
+    # sort reservations by date and time
+    if len(rsv_dict) > 0:
+        for amenity_id, reservations in rsv_dict.items():
+            reservations.sort(key=sort_reservation)
+
+    info_data = get_info_data(tenant)
+    units = get_unit_list()
+    lock.release()
+    return render_template("reservations.html", tenant=tenant, units=units, reservations=rsv_dict, amenities=amenities_dict, user_types=staticvars.user_types, info_data=info_data)
+
+def sort_reservation(rsv):
+    date = get_epoch_from_string(f"{rsv['date']['y']}-{rsv['date']['m']}-{rsv['date']['d']}")
+    time_from_h = rsv['time_from']['h']
+    time_from_m = rsv['time_from']['m']
+    return date, time_from_h, time_from_m
+
+
+@app.route('/<tenant>/save_amenity', methods=["POST"])
+@login_required
+def save_amenity(tenant):
+    lock.acquire()
+    print(f"here in save_amenity()")
+    tenant_req = request.form['tenant']
+
+    if tenant != tenant_req:
+        return_obj = json.dumps({'response': {'status': 'error', 'pid': os.getpid()}})
+        lock.release()
+        return return_obj
+
+    user_id = request.form['created_by']
+    descr = request.form['descr']
+    use_default_img = True if request.form['use_default_img'] == 'yes' else False
+
+    amenity_entry = {
+        "descr": descr,
+        "created_by": user_id,
+        "created_on": get_epoch_from_now()
+    }
+
+    # read the RESERVATIONS_FILE to add a condo to it
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        if 'reservations' in rsv_content:
+            reservations = rsv_content['reservations']
+        else:
+            reservations = {}
+
+        if 'amenities' in rsv_content:
+            amenities = rsv_content['amenities']
+
+            # find the last amenity_id
+            amenity_id = 0
+            for id, value in amenities.items():
+                id = int(id)
+                amenity_id = id if id > amenity_id else amenity_id
+            amenity_id += 1
+            amenities[amenity_id] = amenity_entry
+        else:
+            amenity_id = 0
+            amenities = { amenity_id : amenity_entry }
+    else:
+        amenity_id = 0
+        amenities = { amenity_id : amenity_entry }
+        reservations = {}
+
+    if use_default_img:
+        pic_file_name = os.path.basename(request.form['default_img_name'])
+        print(f"static folder: {app.static_folder}    pic file: {pic_file_name}")
+        amenity_pic = open(f"{app.static_folder}/img/{pic_file_name}", "rb")
+        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/reservations/{amenity_id}/amenity.jpg", amenity_pic.read())
+    else:
+        amenity_pic = request.files['amenity_pic']
+        amenity_pic.stream.seek(0)
+        img_bytes = amenity_pic.read()
+        _, img_bytes = reduce_image_enh(img_bytes, 120, 80)
+        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/reservations/{amenity_id}/amenity.jpg", img_bytes)
+
+    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": reservations, "amenities": amenities}) )
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
+
+@app.route('/<tenant>/delete_amenity', methods=["POST"])
+def delete_amenity(tenant):
+    lock.acquire()
+    print(f"in delete_amenity(): tenant {tenant}")
+
+    page, check_code = check_security(tenant)
+    if check_code != SECURITY_SUCCESS_CODE:
+        lock.release()
+        return page
+
+    json_obj = request.get_json()
+    prefix = "amenity"
+    tenant_json = json_obj[prefix]['tenant']
+
+    if tenant != tenant_json:
+        return_obj = json.dumps({'response': {'status': 'error', 'pid': os.getpid()}})
+        lock.release()
+        return return_obj
+
+    amenity_id = json_obj[prefix]['amenity_id']
+    found_rsv = False
+
+    # make sure there is no reservation for the amenity to be deleted
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        if 'reservations' in rsv_content:
+            reservations = rsv_content['reservations']
+        else:
+            reservations = {}
+
+        if 'amenities' in rsv_content:
+            amenities = rsv_content['amenities']
+        else:
+            # there is nothing to delete, let's return success
+            return_obj = json.dumps({'response': {'status': 'success'}})
+            lock.release()
+            return return_obj
+
+        # let's check if there is any reservation for the amenity
+        for user_id, reservation in reservations.items():
+            for rsv_id, rsv_data in reservations[user_id]['reservations'].items():
+                if str(rsv_data['amenity_id']) == amenity_id:
+                    found_rsv = True
+                    break
+                else:
+                    continue
+    else:
+        # there is nothing to delete, let's return success
+        return_obj = json.dumps({'response': {'status': 'success'}})
+        lock.release()
+        return return_obj
+
+    if found_rsv:
+        print(f"found a reservation for the amenity_id {amenity_id}")
+        return_obj = json.dumps({'response': {'status': 'found_rsv'}})
+        lock.release()
+        return return_obj
+
+    # here we know there is no reservation for the amenity
+    if amenity_id in amenities:
+        del amenities[amenity_id]
+        aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": reservations, "amenities": amenities}))
+    else:
+        print(f"amenity_id not found for tenant {tenant}")
+
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
+
+@app.route('/<tenant>/make_reservation', methods=["POST"])
+@login_required
+def make_reservation(tenant):
+    lock.acquire()
+    print(f"here in make_reservation()")
+    json_obj = request.get_json()
+    prefix = "reservation"
+    tenant_json = json_obj[prefix]['tenant']
+
+    if tenant != tenant_json:
+        return_obj = json.dumps({'response': {'status': 'error', 'pid': os.getpid()}})
+        lock.release()
+        return return_obj
+
+    user_id = json_obj[prefix]['user_id']
+    amenity_id = json_obj[prefix]['amenity_id']
+    date_y = json_obj[prefix]['date']['y']
+    date_m = json_obj[prefix]['date']['m']
+    date_d = json_obj[prefix]['date']['d']
+    time_from_h = json_obj[prefix]['time_from']['h']
+    time_from_m = json_obj[prefix]['time_from']['m']
+    time_to_h = json_obj[prefix]['time_to']['h']
+    time_to_m = json_obj[prefix]['time_to']['m']
+
+    rsv_entry = {
+        "created_on": get_epoch_from_now(),
+        "amenity_id": amenity_id,
+        "date": { "y": date_y, "m": date_m, "d": date_d },
+        "time_from": { "h": time_from_h, "m": time_from_m },
+        "time_to":   { "h": time_to_h, "m": time_to_m }
+    }
+
+    # read the RESERVATIONS_FILE to add a reservation to it
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+
+        if 'amenities' in rsv_content:
+            amenities = rsv_content['amenities']
+        else:
+            # cannot make a reservation for an amenity that doesn't exist
+            return_obj = json.dumps({'response': {'status': 'error'}})
+            lock.release()
+            return return_obj
+
+        if 'reservations' in rsv_content:
+            rsv_data = rsv_content['reservations']
+            if user_id in rsv_data:
+                # find the last reservation_id for the user
+                rsv_id = 0
+                for id, value in rsv_data[user_id]['reservations'].items():
+                    id = int(id)
+                    rsv_id = id if id > rsv_id else rsv_id
+                rsv_id += 1
+                rsv_data[user_id]['reservations'][rsv_id] = rsv_entry
+            else:
+                rsv_id = 0
+                rsv_data[user_id] = { "reservations": {rsv_id: rsv_entry} }
+        else:
+            # this is the first reservation in the file
+            rsv_id = 0
+            rsv_data = { user_id: { "reservations": {rsv_id: rsv_entry} } }
+    else:
+        # if file not found, there is no amenity, therefore way to make a reservation
+        return_obj = json.dumps({'response': {'status': 'error'}})
+        lock.release()
+        return return_obj
+
+    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": rsv_data, "amenities": amenities}))
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
+
+
+
+    # read the RESERVATIONS_FILE to add a reservation to it
+    # if aws.is_file_found(f"{RESERVATIONS_FILE}"):
+    #     rsv_content = get_json_from_file(f"{RESERVATIONS_FILE}")
+    #     amenities = rsv_content['amenities']
+    #
+    #     if 'reservations' in rsv_content:
+    #         rsv_data = rsv_content['reservations']
+    #         if tenant in rsv_data:
+    #             if user_id in rsv_data[tenant]:
+    #                 # find the last reservation_id for the user
+    #                 rsv_id = 0
+    #                 for id, value in rsv_data[tenant][user_id]['reservations'].items():
+    #                     id = int(id)
+    #                     rsv_id = id if id > rsv_id else rsv_id
+    #                 rsv_id += 1
+    #             else:
+    #                 rsv_id = 0
+    #         else:
+    #             rsv_id = 0
+    #     else:
+    #         rsv_id = 0
+    #         rsv_data = {'reservations': {tenant: {user_id: {"reservations": {rsv_id: rsv_entry}}}}}
+    #
+    #
+    #
+    #     # find out if tenant is already in the file
+    #     if tenant in rsv_data:
+    #         if user_id in rsv_data[tenant]:
+    #             rsv_data[tenant][user_id]['reservations'][rsv_id] = rsv_entry
+    #         else:
+    #             rsv_data[tenant][user_id] = { "reservations": {rsv_id: rsv_entry} }
+    #     else:
+    #         rsv_data['reservations'] = { tenant: {user_id: { "reservations": {rsv_id: rsv_entry} } } }
+    # else:
+    #     # if file not found, there is no amenity, therefore way to make a reservation
+    #     return_obj = json.dumps({'response': {'status': 'error'}})
+    #     lock.release()
+    #     return return_obj
+
+#    print(f"in make_reservation(): rsv_data: {rsv_data}")
+
+    # aws.upload_text_obj(f"{RESERVATIONS_FILE}", json.dumps(rsv_data))
+    # return_obj = json.dumps({'response': {'status': 'success'}})
+    # lock.release()
+    # return return_obj
+
+
+@app.route('/<tenant>/delete_reservation', methods=["POST"])
+@login_required
+def delete_reservation(tenant):
+    lock.acquire()
+    print(f"here in delete_reservation()")
+    json_obj = request.get_json()
+    prefix = "reservation"
+    tenant_json = json_obj[prefix]['tenant']
+
+    if tenant != tenant_json:
+        return_obj = json.dumps({'response': {'status': 'error', 'pid': os.getpid()}})
+        lock.release()
+        return return_obj
+
+    user_id = json_obj[prefix]['user_id']
+    rsv_id = json_obj[prefix]['rsv_id']
+
+#    print(f"tenant: {tenant},   user_id: {user_id},   rsv_id {rsv_id}  rsv_id type: {type(rsv_id)}")
+
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        if not 'amenities' in rsv_content or not 'reservations' in rsv_content:
+            return_obj = json.dumps({'response': {'status': 'error'}})
+            lock.release()
+            return return_obj
+
+        amenities = rsv_content['amenities']
+        rsv_data = rsv_content['reservations']
+    else:
+        return_obj = json.dumps({'response': {'status': 'file_not_found'}})
+        lock.release()
+        return return_obj
+
+    if rsv_id in rsv_data[user_id]['reservations']:
+        del rsv_data[user_id]['reservations'][rsv_id]
+        print(f"reservation deleted")
+    else:
+        return_obj = json.dumps({'response': {'status': 'rsv_not_found'}})
+        lock.release()
+        return return_obj
+
+    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": rsv_data, "amenities": amenities}))
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
+
+#------------------------------------------------------------------------------------------
+#   Fine related routes
 #------------------------------------------------------------------------------------------
 @app.route('/<tenant>/fines')
 @login_required
@@ -877,14 +1254,15 @@ def update_settings(tenant):
     info = get_json_from_file(f"{INFO_FILE}")
     info['config'][tenant]['condo_name'] = json_req['request']['condo_name']
     info['config'][tenant]['tagline'] = json_req['request']['condo_tagline']
-    info['config'][tenant]['condo_location'] = json_req['request']['condo_location']
+    info['config'][tenant]['condo_city'] = json_req['request']['condo_city']
+    info['config'][tenant]['condo_state'] = json_req['request']['condo_state']
     info['config'][tenant]['address'] = json_req['request']['condo_address']
     info['config'][tenant]['zip'] = json_req['request']['condo_zip']
     info['config'][tenant]['home_message']['title'] = json_req['request']['home_page_title']
     info['config'][tenant]['about_message']['title'] = json_req['request']['about_page_title']
     home_text = json_req['request']['home_page_text'].split('\n')
     about_text = json_req['request']['about_page_text'].split('\n')
-    lat, long = get_lat_long(json_req['request']['condo_location'])
+    lat, long = get_lat_long(f"{json_req['request']['condo_city']}, {json_req['request']['condo_state']}")
     print(f"lat {lat},  long {long}")
     info['config'][tenant]['geo']['lat'] = lat
     info['config'][tenant]['geo']['long'] = long
@@ -1038,6 +1416,11 @@ def pics(tenant):
         return render_template("pics.html", pics=pictures, events=None, user_types=staticvars.user_types, info_data=get_info_data(tenant))
 
     events = get_json_from_file(f"{get_tenant()}/{EVENT_PICS_FILE}")
+
+    # convert from epoch to string date format
+    for event_key, event_data in events['event_pictures'].items():
+        event_data['date'] = get_string_from_epoch(event_data['date'])
+
     lock.release()
     return render_template("pics.html", pics=pictures, events=events['event_pictures'].items(), user_types=staticvars.user_types, info_data=info_data)
 
@@ -1135,9 +1518,10 @@ def get_resident_json(tenant):
         lock.release()
         return return_obj
 
-    print_process("/getresident start", json_obj['request']['id'], False)
+    #print_process("/getresident start", json_obj['request']['id'], False)
     load_users(tenant)
     if json_obj['request']['type'] == 'user':
+        print(f"user id to retrieve: {json_obj['request']['id']}")
         user = users_repository.get_user_by_userid(tenant, json_obj['request']['id'])
     else:
         return_obj = json.dumps({'response': {'status': 'error'}})
@@ -1184,7 +1568,7 @@ def get_resident_json(tenant):
     }
 
     return_obj = json.dumps({'response': {'status': 'success', 'pid': os.getpid(), 'resident':resident}})
-    print_process("/getresident finis", json_obj['request']['id'])
+    #print_process("/getresident finis", json_obj['request']['id'])
     lock.release()
     return return_obj
 
@@ -1440,33 +1824,6 @@ def change_userid():
 #-----------------------------------------------------------------------------------------------------
 #     Listing routines
 #-----------------------------------------------------------------------------------------------------
-@app.route('/<tenant>/listings')
-def get_listings(tenant):
-    lock.acquire()
-    print(f"get_listings()")
-    if not aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
-        lock.release()
-        return render_template("listings.html", units=get_unit_list(), listings=None,
-                               user_types=staticvars.user_types, info_data=get_info_data(tenant))
-
-    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
-
-    listings_arr = []
-
-    for key, value_a in listings['listings'].items():
-        #print(f"key: {key}     items: {value_a}")
-        for listing_id, value_c in value_a['items'].items():
-            value_c['price'] = format_decimal(format(value_c['price']))
-            value_c['date'] = get_string_from_epoch(value_c['date'])
-            listings_arr.append( {'user_id': key, 'listing_id': listing_id, 'title': value_c['title'], 'email': value_c['email'], 'phone': value_c['phone'],
-                                  'price': value_c['price'], 'cover_file': value_c['cover_file'], 'date': value_c['date']} )
-
-    lock.release()
-    return render_template("listings.html",
-                           units=get_unit_list(), listings=listings_arr,
-                           user_types=staticvars.user_types, info_data=get_info_data(tenant))
-
-
 @app.route('/<tenant>/listing/<unit>/<listing_id>')
 def get_one_listing(tenant, unit, listing_id):
     lock.acquire()
@@ -1497,8 +1854,6 @@ def upload_listing(tenant):
         print("no files were received")
         return_obj = json.dumps({'response': {'status': 'success'}})
         return return_obj
-
-    print("step 1")
 
     img_bytes = None
     cover_found = False
@@ -1570,6 +1925,33 @@ def upload_listing(tenant):
     return return_obj
 
 
+@app.route('/<tenant>/listings')
+def get_listings(tenant):
+    lock.acquire()
+    print(f"get_listings()")
+    if not aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
+        lock.release()
+        return render_template("listings.html", units=get_unit_list(), listings=None,
+                               user_types=staticvars.user_types, info_data=get_info_data(tenant))
+
+    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+
+    listings_arr = []
+
+    for key, value_a in listings['listings'].items():
+        #print(f"key: {key}     items: {value_a}")
+        for listing_id, value_c in value_a['items'].items():
+            value_c['price'] = format_decimal(format(value_c['price']))
+            value_c['date'] = get_string_from_epoch(value_c['date'])
+            listings_arr.append( {'user_id': key, 'listing_id': listing_id, 'title': value_c['title'], 'email': value_c['email'], 'phone': value_c['phone'],
+                                  'price': value_c['price'], 'cover_file': value_c['cover_file'], 'date': value_c['date']} )
+
+    lock.release()
+    return render_template("listings.html",
+                           units=get_unit_list(), listings=listings_arr,
+                           user_types=staticvars.user_types, info_data=get_info_data(tenant))
+
+
 @app.route('/<tenant>/delete_listing', methods=['POST'])
 def delete_listing(tenant):
     lock.acquire()
@@ -1593,6 +1975,28 @@ def delete_listing(tenant):
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
+
+
+#-----------------------------------------------------------------------------------------------------
+#     Picture event routines
+#-----------------------------------------------------------------------------------------------------
+@app.route('/<tenant>/event/<title>')
+def get_event_pics(tenant, title):
+    lock.acquire()
+    print(f"in get_event_pics(): tenant: {tenant}")
+    pictures = get_files(f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
+    events = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
+    info_data = get_info_data(tenant)
+    if title not in events['event_pictures']:
+        event = None
+        pictures = None
+    else:
+        event = events['event_pictures'][title]
+        event['date'] = get_string_from_epoch(event['date'])
+        print(f"info do evento: {event}")
+    lock.release()
+    return render_template("event.html", title=title, event=event, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
+
 
 @app.route('/<tenant>/upload_event_pics', methods=['POST'])
 def upload_event_pics(tenant):
@@ -1660,16 +2064,19 @@ def upload_event_pics(tenant):
             nw = int(w*p)
         img_format, new_img_bytes = reduce_image_enh(img_bytes, nw, nh)
         cover_name = "cover.jpg" if img_format == 'JPEG' else "cover.png"
-        #print(f"cover name {cover_name},   orig size: {cover_image.size},  reduced size: {len(img_bytes)}")
-        print(f"nao achou cover, novo size: {nw}x{nh}")
         aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/eventpics/{folder_name}/pics/{cover_name}", new_img_bytes)
+
+    event_date = f"{request.form['event_y']}-{request.form['event_m']}-{request.form['event_d']}"
+    print(f"event_date: {event_date}")
+    event_date_epoch = get_epoch_from_string(event_date)
+    print(f"event_date epoch: {event_date_epoch}")
 
     if aws.is_file_found(f"{tenant}/{EVENT_PICS_FILE}"):
         event_pics = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
-        new_event = {'title': f'{request.form["title"]}', 'date': f'{request.form["date"]}', 'cover_file': f'{cover_name}' }
+        new_event = {'title': f'{request.form["title"]}', 'date': event_date_epoch, 'cover_file': f'{cover_name}' }
         event_pics['event_pictures'][folder_name] = new_event
     else:
-        new_event = {'title': f'{request.form["title"]}', 'date': f'{request.form["date"]}', 'cover_file': f'{cover_name}' }
+        new_event = {'title': f'{request.form["title"]}', 'date': event_date_epoch, 'cover_file': f'{cover_name}' }
         # new_event_dict = {folder_name: new_event}
         event_pics = {"event_pictures": { f"{folder_name}": new_event } }
 
@@ -1680,21 +2087,6 @@ def upload_event_pics(tenant):
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
-
-
-@app.route('/<tenant>/event/<title>')
-def event_picture(tenant, title):
-    print(f"in event_picture(): tenant: {tenant}")
-    pictures = get_files(f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
-    events = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
-    info_data = get_info_data(tenant)
-    if title not in events['event_pictures']:
-        event = None
-        pictures = None
-    else:
-        event = events['event_pictures'][title]
-        print(f"info do evento: {event}")
-    return render_template("event.html", title=title, event=event, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
 
 
 @app.route('/<tenant>/delete_event_pics', methods=['POST'])
@@ -1838,14 +2230,6 @@ def upload(tenant):
                                links=links['links'].items(),
                                user_types=staticvars.user_types,
                                info_data=info_data)
-
-
-@app.route('/<tenant>/reservations', methods=['GET'])
-@login_required
-def reservations(tenant):
-    print("here in reservations()")
-    info_data = get_info_data(tenant)
-    return render_template("reservations.html", user_types=staticvars.user_types, info_data=info_data)
 
 
 @app.route('/<tenant>/generatepdf', methods=['GET'])
@@ -2115,7 +2499,8 @@ def register_condo():
     condo_tagline = request.form['condo_tagline']
     condo_address = request.form['condo_address']
     condo_zip = request.form['condo_zip']
-    condo_location = request.form['condo_location']
+    condo_city = request.form['condo_city']
+    condo_state = request.form['condo_state']
     use_default_img = True if request.form['use_default_img'] == 'yes' else False
 
     userid = user_full_name.strip().lower()
@@ -2134,7 +2519,7 @@ def register_condo():
 
     print(f"tenant {condo_id} not found. We are creating it now....")
 
-    lat, long = get_lat_long(condo_location)
+    lat, long = get_lat_long(f"{condo_city}, {condo_state}")
     if lat is None or long is None:
         lat = -22.9561
         long = -46.5473
@@ -2192,7 +2577,8 @@ Board of Directors of {condo_name}.
         "address": condo_address,
         "zip": condo_zip,
         "census_forms_pdf_date": "06-Sep-2024",
-        "condo_location": condo_location,
+        "condo_city": condo_city,
+        "condo_state": condo_state,
         "condo_name": condo_name,
         "domain": condo_id,
         "tagline": condo_tagline,
@@ -2200,7 +2586,7 @@ Board of Directors of {condo_name}.
         "home_message": {
             "title": "Olá Pessoal.",
             "lines": [
-                f"Bem-vindo ao lindo {condo_name} em {condo_location}.",
+                f"Bem-vindo ao lindo {condo_name} em {condo_city}, {condo_state}.",
                 "Nós mal podemos esperar ver você aqui e, ao mesmo tempo, te fornecer informações muito úteis.",
                 "Se você já for um residente aqui, documentos e informações estão a apenas alguns clicks."
             ]
@@ -2208,7 +2594,7 @@ Board of Directors of {condo_name}.
         "about_message": {
             "title": "Tudo Sobre Nós.",
             "lines": [
-                f"Nós somos uma pequena e vibrante associação localizada em {condo_location}.",
+                f"Nós somos uma pequena e vibrante associação localizada em {condo_city}, {condo_state}.",
                 "A nossa região proporciona o que há de melhor em qualidade de vida e segurança.",
                 "Estamos localizados numa área nobre da cidade, rodeados pelo que há de melhor em gastronomia e compras de nível internacional, além de fácil acesso por ótimas estradas da região."
             ]
@@ -2323,8 +2709,8 @@ Board of Directors of {condo_name}.
     aws.upload_text_obj(f"{INFO_FILE}", json.dumps(info_data))
 
     if use_default_img:
-        home_pic = open("static/img/branding/home.jpg", "rb")
-        logo_pic = open("static/img/branding/logo.jpg", "rb")
+        home_pic = open(f"{app.static_folder}/img/branding/home.jpg", "rb")
+        logo_pic = open(f"{app.static_folder}/img/branding/logo.jpg", "rb")
         aws.upload_binary_obj(f"{condo_id}/uploadedfiles/unprotected/branding/home.jpg", home_pic.read())
         aws.upload_binary_obj(f"{condo_id}/uploadedfiles/unprotected/branding/logo.jpg", logo_pic.read())
     else:
@@ -2422,11 +2808,13 @@ def get_epoch_from_now():
     return calendar.timegm(datetime.now().timetuple())
 
 def get_epoch_from_string(date_string):
-    date_format = "%d-%m-%Y"
+    date_format = "%Y-%m-%d"
     datetime_object = datetime.strptime(date_string, date_format)
     epoch_timestamp = int(time.mktime(datetime_object.timetuple()))
     return epoch_timestamp
 
+# TODO: a future improvement must be to convert this taking the language param into consideration
+# rather than simply converting to DD-MM-YYYY
 def get_string_from_epoch(epoch_timestamp):
     return datetime.fromtimestamp(int(epoch_timestamp)).strftime('%d-%m-%Y')
 

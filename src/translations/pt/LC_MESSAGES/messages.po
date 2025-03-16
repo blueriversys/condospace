@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2025-01-15 16:27-0500\n"
-"PO-Revision-Date: 2025-03-05 17:05-0500\n"
+"PO-Revision-Date: 2025-03-08 13:38-0500\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: pt\n"
 "Language-Team: pt <LL@li.org>\n"
@@ -21,6 +21,81 @@ msgstr ""
 # for Javascript code
 msgid "Main occupant's name cannot be blank"
 msgstr "Nome do principal ocupante é obrigatório"
+
+
+#: templates/reservations.html
+msgid "Reservation of Common Areas"
+msgstr "Reserva de Espaços Comuns"
+
+msgid "Reservations"
+msgstr "Reservas"
+
+msgid "Add a New Amenity"
+msgstr "Adicionar um Novo Espaço"
+
+msgid "Existing Amenities"
+msgstr "Espaços Existentes"
+
+msgid "Created by"
+msgstr "Criado por"
+
+msgid "Delete This Amenity"
+msgstr "Deletar Este Espaço"
+
+msgid "Amenity Info"
+msgstr "Informação do Espaço"
+
+msgid "Description"
+msgstr "Descrição"
+
+msgid "Use a default picture"
+msgstr "Usar uma imagem padrão"
+
+msgid "Choose an image"
+msgstr "Escolha uma imagem"
+
+msgid "soccer court"
+msgstr "quadra de futebol"
+
+msgid "tennis court"
+msgstr "quadra de tênis"
+
+msgid "barbecue grill"
+msgstr "churrasqueira"
+
+msgid "conference room"
+msgstr "sala de conferência"
+
+msgid "ball room"
+msgstr "salão de festas"
+
+msgid "dance room"
+msgstr "salão de dança"
+
+msgid "Save This Amenity"
+msgstr "Gravar Este Espaço"
+
+msgid "View Existing Reservations"
+msgstr "Ver Reservas Existentes"
+
+msgid "Make a Reservation"
+msgstr "Fazer uma Reserva"
+
+msgid "No reservation yet"
+msgstr "Sem reservas ainda"
+
+msgid "Make a reservation of this amenity"
+msgstr "Fazer uma reserva deste espaço"
+
+msgid "Desired Date"
+msgstr "Data Desejada"
+
+msgid "Time From"
+msgstr "Da Hora"
+
+msgid "Time To"
+msgstr "Até Hora"
+
 
 #: templates/fines.html
 msgid "Fines"
@@ -71,12 +146,10 @@ msgstr "marcar multa como paga"
 msgid "send reminder to user"
 msgstr "enviar lembrete ao usuário"
 
-#: templates/reservations.html
-msgid "Reservations of Common Areas"
-msgstr "Reservas de Áreas Comuns"
+msgid "Event date"
+msgstr "Data do evento"
 
-msgid "Reservations"
-msgstr "Reservas"
+
 
 #: templates/home-root.html
 msgid "Welcome to the CondoSpace App"
@@ -354,6 +427,9 @@ msgstr ""
 "Por que esperar? É mais barato do que você imagina. Registre o seu "
 "condomínio hoje mesmo e comece a usar o aplicativo."
 
+msgid "Enter an integer value, no decimal point"
+msgstr "Digite um valor inteiro, sem vírgula"
+
 #: templates/docs.html
 msgid "Open View Documents"
 msgstr "Documentos Abertos ao Público"
@@ -410,6 +486,9 @@ msgstr "Abrir/Fechar Para Adicionar Um Novo Link"
 
 msgid "Choose a document"
 msgstr "Escolha um documento"
+
+msgid "ZIP with 5 or 9 digits"
+msgstr "CEP com 5 ou 8 digitos"
 
 #: templates/pics.html
 msgid "Condominium Common Areas"
@@ -478,6 +557,9 @@ msgstr "Informação do ítem"
 
 msgid "Select a Unit"
 msgstr "Selecione um Usuário"
+
+msgid "Select User"
+msgstr "Selecione Usuário"
 
 msgid "Select a Unit/User"
 msgstr "Selecione um Apartamento/Usuário"
@@ -960,6 +1042,15 @@ msgstr "Endereço"
 
 msgid "ZIP"
 msgstr "CEP"
+
+msgid "City"
+msgstr "Cidade"
+
+msgid "State"
+msgstr "Estado"
+
+msgid "State abbreviation"
+msgstr "Sigla do estado"
 
 msgid "City & State"
 msgstr "Cidade & Estado"

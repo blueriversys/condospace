@@ -56,9 +56,9 @@
       {% if event is none %}
           <div>{{_("No such event found")}}</div>
       {% else %}
-          <div style="border: 1px solid blue; border-radius: 8px; background: #d2e0f2; font-size: 12px; color: #386295; padding: 3px; line-height: 20px;">
-              <div>event: {{event['title']}}</div>
-              <div>date: {{event['date']}}</div>
+          <div style="border: 1px solid blue; border-radius: 8px; background: #d2e0f2; font-size: 15px; color: #386295; padding: 3px; line-height: 20px;">
+              <div style="font-size: 18px; font-weight: bold;">{{event['title']}}</div>
+              <div>{{_("Event date")}}: {{event['date']}}</div>
           </div>
           <div class="spacer"></div>
           <div class="container">

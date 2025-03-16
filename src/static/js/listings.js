@@ -6,10 +6,32 @@ function onLoadAction() {
     window.loggedin_name_global = document.getElementById('loggedin-name').value;
     window.loggedin_tenant_global = document.getElementById('loggedin-tenant').value.trim();
     window.loggedin_lang_global = document.getElementById('loggedin-lang').value;
+
+//    document.getElementById("myAnchor").addEventListener("click", function(event){
+//        handlesDeleteListingButton(event);
+//        event.preventDefault()
+//    });
 }
 
 function handleUnitSelected() {
+    user_id = document.getElementById('unit').value;
+    request = retrieveUser(user_id);
 
+    request.onload = function () {
+        // Begin accessing JSON data here
+        var json = JSON.parse(this.response);
+
+        if (request.status >= 200 && request.status < 400) {
+            if (json.response.status == 'not_found') {
+                console.log('not_found');
+            }
+
+            if (json.response.status === 'success') {
+                document.getElementById('email').value = json.response.resident.email;
+                document.getElementById('phone').value = json.response.resident.phone;
+            }
+        }
+    }
 }
 
 /* this makes the text be only numbers, no decimal sign */

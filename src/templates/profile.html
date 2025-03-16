@@ -55,9 +55,9 @@
 
             {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
                 <div class="upload-browse">
-                    <label for="user_id" style="font-size: 20px;">{{_("Select a Unit/User")}}:</label>
-                    <select class="unit-dropdown" id="user_id" name="user_id" onChange="retrieveUserByUnit();">
-                      <option value="none" selected disabled hidden>{{_("Select a Unit/User")}}</option>
+                    <label for="user_id" style="font-size: 20px;">{{_("Select User")}}:</label>
+                    <select class="unit-dropdown" id="user_id" name="user_id" style="width: 150px;" onChange="retrieveUserByUnit();">
+                      <option value="none" selected disabled hidden>{{_("Select User")}}</option>
                       {% for unit in units %}
                           <option value="{{unit['userid']}}">{{unit['userid']}}</option>
                       {% endfor %}
