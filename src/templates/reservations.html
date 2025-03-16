@@ -48,7 +48,7 @@
       {% include "mobile-menu.html" %}
 
       <div class="section-title" data-aos="zoom-out">
-          <h2>{{ _('Reservation of Common Area') }}</h2>
+          <h2>{{ _('Reservation of Common Areas') }}</h2>
       </div>
 
       {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
@@ -63,6 +63,7 @@
           <div class="spacer"></div>
 
           <div class="app-container collapse" id="add_new_amenity_section">
+              {% if amenities %}
               <div class="profile-block">
                   <fieldset>
                       <legend>{{_('Existing Amenities')}}</legend>
@@ -70,10 +71,10 @@
                           {% for key, amenity in amenities %}
                           <div class="row m-2">
                               <div class="col-md-3 text-right align-self-center">
-                                  <img class="small-pic" style="margin-bottom: 5px;" src="amenities/{{key}}/amenity.jpg">
+                                  <img class="small-pic" style="margin-bottom: 5px;" src="reservations/{{key}}/amenity.jpg">
                               </div>
                               <div class="col-md-9 align-self-center" style="font-size: 14px; margin-bottom: 8px;">
-                                  {{key}}, {{amenity['descr']}}, Created by: {{amenity['created_by']}}, Created on: {{amenity['created_on']}}
+                                  {{key}}, {{amenity['descr']}}, {{_('Created by')}} {{amenity['created_by']}} on: {{amenity['created_on']}}
                                   {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
                                       <button class="btn btn-danger small-btn" id="del-listing-button" onclick="deleteAmenity('{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Amenity')}}</button>
                                   {% endif  %}
@@ -82,9 +83,9 @@
                           {% endfor %}
                       </div>
                   </fieldset>
-
                   <div class="spacer"></div>
               </div>
+              {% endif %}
 
               <div class="spacer"></div>
 
@@ -94,7 +95,7 @@
                       <div class="row flex h-100  align-self-center">
                           <div class="col-5  align-self-center align-items-right" style="/*border: 1px solid blue;*/">
                               <div class="form-group">
-                                  <label for="descr">Descricao:</label>
+                                  <label for="descr">{{_('Description')}}:</label>
                                   <input type="text" class="form-control" style="height: 26px;" id="descr" name="descricao">
                               </div>
                           </div>
@@ -115,7 +116,7 @@
                                       <!-- style="display:none;"  -->
                                       <!-- see here for more: -->
                                       <span class="btn btn-primary btn-file">
-                                          Escolha sua imagem <input id="amenity_img_file" type="file" onChange="pictureSelectAction('amenity-img-file', 'amenity-img')">
+                                          {{_("Choose an image")}} <input id="amenity_img_file" type="file" onChange="pictureSelectAction('amenity-img-file', 'amenity-img')">
                                       </span>
                                   </div>
                                   <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
@@ -127,15 +128,15 @@
                           <div class="col-4 h-100 align-self-center" id="img_group_2"  style="display: none;">
                               <div class="row">
                                   <div id="dropdown-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
-                                      <label for="default_img_id">{{_("Select one")}}:</label>
+                                      <label for="default_img_id">{{_("select one")}}:</label>
                                       <select class="unit-dropdown" style="width: 120px; height: 24px;" id="default_img_id" name="default_img_id" onChange="defaultImageHandler();">
-                                          <option value="none" selected disabled hidden>{{_("Select one")}}</option>
-                                          <option value="/common/img/amenity_soccer_court.jpg">soccer court</option>
-                                          <option value="/common/img/amenity_tennis_court.png">tennis court</option>
-                                          <option value="/common/img/amenity_barbecue_grill.jpg">barbecue grill</option>
-                                          <option value="/common/img/amenity_conference_room.jpg">conference room</option>
-                                          <option value="/common/img/amenity_ball_room.jpg">ball room</option>
-                                          <option value="/common/img/amenity_dance_room.jpg">dance room</option>
+                                          <option value="none" selected disabled hidden>{{_("select one")}}</option>
+                                          <option value="/common/img/amenity_soccer_court.jpg">{{_("soccer court")}}</option>
+                                          <option value="/common/img/amenity_tennis_court.png">{{_("tennis court")}}</option>
+                                          <option value="/common/img/amenity_barbecue_grill.jpg">{{_("barbecue grill")}}</option>
+                                          <option value="/common/img/amenity_conference_room.jpg">{{_("conference room")}}</option>
+                                          <option value="/common/img/amenity_ball_room.jpg">{{_("ball room")}}</option>
+                                          <option value="/common/img/amenity_dance_room.jpg">{{_("dance room")}}</option>
                                       </select>
                                   </div>
                                   <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
@@ -167,7 +168,7 @@
       {% for key, amenity in amenities %}
       <div class="row" style="/*border: 1px solid blue;*/">
           <div class="col-3 text-right align-self-center">
-              <img class="small-pic" style="margin-bottom: 5px;" src="amenities/{{key}}/amenity.jpg">
+              <img class="small-pic" style="margin-bottom: 5px;" src="reservations/{{key}}/amenity.jpg">
           </div>
           <div class="col-3 align-self-center" style="font-size: 14px; margin-bottom: 8px;">
               {{amenity['descr']}}
@@ -214,10 +215,10 @@
                   <div class="row flex mb-5">
                       <div class="col d-flex justify-content-middle">
                           <div class="col-7 d-flex justify-content-end" style="/*border: 1px solid blue;*/"> <!-- justify-content-end requires d-flex -->
-                              No reservation yet
+                              {{_("No reservation yet")}}
                           </div>
                           <div class="col-3 align-self-center">
-                              <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}});" data-target="#makeReservationModal" title="Make a reservation of this amenity">{{_("Make a Reservation")}}</button>
+                              <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}});" data-target="#makeReservationModal" title='{{_("Make a reservation of this amenity")}}'>{{_("Make a Reservation")}}</button>
                           </div>
                       </div>
                   </div> <!-- closes row -->
@@ -232,26 +233,26 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Make a Reservation</h5>
+            <h5 class="modal-title" id="exampleModalLabel">{{_("Make a Reservation")}}</h5>
             <button id="modal-close" type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-              <label for="res_date">Desired Date:</label>
+              <label for="res_date">{{_("Desired Date")}}:</label>
               <input id="res_date" type="date">
           </div>
           <div class="modal-body">
-              <label for="res_time_from">Time From:</label>
+              <label for="res_time_from">{{_("Time From")}}:</label>
               <input id="res_time_from" type="time">
           </div>
           <div class="modal-body">
-              <label for="res_time_to">Time To:</label>
+              <label for="res_time_to">{{_("Time To")}}:</label>
               <input id="res_time_to" type="time">
           </div>
           <div class="modal-footer">
               <button id='paid_btn' type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button id='cancel_btn' type="button" class="btn btn-primary" onClick='makeReservation()'>Make This Reservation</button>
+              <button id='cancel_btn' type="button" class="btn btn-primary" onClick='makeReservation()'>{{_("Make This Reservation")}}</button>
           </div>
         </div>
       </div>

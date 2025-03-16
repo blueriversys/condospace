@@ -92,6 +92,11 @@ map.set("One moment, as we register your condominium on our database...", new Ma
 map.set("Email field content is invalid", new Map().set("pt", "Conteúdo do campo Email é inválido"));
 map.set("Are you sure you want to delete entry", new Map().set("pt", "Tem certeza que quer deletar item"));
 map.set("ZIP is a required field", new Map().set("pt", "Campo CEP é obrigatório"));
+map.set("Description is a required field", new Map().set("pt", "Campo Descrição é obrigatório"));
+map.set("Selecting a default image name is required", new Map().set("pt", "Selecionar uma imagem padrão é obrigatório"));
+map.set("Cannot delete, reservation found for this amenity", new Map().set("pt", "Não pode deletar, existe reserva para este espaço"));
+map.set("All reservation fields are required", new Map().set("pt", "Todos os campos para reserva são obrigatórios"));
+map.set("This conflicts with existing reservation", new Map().set("pt", "Já existe uma reserva para esta data e horário"));
 
 
 function gettext(text) {

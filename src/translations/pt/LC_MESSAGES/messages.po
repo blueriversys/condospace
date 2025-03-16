@@ -22,6 +22,81 @@ msgstr ""
 msgid "Main occupant's name cannot be blank"
 msgstr "Nome do principal ocupante é obrigatório"
 
+
+#: templates/reservations.html
+msgid "Reservation of Common Areas"
+msgstr "Reserva de Espaços Comuns"
+
+msgid "Reservations"
+msgstr "Reservas"
+
+msgid "Add a New Amenity"
+msgstr "Adicionar um Novo Espaço"
+
+msgid "Existing Amenities"
+msgstr "Espaços Existentes"
+
+msgid "Created by"
+msgstr "Criado por"
+
+msgid "Delete This Amenity"
+msgstr "Deletar Este Espaço"
+
+msgid "Amenity Info"
+msgstr "Informação do Espaço"
+
+msgid "Description"
+msgstr "Descrição"
+
+msgid "Use a default picture"
+msgstr "Usar uma imagem padrão"
+
+msgid "Choose an image"
+msgstr "Escolha uma imagem"
+
+msgid "soccer court"
+msgstr "quadra de futebol"
+
+msgid "tennis court"
+msgstr "quadra de tênis"
+
+msgid "barbecue grill"
+msgstr "churrasqueira"
+
+msgid "conference room"
+msgstr "sala de conferência"
+
+msgid "ball room"
+msgstr "salão de festas"
+
+msgid "dance room"
+msgstr "salão de dança"
+
+msgid "Save This Amenity"
+msgstr "Gravar Este Espaço"
+
+msgid "View Existing Reservations"
+msgstr "Ver Reservas Existentes"
+
+msgid "Make a Reservation"
+msgstr "Fazer uma Reserva"
+
+msgid "No reservation yet"
+msgstr "Sem reservas ainda"
+
+msgid "Make a reservation of this amenity"
+msgstr "Fazer uma reserva deste espaço"
+
+msgid "Desired Date"
+msgstr "Data Desejada"
+
+msgid "Time From"
+msgstr "Da Hora"
+
+msgid "Time To"
+msgstr "Até Hora"
+
+
 #: templates/fines.html
 msgid "Fines"
 msgstr "Multas"
@@ -74,12 +149,7 @@ msgstr "enviar lembrete ao usuário"
 msgid "Event date"
 msgstr "Data do evento"
 
-#: templates/reservations.html
-msgid "Reservation of Common Area"
-msgstr "Reserva de Área Comun"
 
-msgid "Reservations"
-msgstr "Reservas"
 
 #: templates/home-root.html
 msgid "Welcome to the CondoSpace App"
@@ -972,6 +1042,15 @@ msgstr "Endereço"
 
 msgid "ZIP"
 msgstr "CEP"
+
+msgid "City"
+msgstr "Cidade"
+
+msgid "State"
+msgstr "Estado"
+
+msgid "State abbreviation"
+msgstr "Sigla do estado"
 
 msgid "City & State"
 msgstr "Cidade & Estado"

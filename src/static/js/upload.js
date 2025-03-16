@@ -72,7 +72,8 @@ function fillSystemSettings() {
           document.getElementById('condo-tagline').value = json['tagline'];
           document.getElementById('condo-address').value = json['address'];
           document.getElementById('condo-zip').value = json['zip'];
-          document.getElementById('condo-location').value = json['condo_location'];
+          document.getElementById('condo-city').value = json['condo_city'];
+          document.getElementById('condo-state').value = json['condo_state'];
           document.getElementById('home-page-title').value = json.home_message.title;
           document.getElementById('about-page-title').value = json.about_message.title;
           document.getElementById('home-page-text').value = json.home_message.text;
@@ -94,7 +95,8 @@ function updateSystemSettings() {
     condo_tagline = document.getElementById('condo-tagline').value.trim();
     condo_address = document.getElementById('condo-address').value.trim();
     condo_zip = document.getElementById('condo-zip').value.trim();
-    condo_location = document.getElementById('condo-location').value.trim();
+    condo_city = document.getElementById('condo-city').value.trim();
+    condo_state = document.getElementById('condo-state').value.trim();
     home_page_title = document.getElementById('home-page-title').value.trim();
     home_page_text = document.getElementById('home-page-text').value.trim();
     about_page_title = document.getElementById('about-page-title').value.trim();
@@ -103,7 +105,7 @@ function updateSystemSettings() {
     fine_template = document.getElementById('fine_template').value.trim();
     fine_email_title = document.getElementById('fine_email_title').value.trim();
 
-    if ( condo_name.length == 0  ||  condo_tagline.length == 0  ||  condo_address.length == 0  ||  condo_location.length == 0 ) {
+    if ( condo_name.length == 0  ||  condo_tagline.length == 0  ||  condo_address.length == 0  ||  condo_city.length == 0  ||  condo_state.length == 0 ) {
         showMsgBox( gettext("Condo Name, Tagline, Address, ZIP and Location are required fields") );
         return;
     }
@@ -143,7 +145,8 @@ function updateSystemSettings() {
     requestObj.condo_tagline = condo_tagline;
     requestObj.condo_address = condo_address;
     requestObj.condo_zip = condo_zip;
-    requestObj.condo_location = condo_location;
+    requestObj.condo_city = condo_city;
+    requestObj.condo_state = condo_state;
     requestObj.home_page_title = home_page_title;
     requestObj.about_page_title = about_page_title;
     requestObj.home_page_text = home_page_text;

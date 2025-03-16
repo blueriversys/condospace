@@ -127,13 +127,17 @@
 
                             <div class="input-group mb-2">
                                 <span class="input-group-addon col-lg-3 form-label">{{_("ZIP")}}:</span>
-                                <input type="text" class="form-control col-lg-2" id="condo-zip" placeholder='{{_("ZIP of the condominium")}}'>
+                                <input type="text" class="form-control col-lg-2" id="condo-zip" placeholder='{{_("ZIP")}}'>
                             </div>
 
                             <div class="input-group mb-2">
-                                <span class="input-group-addon col-lg-3 form-label">{{_("City & State")}}:</span>
-                                <input type="text" class="form-control col-lg-4" id="condo-location" placeholder='{{_("City, State of the condominium location")}}'>
-                                <span style="line-height: 40px; padding-left: 3px;" title='{{_("For example, enter Syracuse, NY")}}'><i class="fa fa-question-circle-o"></i></span>
+<!--                                <span style="line-height: 40px; padding-left: 3px;" title='{{_("For example, enter Syracuse, NY")}}'><i class="fa fa-question-circle-o"></i></span> -->
+                                <div class="input-group mb-2">
+                                    <span class="input-group-addon col-lg-3 form-label">{{_("City")}}:</span>
+                                    <input type="text" class="form-control col-lg-2" id="condo-city" placeholder='{{_("City")}}'>
+                                    <span class="input-group-addon col-lg-1 form-label">{{_("State")}}:</span>
+                                    <input type="text" class="form-control col-lg-1" id="condo-state" placeholder='{{_("State abbreviation")}}'>
+                                </div>
                             </div>
 
                             <div class="input-group mb-2" style="font-size: 18px;">

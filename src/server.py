@@ -106,8 +106,7 @@ CONFIG_FILE =   f"{CONFIG_FOLDER}/config.json"
 # all files in the "serverfiles" folder
 INFO_FILE =     "info.json"
 FINES_FILE =  "fines.json"
-RESERVATIONS_FILE =  "reservations.json"
-AMENITIES_FILE = "amenities.json"
+RESERVATIONS_FILE =  f"{UNPROTECTED_FOLDER}/reservations/reservations.json"
 LINKS_FILE =    f"{SERVER_FOLDER}/links.json"
 ANNOUNCS_FILE = f"{SERVER_FOLDER}/announcs.dat"
 LOG_FILE =      f"{SERVER_FOLDER}/messages.log"
@@ -432,10 +431,10 @@ def custom_static_listing(tenant, unit, listing_id, filename):
     file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
-@app.route('/<tenant>/amenities/<amenity_id>/<filename>')
+@app.route('/<tenant>/reservations/<amenity_id>/<filename>')
 def custom_static_amenity(tenant, amenity_id, filename):
     print(f"in custom_static_amenity(): tenant: {tenant}, amenity_id {amenity_id}, filename {filename}")
-    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/amenities/{amenity_id}/{filename}")
+    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/{amenity_id}/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
 @app.route('/<tenant>/event/eventpics/<title>/pics/<filename>')
@@ -563,31 +562,34 @@ def get_reservations(tenant):
     #     lock.release()
     #     return page
 
-    amenities = {}
+    amenities_dict = {}
+    rsv_dict = {}
 
     # test if the amenities file exists
-    if aws.is_file_found(f"{AMENITIES_FILE}"):
-        amenities = get_json_from_file(f"{AMENITIES_FILE}")
-        for key, amenity in amenities['amenities'][tenant].items():
-            amenity['created_on'] = get_string_from_epoch(amenity['created_on'])
-        amenities = amenities['amenities'][tenant].items()
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        if 'amenities' in rsv_content:
+            amenities = rsv_content['amenities']
+            if len(amenities) > 0:
+                for key, amenity in amenities.items():
+                    amenity['created_on'] = get_string_from_epoch(amenity['created_on'])
+                amenities_dict = amenities.items()
 
-    rsv_dict = {}
-    # test if the reservations file exists
-    if aws.is_file_found(f"{RESERVATIONS_FILE}"):
-        reservations = get_json_from_file(f"{RESERVATIONS_FILE}")
-#        print(f"original reservations: {reservations}")
-        for user_id, reservation in reservations['reservations'][tenant].items():
-            #print(f"user {user_id}   reservation: {reservation}")
-            for rsv_id, rsv_data in reservation['reservations'].items():
-                rsv_data['created_on'] = get_string_from_epoch(rsv_data['created_on'])
-                rsv_name = users_repository.get_user_by_userid(tenant, user_id).name
-                arr_entry = { "name": rsv_name, "user_id": user_id, "rsv_id": rsv_id, "date": rsv_data['date'], "time_from": rsv_data['time_from'], "time_to": rsv_data['time_to']}
-                amenity_id = rsv_data['amenity_id']
-                if amenity_id in rsv_dict:
-                    rsv_dict[amenity_id].append(arr_entry)
-                else:
-                    rsv_dict[amenity_id] = [ arr_entry ]
+        if 'reservations' in rsv_content:
+            reservations = rsv_content['reservations']
+            if len(reservations) > 0:
+                for user_id, reservation in reservations.items():
+                    for rsv_id, rsv_data in reservation['reservations'].items():
+                        rsv_data['created_on'] = get_string_from_epoch(rsv_data['created_on'])
+                        rsv_name = users_repository.get_user_by_userid(tenant, user_id).name
+                        arr_entry = {"name": rsv_name, "user_id": user_id, "rsv_id": rsv_id, "date": rsv_data['date'],
+                                     "time_from": rsv_data['time_from'], "time_to": rsv_data['time_to']}
+                        amenity_id = rsv_data['amenity_id']
+                        if amenity_id in rsv_dict:
+                            rsv_dict[amenity_id].append(arr_entry)
+                        else:
+                            rsv_dict[amenity_id] = [arr_entry]
+
 
 #    print(f"\n\n rsv_dict: {rsv_dict} \n\n")
 
@@ -599,7 +601,7 @@ def get_reservations(tenant):
     info_data = get_info_data(tenant)
     units = get_unit_list()
     lock.release()
-    return render_template("reservations.html", tenant=tenant, units=units, reservations=rsv_dict, amenities=amenities, user_types=staticvars.user_types, info_data=info_data)
+    return render_template("reservations.html", tenant=tenant, units=units, reservations=rsv_dict, amenities=amenities_dict, user_types=staticvars.user_types, info_data=info_data)
 
 def sort_reservation(rsv):
     date = get_epoch_from_string(f"{rsv['date']['y']}-{rsv['date']['m']}-{rsv['date']['d']}")
@@ -630,36 +632,45 @@ def save_amenity(tenant):
         "created_on": get_epoch_from_now()
     }
 
-    # read the AMENITIES_FILE to add an additional condo to it
-    if aws.is_file_found(f"{AMENITIES_FILE}"):
-        amenities = get_json_from_file(f"{AMENITIES_FILE}")
-        # find the last fine_id for the user
-        if tenant in amenities['amenities']:
+    # read the RESERVATIONS_FILE to add a condo to it
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        if 'reservations' in rsv_content:
+            reservations = rsv_content['reservations']
+        else:
+            reservations = {}
+
+        if 'amenities' in rsv_content:
+            amenities = rsv_content['amenities']
+
+            # find the last amenity_id
             amenity_id = 0
-            for id, value in amenities['amenities'][tenant].items():
+            for id, value in amenities.items():
                 id = int(id)
                 amenity_id = id if id > amenity_id else amenity_id
             amenity_id += 1
+            amenities[amenity_id] = amenity_entry
         else:
             amenity_id = 0
-        amenities['amenities'][tenant][amenity_id] = amenity_entry
+            amenities = { amenity_id : amenity_entry }
     else:
         amenity_id = 0
-        amenities = { 'amenities': { tenant: { amenity_id : amenity_entry } } }
+        amenities = { amenity_id : amenity_entry }
+        reservations = {}
 
     if use_default_img:
         pic_file_name = os.path.basename(request.form['default_img_name'])
         print(f"static folder: {app.static_folder}    pic file: {pic_file_name}")
         amenity_pic = open(f"{app.static_folder}/img/{pic_file_name}", "rb")
-        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/amenities/{amenity_id}/amenity.jpg", amenity_pic.read())
+        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/reservations/{amenity_id}/amenity.jpg", amenity_pic.read())
     else:
         amenity_pic = request.files['amenity_pic']
         amenity_pic.stream.seek(0)
         img_bytes = amenity_pic.read()
         _, img_bytes = reduce_image_enh(img_bytes, 120, 80)
-        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/amenities/{amenity_id}/amenity.jpg", img_bytes)
+        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/reservations/{amenity_id}/amenity.jpg", img_bytes)
 
-    aws.upload_text_obj(f"{AMENITIES_FILE}", json.dumps(amenities))
+    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": reservations, "amenities": amenities}) )
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -688,33 +699,49 @@ def delete_amenity(tenant):
     found_rsv = False
 
     # make sure there is no reservation for the amenity to be deleted
-    if aws.is_file_found(f"{RESERVATIONS_FILE}"):
-        reservations = get_json_from_file(f"{RESERVATIONS_FILE}")
-        for user_id, reservation in reservations['reservations'][tenant].items():
-            for rsv_id, rsv_data in reservations['reservations'][tenant][user_id]['reservations'].items():
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        if 'reservations' in rsv_content:
+            reservations = rsv_content['reservations']
+        else:
+            reservations = {}
+
+        if 'amenities' in rsv_content:
+            amenities = rsv_content['amenities']
+        else:
+            # there is nothing to delete, let's return success
+            return_obj = json.dumps({'response': {'status': 'success'}})
+            lock.release()
+            return return_obj
+
+        # let's check if there is any reservation for the amenity
+        for user_id, reservation in reservations.items():
+            for rsv_id, rsv_data in reservations[user_id]['reservations'].items():
                 if str(rsv_data['amenity_id']) == amenity_id:
                     found_rsv = True
                     break
+                else:
+                    continue
+    else:
+        # there is nothing to delete, let's return success
+        return_obj = json.dumps({'response': {'status': 'success'}})
+        lock.release()
+        return return_obj
 
     if found_rsv:
-        print(f"found reservation for the amenity_id {amenity_id}")
+        print(f"found a reservation for the amenity_id {amenity_id}")
         return_obj = json.dumps({'response': {'status': 'found_rsv'}})
         lock.release()
         return return_obj
-    else:
-        print(f"amenity id not found in RESERVATIONS. Ok to delete")
 
-    # read the AMENITIES_FILE to add a condo to it
-    if not aws.is_file_found(f"{AMENITIES_FILE}"):
-        return_obj = json.dumps({'response': {'status': 'error'}})
+    # here we know there is no reservation for the amenity
+    if amenity_id in amenities:
+        del amenities[amenity_id]
+        aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": reservations, "amenities": amenities}))
     else:
-        amenities = get_json_from_file(f"{AMENITIES_FILE}")
-        if amenity_id in amenities['amenities'][tenant]:
-            del amenities['amenities'][tenant][amenity_id]
-            aws.upload_text_obj(f"{AMENITIES_FILE}", json.dumps(amenities))
-        else:
-            print(f"amenity_id not found for tenant {tenant}")
-        return_obj = json.dumps({'response': {'status': 'success'}})
+        print(f"amenity_id not found for tenant {tenant}")
+
+    return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
 
@@ -752,37 +779,93 @@ def make_reservation(tenant):
     }
 
     # read the RESERVATIONS_FILE to add a reservation to it
-    if aws.is_file_found(f"{RESERVATIONS_FILE}"):
-        rsv_data = get_json_from_file(f"{RESERVATIONS_FILE}")
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
 
-        # find the last reservation_id for the user
-        if user_id in rsv_data['reservations'][tenant]:
-            rsv_id = 0
-            for id, value in rsv_data['reservations'][tenant][user_id]['reservations'].items():
-                id = int(id)
-                rsv_id = id if id > rsv_id else rsv_id
-            rsv_id += 1
+        if 'amenities' in rsv_content:
+            amenities = rsv_content['amenities']
         else:
-            rsv_id = 0
+            # cannot make a reservation for an amenity that doesn't exist
+            return_obj = json.dumps({'response': {'status': 'error'}})
+            lock.release()
+            return return_obj
 
-        # find out if tenant is already in the file
-        if tenant in rsv_data['reservations']:
-            if user_id in rsv_data['reservations'][tenant]:
-                rsv_data['reservations'][tenant][user_id]['reservations'][rsv_id] = rsv_entry
+        if 'reservations' in rsv_content:
+            rsv_data = rsv_content['reservations']
+            if user_id in rsv_data:
+                # find the last reservation_id for the user
+                rsv_id = 0
+                for id, value in rsv_data[user_id]['reservations'].items():
+                    id = int(id)
+                    rsv_id = id if id > rsv_id else rsv_id
+                rsv_id += 1
+                rsv_data[user_id]['reservations'][rsv_id] = rsv_entry
             else:
-                rsv_data['reservations'][tenant][user_id] = { "reservations": {rsv_id: rsv_entry} }
+                rsv_id = 0
+                rsv_data[user_id] = { "reservations": {rsv_id: rsv_entry} }
         else:
-            rsv_data['reservations'] = { tenant: {user_id: { "reservations": {rsv_id: rsv_entry} } } }
+            # this is the first reservation in the file
+            rsv_id = 0
+            rsv_data = { user_id: { "reservations": {rsv_id: rsv_entry} } }
     else:
-        rsv_id = 0
-        rsv_data = { 'reservations': { tenant: {user_id: { "reservations": {rsv_id: rsv_entry} } } } }
+        # if file not found, there is no amenity, therefore way to make a reservation
+        return_obj = json.dumps({'response': {'status': 'error'}})
+        lock.release()
+        return return_obj
 
-#    print(f"in make_reservation(): rsv_data: {rsv_data}")
-
-    aws.upload_text_obj(f"{RESERVATIONS_FILE}", json.dumps(rsv_data))
+    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": rsv_data, "amenities": amenities}))
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
+
+
+
+
+    # read the RESERVATIONS_FILE to add a reservation to it
+    # if aws.is_file_found(f"{RESERVATIONS_FILE}"):
+    #     rsv_content = get_json_from_file(f"{RESERVATIONS_FILE}")
+    #     amenities = rsv_content['amenities']
+    #
+    #     if 'reservations' in rsv_content:
+    #         rsv_data = rsv_content['reservations']
+    #         if tenant in rsv_data:
+    #             if user_id in rsv_data[tenant]:
+    #                 # find the last reservation_id for the user
+    #                 rsv_id = 0
+    #                 for id, value in rsv_data[tenant][user_id]['reservations'].items():
+    #                     id = int(id)
+    #                     rsv_id = id if id > rsv_id else rsv_id
+    #                 rsv_id += 1
+    #             else:
+    #                 rsv_id = 0
+    #         else:
+    #             rsv_id = 0
+    #     else:
+    #         rsv_id = 0
+    #         rsv_data = {'reservations': {tenant: {user_id: {"reservations": {rsv_id: rsv_entry}}}}}
+    #
+    #
+    #
+    #     # find out if tenant is already in the file
+    #     if tenant in rsv_data:
+    #         if user_id in rsv_data[tenant]:
+    #             rsv_data[tenant][user_id]['reservations'][rsv_id] = rsv_entry
+    #         else:
+    #             rsv_data[tenant][user_id] = { "reservations": {rsv_id: rsv_entry} }
+    #     else:
+    #         rsv_data['reservations'] = { tenant: {user_id: { "reservations": {rsv_id: rsv_entry} } } }
+    # else:
+    #     # if file not found, there is no amenity, therefore way to make a reservation
+    #     return_obj = json.dumps({'response': {'status': 'error'}})
+    #     lock.release()
+    #     return return_obj
+
+#    print(f"in make_reservation(): rsv_data: {rsv_data}")
+
+    # aws.upload_text_obj(f"{RESERVATIONS_FILE}", json.dumps(rsv_data))
+    # return_obj = json.dumps({'response': {'status': 'success'}})
+    # lock.release()
+    # return return_obj
 
 
 @app.route('/<tenant>/delete_reservation', methods=["POST"])
@@ -804,22 +887,29 @@ def delete_reservation(tenant):
 
 #    print(f"tenant: {tenant},   user_id: {user_id},   rsv_id {rsv_id}  rsv_id type: {type(rsv_id)}")
 
-    if aws.is_file_found(f"{RESERVATIONS_FILE}"):
-        rsv_data = get_json_from_file(f"{RESERVATIONS_FILE}")
+    if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
+        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        if not 'amenities' in rsv_content or not 'reservations' in rsv_content:
+            return_obj = json.dumps({'response': {'status': 'error'}})
+            lock.release()
+            return return_obj
+
+        amenities = rsv_content['amenities']
+        rsv_data = rsv_content['reservations']
     else:
         return_obj = json.dumps({'response': {'status': 'file_not_found'}})
         lock.release()
         return return_obj
 
-    if rsv_id in rsv_data['reservations'][tenant][user_id]['reservations']:
-        del rsv_data['reservations'][tenant][user_id]['reservations'][rsv_id]
+    if rsv_id in rsv_data[user_id]['reservations']:
+        del rsv_data[user_id]['reservations'][rsv_id]
         print(f"reservation deleted")
     else:
         return_obj = json.dumps({'response': {'status': 'rsv_not_found'}})
         lock.release()
         return return_obj
 
-    aws.upload_text_obj(f"{RESERVATIONS_FILE}", json.dumps(rsv_data))
+    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": rsv_data, "amenities": amenities}))
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -1164,14 +1254,15 @@ def update_settings(tenant):
     info = get_json_from_file(f"{INFO_FILE}")
     info['config'][tenant]['condo_name'] = json_req['request']['condo_name']
     info['config'][tenant]['tagline'] = json_req['request']['condo_tagline']
-    info['config'][tenant]['condo_location'] = json_req['request']['condo_location']
+    info['config'][tenant]['condo_city'] = json_req['request']['condo_city']
+    info['config'][tenant]['condo_state'] = json_req['request']['condo_state']
     info['config'][tenant]['address'] = json_req['request']['condo_address']
     info['config'][tenant]['zip'] = json_req['request']['condo_zip']
     info['config'][tenant]['home_message']['title'] = json_req['request']['home_page_title']
     info['config'][tenant]['about_message']['title'] = json_req['request']['about_page_title']
     home_text = json_req['request']['home_page_text'].split('\n')
     about_text = json_req['request']['about_page_text'].split('\n')
-    lat, long = get_lat_long(json_req['request']['condo_location'])
+    lat, long = get_lat_long(f"{json_req['request']['condo_city']}, {json_req['request']['condo_state']}")
     print(f"lat {lat},  long {long}")
     info['config'][tenant]['geo']['lat'] = lat
     info['config'][tenant]['geo']['long'] = long
@@ -2408,7 +2499,8 @@ def register_condo():
     condo_tagline = request.form['condo_tagline']
     condo_address = request.form['condo_address']
     condo_zip = request.form['condo_zip']
-    condo_location = request.form['condo_location']
+    condo_city = request.form['condo_city']
+    condo_state = request.form['condo_state']
     use_default_img = True if request.form['use_default_img'] == 'yes' else False
 
     userid = user_full_name.strip().lower()
@@ -2427,7 +2519,7 @@ def register_condo():
 
     print(f"tenant {condo_id} not found. We are creating it now....")
 
-    lat, long = get_lat_long(condo_location)
+    lat, long = get_lat_long(f"{condo_city}, {condo_state}")
     if lat is None or long is None:
         lat = -22.9561
         long = -46.5473
@@ -2485,7 +2577,8 @@ Board of Directors of {condo_name}.
         "address": condo_address,
         "zip": condo_zip,
         "census_forms_pdf_date": "06-Sep-2024",
-        "condo_location": condo_location,
+        "condo_city": condo_city,
+        "condo_state": condo_state,
         "condo_name": condo_name,
         "domain": condo_id,
         "tagline": condo_tagline,
@@ -2493,7 +2586,7 @@ Board of Directors of {condo_name}.
         "home_message": {
             "title": "Olá Pessoal.",
             "lines": [
-                f"Bem-vindo ao lindo {condo_name} em {condo_location}.",
+                f"Bem-vindo ao lindo {condo_name} em {condo_city}, {condo_state}.",
                 "Nós mal podemos esperar ver você aqui e, ao mesmo tempo, te fornecer informações muito úteis.",
                 "Se você já for um residente aqui, documentos e informações estão a apenas alguns clicks."
             ]
@@ -2501,7 +2594,7 @@ Board of Directors of {condo_name}.
         "about_message": {
             "title": "Tudo Sobre Nós.",
             "lines": [
-                f"Nós somos uma pequena e vibrante associação localizada em {condo_location}.",
+                f"Nós somos uma pequena e vibrante associação localizada em {condo_city}, {condo_state}.",
                 "A nossa região proporciona o que há de melhor em qualidade de vida e segurança.",
                 "Estamos localizados numa área nobre da cidade, rodeados pelo que há de melhor em gastronomia e compras de nível internacional, além de fácil acesso por ótimas estradas da região."
             ]
@@ -2616,8 +2709,8 @@ Board of Directors of {condo_name}.
     aws.upload_text_obj(f"{INFO_FILE}", json.dumps(info_data))
 
     if use_default_img:
-        home_pic = open("static/img/branding/home.jpg", "rb")
-        logo_pic = open("static/img/branding/logo.jpg", "rb")
+        home_pic = open(f"{app.static_folder}/img/branding/home.jpg", "rb")
+        logo_pic = open(f"{app.static_folder}/img/branding/logo.jpg", "rb")
         aws.upload_binary_obj(f"{condo_id}/uploadedfiles/unprotected/branding/home.jpg", home_pic.read())
         aws.upload_binary_obj(f"{condo_id}/uploadedfiles/unprotected/branding/logo.jpg", logo_pic.read())
     else:

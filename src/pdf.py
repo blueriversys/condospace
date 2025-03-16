@@ -196,7 +196,7 @@ class PDF(FPDF):
         self.cell(0, 10, info_data['condo_name'], 0, 0, 'C')
         self.ln(8)
         self.set_font('Arial', '', 14)
-        address = f"{info_data['address']}, {info_data['condo_location']}"
+        address = f"{info_data['address']}, {info_data['condo_city']}, {info_data['condo_state']}"
         self.set_fill_color(255, 255, 255)
         self.set_text_color(70, 70, 70)
         self.cell(0, 10, address, 0, 0, 'C')

@@ -200,7 +200,8 @@ function sendCondoRegistrationForm() {
     condo_tagline = document.getElementById('condo-tagline').value.trim();
     condo_address = document.getElementById('condo-address').value.trim();
     condo_zip = document.getElementById('condo-zip').value.trim();
-    condo_location = document.getElementById('condo-location').value.trim();
+    condo_city = document.getElementById('condo-city').value.trim();
+    condo_state = document.getElementById('condo-state').value.trim();
     use_default_img = document.getElementById('use-default-img');
 
     if (name.length == 0 ) {
@@ -221,7 +222,7 @@ function sendCondoRegistrationForm() {
         return;
     }
 
-    if (condo_location.length == 0 ) {
+    if (condo_city.length == 0  ||  condo_state.length == 0) {
         showMsgBox( gettext("Condominium Location cannot be empty") );
         return;
     }
@@ -257,7 +258,8 @@ function sendCondoRegistrationForm() {
     formData.append("condo_tagline", condo_tagline);
     formData.append("condo_address", condo_address);
     formData.append("condo_zip", condo_zip);
-    formData.append("condo_location", condo_location);
+    formData.append("condo_city", condo_city);
+    formData.append("condo_state", condo_state);
 
     registration_result = 'error';
     text = gettext('One moment, as we register your condominium on our database...');
