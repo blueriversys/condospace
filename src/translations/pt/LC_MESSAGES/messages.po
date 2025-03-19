@@ -617,7 +617,7 @@ msgid "Retrieve Password"
 msgstr "Recuperar Senha"
 
 msgid "User Id. Example: UnitA23"
-msgstr "Código do Usuário. Exemplo: AptA23"
+msgstr "Código do Usuário. Exemplo: AptoA23"
 
 msgid "Retrieve Login Info"
 msgstr "Recuperar Informação de Login"
@@ -755,7 +755,7 @@ msgstr "Morador"
 msgid ""
 "The unit is the same as the user id, which the resident will enter in the"
 " Login page."
-msgstr "Campo Apt é o mesmo que Usuário, que será usado na página de Login."
+msgstr "Campo Apto é o mesmo que Usuário, que será usado na página de Login."
 
 msgid "You may name your units the way you think is best."
 msgstr "Você poderá adotar o padrão que você achar melhor."
@@ -768,10 +768,10 @@ msgstr ""
 "C, você poderá adotar o seguinte padrão de nomes"
 
 msgid "For units in the first floor of tower A: UnitA11, UnitA12, UnitA13, etc."
-msgstr "Para apts no primeiro piso da torre A: AptA11, AptA12, AptA13, etc."
+msgstr "Para aptos no primeiro piso da torre A: AptoA11, AptoA12, AptoA13, etc."
 
 msgid "For units in the third floor of tower B: UnitB31, UnitB32, UnitB33, etc."
-msgstr "Para apts no terceiro piso da torre B: AptB31, AptB32, AptB33, etc."
+msgstr "Para apts no terceiro piso da torre B: AptoB31, AptoB32, AptoB33, etc."
 
 msgid "The sections below marked with * are required to be filled."
 msgstr "As seções abaixo marcadas com * são de preenchimento obrigatório."
@@ -794,7 +794,7 @@ msgstr ""
 "alguém que more em outra torre."
 
 msgid "For Rental Unit Only"
-msgstr "Apenas Para Apt de Aluguel"
+msgstr "Apenas Para Apto de Aluguel"
 
 msgid "If this unit is a rental, you might want to fill this section"
 msgstr "Se este for um apt de aluguel, você talvez queira preencher esta seção"
@@ -899,7 +899,7 @@ msgid "Use This Section Exclusively for Deletion of Unit"
 msgstr "Use Esta Seção Somente Para Remover Um Apartamento"
 
 msgid "Unit / User Id"
-msgstr "Apt / Usuário"
+msgstr "Apto / Usuário"
 
 msgid "Delete Unit from Database"
 msgstr "Remover Apartamento do Banco de Dados"

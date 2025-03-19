@@ -986,7 +986,7 @@ def save_payment(tenant):
         'name': name,
         'email': email,
         "descr": descr,
-        "amount": amount,
+        "amount": float(amount),
         "paid_amount": None,
         "due_date": {"y": due_date_y, "m": due_date_m, "d": due_date_d},
         "paid_date": None

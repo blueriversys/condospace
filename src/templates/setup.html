@@ -6,7 +6,6 @@
 {% endblock %}
 
 
-
 {% block body %}
 <div class="main">
 
@@ -48,6 +47,44 @@
 
     <div class="spacer"></div>
     <div class="spacer"></div>
+
+
+
+    <div class="modal fade" id="showInstructionModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width: 600px;">
+          <div class="modal-header"  style="font-size: 16px;">
+            <h5 class="modal-title" id="exampleModalLabel">{{_("Tips on Creating the Users")}}</h5>
+            <button id="modal-close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" style="font-size: 16px;">
+              <div>
+                {{_("The unit is the same as the user id, which the resident will enter in the Login page.")}}
+              </div>
+              <div class="mt-2">
+                {{_("You may name your units the way you think is best.")}}
+              </div>
+              <div class="mt-2">
+                {{_("For example, if your condominium has multiple towers, such as tower A, B and C, you may adopt the following naming convention")}}:
+              </div>
+              <div class="mt-2">
+                {{_("For units in the first floor of tower A: UnitA11, UnitA12, UnitA13, etc.")}}
+              </div>
+              <div class="mt-2">
+                {{_("For units in the third floor of tower B: UnitB31, UnitB32, UnitB33, etc.")}}
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-dismiss="modal">{{_("close")}}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
 
 
     <div class="app-container collapse" id="units_section">
@@ -119,33 +156,25 @@
     <div id="content_id" class="profile-block">
       <fieldset>
         <div class="row align-items-center">
-        <div class="col-4">
-          <div class="spacer"></div>
-          <label class="right-aligned" for="user_id_adm">{{_('Unit / User Id')}}:</label>
-          <input class="userid-input" type="text" id="user_id_adm" name="user_id_adm">
-          <br>
-          <label class="right-aligned">{{_('Initial Password')}}:</label>
-          <input type="text" id="password" name="password">
-          <br>
-          <label class="right-aligned" for="resident_type">{{_('Resident type')}}:</label>
-          <select id="resident_type" name="resident_type">
-            <option value="0">Admin</option>
-            <option value="1">{{_('Board Member')}}</option>
-            <option value="2">{{_('Secretary')}}</option>
-            <option value="3" selected>{{_('Resident')}}</option>
-          </select>
-        </div>
-        <div class="col-8">
-          {{_("The unit is the same as the user id, which the resident will enter in the Login page.")}}
-          <br>
-          {{_("You may name your units the way you think is best.")}}
-          <br>
-          {{_("For example, if your condominium has multiple towers, such as tower A, B and C, you may adopt the following naming convention")}}:
-          <br>
-          {{_("For units in the first floor of tower A: UnitA11, UnitA12, UnitA13, etc.")}}
-          <br>
-          {{_("For units in the third floor of tower B: UnitB31, UnitB32, UnitB33, etc.")}}
-        </div>
+          <div class="col-4">
+            <div class="spacer"></div>
+            <label class="right-aligned" for="user_id_adm">{{_('Unit / User Id')}}:</label>
+            <input class="userid-input" style="width: 100px; margin-right: 0px;" type="text" id="user_id_adm" name="user_id_adm">
+            <button class="btn btn-icon d-inline-flex align-items-center" data-toggle="modal" data-target="#showInstructionModal">
+              <i style="font-size: 18px;" class="fa fa-question-circle-o"></i>
+            </button>
+            <br>
+            <label class="right-aligned">{{_('Initial Password')}}:</label>
+            <input type="text" id="password" name="password">
+            <br>
+            <label class="right-aligned" for="resident_type">{{_('Resident type')}}:</label>
+            <select id="resident_type" name="resident_type">
+              <option value="0">Admin</option>
+              <option value="1">{{_('Board Member')}}</option>
+              <option value="2">{{_('Secretary')}}</option>
+              <option value="3" selected>{{_('Resident')}}</option>
+            </select>
+          </div>
         </div>
       </fieldset>
 
@@ -228,7 +257,7 @@
         <fieldset>
           <legend>{{_('Other Occupants')}}</legend>
           <label for="occup1_name">{{_('Name')}}:</label>
-          <input class="name-input" type="text" id="occup1_name" class="name-input" name="occup1_name">
+          <input class="name-input" type="text" id="occup1_name" name="occup1_name">
           <label for="occup1_email">Email:</label>
           <input class="email-input" type="email" id="occup1_email" name="occup1_email">
           <label for="occup1_cc">CC:</label>
