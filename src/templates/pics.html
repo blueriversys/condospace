@@ -53,10 +53,13 @@
 
       {% if (pics is defined) and pics %}
           <div class="row">
-            {% for pic in pics: %}
+            {% for pic in pics %}
               <div class="col-lg-3 col-md-4 p-3 mb-4 bg-white center shadow rounded d-flex align-items-stretch">
                 <div class="member-img">
                   <a class="example-image-link" href="pics/{{pic}}" data-lightbox="example-set" data-title="<-- click/tap image's left half to go backward; right half to go forward -->"><img class="img-fluid" src="pics/{{pic}}" alt=""/></a>
+                  {% if info_data['is_authenticated'] == true and current_user.get_type() != 3 %}
+                    <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteFile('pics/{{pic}}', '{{pic}}');">{{_('delete')}}</button>
+                  {% endif %}
                 </div>
               </div>
               <div style="margin: 1px;"></div>
@@ -102,7 +105,7 @@
                           <a href="event/{{key}}"><img class="small-pic" src="event/eventpics/{{key}}/pics/{{event['cover_file']}}"></a>
                           <a href="event/{{key}}">{{key}}</a>, {{event['date']}}
                           {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-                              <button class="button" id="del-listing-button" onclick="deletePictureFiles('eventpics', '', '{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_("Delete This Event")}}</button>
+                              <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="height: 20px;" id="del-listing-button" onclick="deletePictureFiles('eventpics', '', '{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_("Delete This Event")}}</button>
                           {% endif  %}
                       </li>
                   {% endfor %}

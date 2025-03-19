@@ -224,36 +224,6 @@ async function uploadFile(filename) {
 }
 */
 
-function deleteFile(filepath, filename) {
-    var request = new XMLHttpRequest()
-    request.open('POST', '/deletefile', true)
-
-    request.onload = function () {
-        // Begin accessing JSON data here
-        var json = JSON.parse(this.response);
-
-        if (request.status >= 200 && request.status < 400) {
-            if (json.status == 'success') {
-                showMsgBoxSuccess( gettext("File") + " '" + filename + "' " + gettext("has been deleted") );
-                location.reload(true);
-            }
-            else {
-                showMsgBox( gettext("Some error occurred trying to delete file") + " " + filename);
-            }
-        }
-        else {
-            showMsgBox( gettext('Error communicating with the server.') );
-        }
-    }
-
-    var requestObj = new Object();
-    requestObj.filepath = filepath;
-    requestObj.filename = filename;
-    jsonStr = '{ "request": ' + JSON.stringify(requestObj) + '}';
-    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    request.send(jsonStr);
-}
-
 // we retrieve the user data from the database first
 // then we use that data to send him an email.
 function startSendEmail() {
@@ -462,7 +432,44 @@ async function sendPasswordReset() {
     });
 }
 
-// Description of the link is the key
+
+/*
+    // this function was moved into other .js modules
+function deleteFile(filepath, filename) {
+    var request = new XMLHttpRequest()
+    request.open('POST', '/deletefile', true)
+
+    request.onload = function () {
+        // Begin accessing JSON data here
+        var json = JSON.parse(this.response);
+
+        if (request.status >= 200 && request.status < 400) {
+            if (json.status == 'success') {
+                showMsgBoxSuccess( gettext("File") + " '" + filename + "' " + gettext("has been deleted") );
+                location.reload(true);
+            }
+            else {
+                showMsgBox( gettext("Some error occurred trying to delete file") + " " + filename);
+            }
+        }
+        else {
+            showMsgBox( gettext('Error communicating with the server.') );
+        }
+    }
+
+    var requestObj = new Object();
+    requestObj.filepath = filepath;
+    requestObj.filename = filename;
+    jsonStr = '{ "request": ' + JSON.stringify(requestObj) + '}';
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.send(jsonStr);
+}
+*/
+
+
+/*
+  // this function was moved into the docs.js
+  // Description of the link is the key
 function deleteLink(link_descr) {
     // here we make a request to "upload_link"
     var request = new XMLHttpRequest();
@@ -494,4 +501,6 @@ function deleteLink(link_descr) {
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.send(jsonStr);
 }
+*/
+
 

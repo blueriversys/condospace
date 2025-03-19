@@ -1087,3 +1087,37 @@ function retrieveUser(user_id) {
   return request;
 }
 
+// This function is invoked by more than 1 module
+function deleteFileCommon(filepath, filename, protected) {
+    var request = new XMLHttpRequest();
+    post_url = "/" + window.loggedin_tenant_global + "/delete_file";
+    request.open('POST', post_url, true);
+
+    request.onload = function () {
+        // Begin accessing JSON data here
+        var json = JSON.parse(this.response);
+
+        if (request.status >= 200 && request.status < 400) {
+            if (json.status == 'success') {
+                showMsgBoxSuccess( gettext("File") + " '" + filename + "' " + gettext("has been deleted") );
+                location.reload(true);
+            }
+            else {
+                showMsgBox( gettext("An error occurred trying to delete file") + " " + filename);
+            }
+        }
+        else {
+            showMsgBox( gettext('Error communicating with the server') );
+        }
+    }
+
+    var requestObj = new Object();
+    requestObj.tenant = window.loggedin_tenant_global;
+    requestObj.filepath = filepath;
+    requestObj.filename = filename;
+    requestObj.protected = protected; // contains 'yes' or 'no'
+    jsonStr = '{ "request": ' + JSON.stringify(requestObj) + '}';
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.send(jsonStr);
+}
+

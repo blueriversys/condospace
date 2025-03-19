@@ -84,20 +84,22 @@
                       <th style="width: 12%;">{{_("Email")}}</th>
                       <th style="width: 12%;">{{_("Description")}}</th>
                       <th style="width: 8%;">{{_("Amount")}}</th>
+                      <th style="width: 10%;">{{_("Issued")}}</th>
                       <th style="width: 10%;">{{_("Due Date")}}</th>
                       <th style="width: 10%;">{{_("Status")}}</th>
                     </tr>
                     {% for item in fines %}
                       <tr>
-                        <td><button id="delete" class="button small-button" onClick="deleteFine({{loop.index}});" title='{{_("delete this fine")}}'>{{_("delete")}}</button></td>
-                        <td><button class="button small-button" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>mark</button></td>
-                        <td><button id="remind" class="button small-button" onClick="sendFineReminder({{loop.index}});" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
+                        <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
+                        <td><button class="btn btn-primary small-btn" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
+                        <td><button id="remind" class="btn btn-primary small-btn" onClick="sendFineReminder({{loop.index}});" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
                         <td>{{item['user_id']}}</td>
                         <td>{{item['name']}}</td>
                         <td>{{item['email']}}</td>
                         <td>{{item['descr']}}</td>
                         <td>{{item['amount']}}</td>
-                        <td>{{item['due_date']['d']}}/{{item['due_date']['m']}}/{{item['due_date']['y']}}</td>
+                        <td>{{item['created_on']}}</td>
+                        <td>{{item['due_date']['d']}}-{{item['due_date']['m']}}-{{item['due_date']['y']}}</td>
                         <td>{{_(item['status'])}}</td>
                       </tr>
                     {% endfor %}

@@ -24,6 +24,9 @@ msgstr "Nome do principal ocupante é obrigatório"
 
 
 #: templates/reservations.html
+msgid "No amenity has been created yet. Ask the Admin to create it."
+msgstr "Nenhum espaço foi criado ainda. Peça para o Admin criar."
+
 msgid "Reservation of Common Areas"
 msgstr "Reserva de Espaços Comuns"
 
@@ -73,7 +76,7 @@ msgid "dance room"
 msgstr "salão de dança"
 
 msgid "Save This Amenity"
-msgstr "Gravar Este Espaço"
+msgstr "Adicionar Este Espaço"
 
 msgid "View Existing Reservations"
 msgstr "Ver Reservas Existentes"
@@ -100,6 +103,9 @@ msgstr "Até Hora"
 #: templates/fines.html
 msgid "Fines"
 msgstr "Multas"
+
+msgid "Issued"
+msgstr "Emissão"
 
 msgid "Open/Close the List of Fines Already Issued"
 msgstr "Abrir/Fechar a Lista de Multas Já Emitidas"
@@ -431,6 +437,9 @@ msgid "Enter an integer value, no decimal point"
 msgstr "Digite um valor inteiro, sem vírgula"
 
 #: templates/docs.html
+msgid "delete entire group"
+msgstr "deletar o grupo inteiro"
+
 msgid "Open View Documents"
 msgstr "Documentos Abertos ao Público"
 

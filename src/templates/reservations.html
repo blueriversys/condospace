@@ -156,9 +156,14 @@
                   <div class="spacer"></div>
               </div> <!-- closes closes profile-block -->
           </div> <!-- app-container -->
+      {% elif amenities is defined and amenities %}
+          <div></div>
+      {% else %}
+          <div>
+              <div class="spacer"></div>
+              <div class="no-item-msg">{{_("No amenity has been created yet. Ask the Admin to create it.")}}</div>
+          </div>
       {% endif %}
-
-
 
       <div class="spacer"></div>
       <div class="spacer"></div>

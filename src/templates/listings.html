@@ -59,9 +59,9 @@
                               <li>
                                   <a href="listing/{{listing['user_id']}}/{{listing['listing_id']}}"><img class="small-pic" src="listings/{{listing['user_id']}}/{{listing['listing_id']}}/pics/{{listing['cover_file']}}"></a>
                                   {{listing['listing_id']}},
-                                  <a href="listing/{{listing['user_id']}}/{{listing['listing_id']}}">{{listing['title']}}</a>, {{listing['date']}}, {{listing['email']}}, {{listing['phone']}}, {{listing['price']}}
+                                  <a href="listing/{{listing['user_id']}}/{{listing['listing_id']}}">{{listing['title']}}</a>, {{listing['date']}}, {{listing['phone']}}, {{listing['price']}}
                                   {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-                                      <button class="button" id="del-listing-button" onclick="deletePictureFiles('listing', '{{listing['user_id']}}', '{{listing['listing_id']}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Listing')}}</button>
+                                      <button class="btn btn-danger btn-sm d-inline-flex align-items-center" id="del-listing-button" onclick="deletePictureFiles('listing', '{{listing['user_id']}}', '{{listing['listing_id']}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Listing')}}</button>
                                   {% endif  %}
                               </li>
                   {% endfor %}

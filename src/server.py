@@ -133,6 +133,9 @@ SECURITY_SUCCESS_CODE = 0
 TENANT_NOT_FOUND_CODE = 1
 USER_NOT_AUTHENTICATED_CODE = 2
 
+COVER_PREF_WIDTH = 120
+COVER_PREF_HEIGHT = 80
+
 
 # for PROD, change the file serverfiles/config-prod.dat
 with open(CONFIG_FILE, 'r') as f:
@@ -562,6 +565,7 @@ def get_reservations(tenant):
     #     lock.release()
     #     return page
 
+    info_data = get_info_data(tenant)
     amenities_dict = {}
     rsv_dict = {}
 
@@ -572,7 +576,7 @@ def get_reservations(tenant):
             amenities = rsv_content['amenities']
             if len(amenities) > 0:
                 for key, amenity in amenities.items():
-                    amenity['created_on'] = get_string_from_epoch(amenity['created_on'])
+                    amenity['created_on'] = get_string_from_epoch(amenity['created_on'], info_data['language'])
                 amenities_dict = amenities.items()
 
         if 'reservations' in rsv_content:
@@ -580,7 +584,7 @@ def get_reservations(tenant):
             if len(reservations) > 0:
                 for user_id, reservation in reservations.items():
                     for rsv_id, rsv_data in reservation['reservations'].items():
-                        rsv_data['created_on'] = get_string_from_epoch(rsv_data['created_on'])
+                        rsv_data['created_on'] = get_string_from_epoch(rsv_data['created_on'], info_data['language'])
                         rsv_name = users_repository.get_user_by_userid(tenant, user_id).name
                         arr_entry = {"name": rsv_name, "user_id": user_id, "rsv_id": rsv_id, "date": rsv_data['date'],
                                      "time_from": rsv_data['time_from'], "time_to": rsv_data['time_to']}
@@ -598,7 +602,6 @@ def get_reservations(tenant):
         for amenity_id, reservations in rsv_dict.items():
             reservations.sort(key=sort_reservation)
 
-    info_data = get_info_data(tenant)
     units = get_unit_list()
     lock.release()
     return render_template("reservations.html", tenant=tenant, units=units, reservations=rsv_dict, amenities=amenities_dict, user_types=staticvars.user_types, info_data=info_data)
@@ -667,7 +670,7 @@ def save_amenity(tenant):
         amenity_pic = request.files['amenity_pic']
         amenity_pic.stream.seek(0)
         img_bytes = amenity_pic.read()
-        _, img_bytes = reduce_image_enh(img_bytes, 120, 80)
+        _, img_bytes = reduce_image_enh(img_bytes, COVER_PREF_WIDTH, COVER_PREF_HEIGHT)
         aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/reservations/{amenity_id}/amenity.jpg", img_bytes)
 
     aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": reservations, "amenities": amenities}) )
@@ -935,6 +938,7 @@ def payments(tenant):
         for user, payment in pay_json['fines'][tenant].items():
             for fine_id, fine in payment['fines'].items():
                 entry = dict()
+                entry['created_on'] = get_string_from_epoch(fine['created_on'], info_data['language'])
                 entry["user_id"] = user
                 entry["fine_id"] = fine_id
                 entry["name"] = fine['name']
@@ -978,7 +982,7 @@ def save_payment(tenant):
     due_date_d = json_obj['payment']['due_date']['d']
 
     fine_entry = {
-        "creation": get_epoch_from_now(),
+        "created_on": get_epoch_from_now(),
         'name': name,
         'email': email,
         "descr": descr,
@@ -988,7 +992,7 @@ def save_payment(tenant):
         "paid_date": None
     }
 
-    # read the FINES_FILE to add an additional condo to it
+    # read the FINES_FILE to add a fine to it
     if aws.is_file_found(f"{FINES_FILE}"):
         pay_data = get_json_from_file(f"{FINES_FILE}")
 
@@ -1319,9 +1323,16 @@ def get_docs(tenant):
         return render_template("docs-open.html", opendocs=open_docs, info_data=info_data)
 
     # here user is authenticated, aka logged in
-    docs2023 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2023')
-    docs2024 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2024')
-    docs2025 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2025')
+    start_year = datetime.now().year - 4
+    fin_docs = {}
+    for year in range(10):
+        year = start_year + year
+        docs = get_files(f"{PROTECTED_FOLDER}/docs/financial/{year}", f"Fin-{year}")
+        if len(docs) > 0:
+            fin_docs[year] = docs
+    # docs2023 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2023')
+    # docs2024 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2024')
+    # docs2025 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2025')
     bylaws = get_files(PROTECTED_FOLDER + '/docs/bylaws', '')
     other_docs = get_files(PROTECTED_FOLDER + '/docs/other', '')
     links = get_json_from_file(f"{tenant}/{LINKS_FILE}")
@@ -1329,13 +1340,39 @@ def get_docs(tenant):
     other_docs = [] if other_docs is None else other_docs
     open_docs = [] if open_docs is None else open_docs
     links = [] if links is None else links['links'].items()
-    docs2023 = [] if docs2023 is None else docs2023
-    docs2024 = [] if docs2024 is None else docs2024
-    docs2025 = [] if docs2025 is None else docs2025
+    # docs2023 = [] if docs2023 is None else docs2023
+    # docs2024 = [] if docs2024 is None else docs2024
+    # docs2025 = [] if docs2025 is None else docs2025
     lock.release()
     return render_template("docs.html", bylaws=bylaws, otherdocs=other_docs, opendocs=open_docs,
-        findocs2023=docs2023, findocs2024=docs2024, findocs2025=docs2025, links=links,
+        findocs=fin_docs.items(), links=links,
         user_types=staticvars.user_types, info_data=info_data)
+
+
+@app.route('/<tenant>/delete_fin_doc_group', methods=["POST"])
+@login_required
+def delete_fin_doc_group(tenant):
+    lock.acquire()
+    print(f"here in delete_fin_doc_group()")
+    json_req = request.get_json()
+    # info = get_json_from_file(f"{INFO_FILE}")
+    year = json_req['request']['year']
+    docs = get_files(f"{PROTECTED_FOLDER}/docs/financial/{year}", f"Fin-{year}")
+    status = 'success'
+
+    for doc in docs:
+        filepath = f"{tenant}/{PROTECTED_FOLDER}/docs/financial/{year}/{doc}"
+        resp = aws.delete_object(f"{filepath}")
+        if resp:
+            print(f"file deleted: {filepath}")
+            continue
+        else:
+            status = 'failure'
+            print(f"deletion failed: {filepath}")
+            break
+    return_obj = { 'response': {'status': status} }
+    lock.release()
+    return json.dumps(return_obj)
 
 
 @app.route('/users')
@@ -1419,7 +1456,7 @@ def pics(tenant):
 
     # convert from epoch to string date format
     for event_key, event_data in events['event_pictures'].items():
-        event_data['date'] = get_string_from_epoch(event_data['date'])
+        event_data['date'] = get_string_from_epoch(event_data['date'], info_data['language'])
 
     lock.release()
     return render_template("pics.html", pics=pictures, events=events['event_pictures'].items(), user_types=staticvars.user_types, info_data=info_data)
@@ -1444,17 +1481,30 @@ def logout(tenant):
 '''
   These are POST request routes
 '''
-@app.route('/deletefile', methods=['POST'])
-def delete_file():
+@app.route('/<tenant>/delete_file', methods=['POST'])
+def delete_file(tenant):
+    lock.acquire()
+    print(f"here in delete_file()")
     file_obj = request.get_json()
-    filepath = file_obj['request']['filepath']
-    filepath = f"{PROTECTED_FOLDER}/{filepath}" if filepath.startswith('docs') else f"{UNPROTECTED_FOLDER}/{filepath}"
-    resp = aws.delete_object(f"{get_tenant()}/{filepath}")
+    req_tenant = file_obj['request']['tenant']
+    file_path = file_obj['request']['filepath']
+    protected = file_obj['request']['protected']
+
+    file_path = f"{tenant}/{PROTECTED_FOLDER}/{file_path}" if protected == 'yes' else f"{tenant}/{UNPROTECTED_FOLDER}/{file_path}"
+    print(f"file to be deleted: {file_path}")
+
+    if not aws.is_file_found(file_path):
+        return_obj = {'status': 'success'}
+        lock.release()
+        return json.dumps(return_obj)
+
+    resp = aws.delete_object(f"{file_path}")
     if resp:
         status = 'success'
     else:
         status = 'failure'
     return_obj = {'status': status}
+    lock.release()
     return json.dumps(return_obj)
 
 #------------------------------------------------------------
@@ -1836,7 +1886,7 @@ def get_one_listing(tenant, unit, listing_id):
     if unit in listings['listings']:
         alisting = listings['listings'][unit]['items'][listing_id]
         alisting['listing_id'] = listing_id
-        alisting['date'] = get_string_from_epoch(alisting['date'])
+        alisting['date'] = get_string_from_epoch(alisting['date'], info_data['language'])
         alisting['price'] = format_decimal(alisting['price'])
         pictures = get_files(f"{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics", '')
 
@@ -1935,21 +1985,21 @@ def get_listings(tenant):
                                user_types=staticvars.user_types, info_data=get_info_data(tenant))
 
     listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
-
+    info_data = get_info_data(tenant)
     listings_arr = []
 
     for key, value_a in listings['listings'].items():
         #print(f"key: {key}     items: {value_a}")
         for listing_id, value_c in value_a['items'].items():
             value_c['price'] = format_decimal(format(value_c['price']))
-            value_c['date'] = get_string_from_epoch(value_c['date'])
+            value_c['date'] = get_string_from_epoch(value_c['date'], info_data['language'])
             listings_arr.append( {'user_id': key, 'listing_id': listing_id, 'title': value_c['title'], 'email': value_c['email'], 'phone': value_c['phone'],
                                   'price': value_c['price'], 'cover_file': value_c['cover_file'], 'date': value_c['date']} )
 
     lock.release()
     return render_template("listings.html",
-                           units=get_unit_list(), listings=listings_arr,
-                           user_types=staticvars.user_types, info_data=get_info_data(tenant))
+                           units=get_unit_list(include_adm=False), listings=listings_arr,
+                           user_types=staticvars.user_types, info_data=info_data)
 
 
 @app.route('/<tenant>/delete_listing', methods=['POST'])
@@ -1992,7 +2042,7 @@ def get_event_pics(tenant, title):
         pictures = None
     else:
         event = events['event_pictures'][title]
-        event['date'] = get_string_from_epoch(event['date'])
+        event['date'] = get_string_from_epoch(event['date'], info_data['language'])
         print(f"info do evento: {event}")
     lock.release()
     return render_template("event.html", title=title, event=event, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
@@ -2025,23 +2075,23 @@ def upload_event_pics(tenant):
             file.stream.seek(0)
             img_bytes = file.read()
             (_, w, h) = get_format_and_size(img_bytes)
-            # this logic takes into account whether or not the image is horizontal
+            # this logic takes into account whether the image is horizontal
             if w > h:
-                if w > 80:
-                    nw = 80  # image is horizontal, let's fix the width in 80
-                    p = 80 / w
+                if w > COVER_PREF_WIDTH:
+                    nw = COVER_PREF_WIDTH  # image is horizontal, let's fix the width
+                    p = COVER_PREF_WIDTH / w
                     nh = int(h*p)
                 else:
-                    nw = 80
-                    nh = 50
+                    nw = COVER_PREF_WIDTH
+                    nh = COVER_PREF_HEIGHT
             else:
-                if h > 50:
-                    nh = 50 # image is vertical, let's fix the height in 50
-                    p = 50 / h
+                if h > COVER_PREF_HEIGHT:
+                    nh = COVER_PREF_HEIGHT # image is vertical, let's fix the height
+                    p = COVER_PREF_HEIGHT / h
                     nw = int(w*p)
                 else:
-                    nw = 80
-                    nh = 50
+                    nw = COVER_PREF_WIDTH
+                    nh = COVER_PREF_HEIGHT
             img_format, new_img_bytes = reduce_image_enh(img_bytes, nw, nh)
             cover_name = "cover.jpg" if img_format == 'JPEG' else "cover.png"
             aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/eventpics/{folder_name}/pics/{cover_name}", new_img_bytes)
@@ -2055,12 +2105,12 @@ def upload_event_pics(tenant):
         w, h = cover_image.size
         # this logic takes into account whether or not the image is horizontal
         if w > h:
-            nw = 80  # image is horizontal, let's fix the width in 80
-            p = 80 / w
+            nw = COVER_PREF_WIDTH  # image is horizontal, let's fix the width
+            p = COVER_PREF_WIDTH / w
             nh = int(h*p)
         else:
-            nh = 50 # image is vertical, let's fix the height in 50
-            p = 50 / h
+            nh = COVER_PREF_HEIGHT # image is vertical, let's fix the height
+            p = COVER_PREF_HEIGHT / h
             nw = int(w*p)
         img_format, new_img_bytes = reduce_image_enh(img_bytes, nw, nh)
         cover_name = "cover.jpg" if img_format == 'JPEG' else "cover.png"
@@ -2117,7 +2167,7 @@ def delete_event_pics(tenant):
     return return_obj
 
 
-@app.route('/delete_link', methods=['POST'])
+@app.route('/<tenant>/delete_link', methods=['POST'])
 def delete_link(tenant):
     lock.acquire()
 
@@ -2127,7 +2177,7 @@ def delete_link(tenant):
         return page
 
     descr = request.get_json()['request']['link_descr']
-    print(f"desc: {descr}")
+    print(f"tenant: {tenant}    link to be deleted: {descr}")
     links = get_json_from_file(f"{tenant}/{LINKS_FILE}")
     links['links'].pop(descr, None)
     aws.upload_text_obj(f"{tenant}/{LINKS_FILE}", json.dumps(links))
@@ -2150,6 +2200,27 @@ def upload_event():
 
     pictures = get_files(UNPROTECTED_FOLDER + '/pics', '')
     return render_template("pics.html", pics=pictures, info_data=get_info_data())
+
+
+@app.route('/<tenant>/upload_financial', methods=['GET' , 'POST'])
+@login_required
+def upload_financial(tenant):
+    lock.acquire()
+    print(f"here in upload_financial(): {tenant}")
+
+    page, check_code = check_security(tenant)
+    if check_code != SECURITY_SUCCESS_CODE:
+        lock.release()
+        return page
+
+    uploaded_file = request.files['file']
+    doc_year = request.form['year']
+    doc_month = request.form['month']
+    file_size = request.form['filesize']
+    fullpath = f"{PROTECTED_FOLDER}/docs/financial/{doc_year}/Fin-{doc_year}-{doc_month}.pdf"
+    aws.upload_binary_obj(f"{tenant}/{fullpath}", uploaded_file.read())
+    lock.release()
+    return redirect(f"/{tenant}/docs")
 
 
 @app.route('/<tenant>/upload', methods=['GET' , 'POST'])
@@ -2195,7 +2266,7 @@ def upload(tenant):
 
         if uploaded_convname == 'logopic':
             img_bytes = uploaded_file.read()
-            img_format, new_img_bytes = reduce_image_enh(img_bytes, 120, 80)
+            img_format, new_img_bytes = reduce_image_enh(img_bytes, COVER_PREF_WIDTH, COVER_PREF_HEIGHT)
             logo_name = "logo.jpg" if img_format == 'JPEG' else "logo.png"
             fullpath = f"{UNPROTECTED_FOLDER}/branding/{logo_name}"
             aws.upload_binary_obj(f"{tenant}/{fullpath}", new_img_bytes)
@@ -2214,18 +2285,21 @@ def upload(tenant):
         lock.release()
         return render_template("upload.html", user_types=staticvars.user_types, info_data=info_data)
     else:
-        docs2023 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2023')
-        docs2024 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2024')
-        docs2025 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2025')
+        docs2023 = get_files(f"{PROTECTED_FOLDER}/docs/financial/2023", 'Fin-2023')
+        docs2024 = get_files(f"{PROTECTED_FOLDER}/docs/financial/2024", 'Fin-2024')
+        docs2025 = get_files(f"{PROTECTED_FOLDER}/docs/financial/2025", 'Fin-2025')
         bylaws = get_files(PROTECTED_FOLDER + '/docs/bylaws', '')
         otherdocs = get_files(PROTECTED_FOLDER + '/docs/other', '')
         opendocs = get_files(UNPROTECTED_FOLDER + '/opendocs/files', '')
         picts = get_files(UNPROTECTED_FOLDER + '/pics', '')
         links = get_json_from_file(f"{get_tenant()}/{LINKS_FILE}")
         info_data = get_info_data(tenant)
+        fin_docs = {'2023': docs2023, '2024': docs2024, '2025': docs2025}
+
         lock.release()
         return render_template("upload.html", bylaws=bylaws, otherdocs=otherdocs, opendocs=opendocs,
                                findocs2023=docs2023, findocs2024=docs2024, findocs2025=docs2025,
+                               findocs=fin_docs.items(),
                                pics=picts, census_forms_pdf=f"docs/restricted/{CENSUS_FORM_PDF_FILE_NAME}",
                                links=links['links'].items(),
                                user_types=staticvars.user_types,
@@ -2718,7 +2792,7 @@ Board of Directors of {condo_name}.
         home_pic.stream.seek(0)
         img_bytes = home_pic.read()
         aws.upload_binary_obj(f"{condo_id}/uploadedfiles/unprotected/branding/home.jpg", img_bytes)
-        _, img_bytes = reduce_image_enh(img_bytes, 120, 80)
+        _, img_bytes = reduce_image_enh(img_bytes, COVER_PREF_WIDTH, COVER_PREF_HEIGHT)
         aws.upload_binary_obj(f"{condo_id}/uploadedfiles/unprotected/branding/logo.jpg", img_bytes)
 
     # send an email to let user know he's registered
@@ -2813,10 +2887,16 @@ def get_epoch_from_string(date_string):
     epoch_timestamp = int(time.mktime(datetime_object.timetuple()))
     return epoch_timestamp
 
-# TODO: a future improvement must be to convert this taking the language param into consideration
 # rather than simply converting to DD-MM-YYYY
-def get_string_from_epoch(epoch_timestamp):
-    return datetime.fromtimestamp(int(epoch_timestamp)).strftime('%d-%m-%Y')
+def get_string_from_epoch(epoch_timestamp, lang='en'):
+    if lang == 'pt':
+        date_format = '%d-%m-%Y'
+    elif lang == 'en':
+        date_format = '%m-%d-%Y'
+    else:
+        date_format = '%m-%d-%Y'
+    return datetime.fromtimestamp(int(epoch_timestamp)).strftime(date_format)
+
 
 def send_email_relay_host(emailto, subject, body):
     TO = emailto

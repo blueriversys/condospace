@@ -64,6 +64,9 @@
                         {% for doc in bylaws %}
                             <div class="col-1 doc-col">
                                 <a class="doc-link" href="docs/bylaws/{{doc}}" target="_blank"> {{doc}}</a>
+                                {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                  <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="deleteFile('docs/bylaws/{{doc}}', '{{doc}}', 'yes');">{{_('delete')}}</button>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
@@ -106,6 +109,9 @@
                         {% for doc in otherdocs %}
                             <div class="col-1 doc-col">
                                 <a class="doc-link" href="docs/other/{{doc}}" target="_blank"> {{doc}}</a>
+                                {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                  <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteFile('docs/other/{{doc}}', '{{doc}}', 'yes');">{{_('delete')}}</button>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
@@ -142,6 +148,9 @@
                     {% for doc in opendocs %}
                         <div class="col-1 doc-col">
                             <a class="doc-link" href="opendocs/files/{{doc}}" target="_blank"> {{doc}}</a>
+                            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                              <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteFile('opendocs/files/{{doc}}', '{{doc}}', 'no');">{{_('delete')}}</button>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -174,61 +183,29 @@
 
         <fieldset>
             <legend>{{_('Financial Statements')}}</legend>
-            <h2>2023</h2>
-            <div class="app-container">
-                {% if findocs2023 is defined and findocs2023 %}
-                <div class="row">
-                    {% for doc in findocs2023 %}
-                        <div class="col-1 doc-col">
-                            <a class="doc-link" href="docs/financial/{{doc}}" target="_blank"> {{doc}}</a>
+
+            {% for year, docs in findocs %}
+                <h2>{{year}}</h2>
+
+                <div class="app-container">
+                    {% if docs is defined and docs %}
+                        <div class="row">
+                            {% for doc in docs %}
+                                <div class="col-1 doc-col">
+                                    <a class="doc-link" href="docs/financial/{{year}}/{{doc}}" target="_blank"> {{doc}}</a>
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                            <button id="delete" class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteFinDocsGroup({{year}});">{{_('delete entire group')}}</button>
+                        {% endif %}
+                    {% endif %}
                 </div>
-                {% else %}
-                    <div class="spacer"></div>
-                    <div class="no-item-msg">{{_("No statement uploaded for this year yet.")}}</div>
-                {% endif %}
-            </div>
 
-            <div class="spacer"></div>
-            <div class="spacer"></div>
-            <div class="spacer"></div>
-
-            <h2>2024</h2>
-            <div class="app-container">
-                {% if findocs2024 is defined and findocs2024 %}
-                <div class="row">
-                    {% for doc in findocs2024 %}
-                        <div class="col-1 doc-col">
-                            <a class="doc-link" href="docs/financial/{{doc}}" target="_blank"> {{doc}}</a>
-                        </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                    <div class="spacer"></div>
-                    <div class="no-item-msg">{{_("No statement uploaded for this year yet.")}}</div>
-                {% endif %}
-            </div>
-
-            <div class="spacer"></div>
-            <div class="spacer"></div>
-            <div class="spacer"></div>
-
-            <h2>2025</h2>
-            <div class="app-container">
-                {% if findocs2025 is defined and findocs2025 %}
-                <div class="row">
-                    {% for doc in findocs2025 %}
-                        <div class="col-1 doc-col">
-                            <a class="doc-link" href="docs/financial/{{doc}}" target="_blank"> {{doc}}</a>
-                        </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                    <div class="spacer"></div>
-                    <div class="no-item-msg">{{_("No statement uploaded for this year yet.")}}</div>
-                {% endif %}
-            </div>
+                <div class="spacer"></div>
+                <div class="spacer"></div>
+                <div class="spacer"></div>
+            {% endfor %}
 
 
             {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
@@ -240,11 +217,42 @@
                 <div class="app-container collapse" id="add_new_fin_state">
                   <div class="upload-browse">
                       <label for="rep-month">{{_("Month")}}:</label>
-                      <input id="rep-month" type="text" style="width: 30px;"/>
-                      <label for="rep-year">{{_("Year")}}:</label>
-                      <input id="rep-year" type="text" style="width: 60px;"/>
+                      <select id="rep-month" name="rep-month">
+                        <option value="1">Jan</option>
+                        <option value="2">Feb</option>
+                        <option value="3">Mar</option>
+                        <option value="4">Apr</option>
+                        <option value="5">May</option>
+                        <option value="6">Jun</option>
+                        <option value="7">Jul</option>
+                        <option value="8">Aug</option>
+                        <option value="9">Sep</option>
+                        <option value="10">Oct</option>
+                        <option value="11">Nov</option>
+                        <option value="12">Dec</option>
+                      </select>
+
+                      <select id="rep-year" name="rep-year">
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                        <option value="2029">2029</option>
+                        <option value="2030">2030</option>
+                        <option value="2031">2031</option>
+                        <option value="2032">2032</option>
+                        <option value="2033">2033</option>
+                        <option value="2034">2034</option>
+                        <option value="2035">2035</option>
+                      </select>
+
                       <input id="rep-file" type="file"/>
-                      <button id="upload-button" onclick="uploadFinancialStatement()"> {{_("Upload This Financial Statement")}}</button>
+                      <button id="upload-button" onclick="uploadFinStatement()"> {{_("Upload This Financial Statement")}}</button>
                       <progress id="rep-progress-bar" value="0" max="100"/>
                   </div>
                 </div>
@@ -263,7 +271,14 @@
                 <div class="row">
                     {% for descr, link in links %}
                         <div class="col-1 doc-col">
-                            <a class="doc-link" href="{{link['url']}}" target="_blank"> {{descr}}</a>
+                            <div>
+                                <a class="doc-link" href="{{link['url']}}" target="_blank"> {{descr}}</a>
+                            </div>
+                            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                            <div>
+                                <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteLink('{{descr}}');">{{_('delete')}}</button>
+                            </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>

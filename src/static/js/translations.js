@@ -97,6 +97,13 @@ map.set("Selecting a default image name is required", new Map().set("pt", "Selec
 map.set("Cannot delete, reservation found for this amenity", new Map().set("pt", "Não pode deletar, existe reserva para este espaço"));
 map.set("All reservation fields are required", new Map().set("pt", "Todos os campos para reserva são obrigatórios"));
 map.set("This conflicts with existing reservation", new Map().set("pt", "Já existe uma reserva para esta data e horário"));
+map.set("Are you sure you want to delete entire group for year", new Map().set("pt", "Tem certeza que quer deletar o inteiro grupo para o ano"));
+map.set("Group deleted from database", new Map().set("pt", "Grupo deletado do banco de dados"));
+map.set("Error deleting group from database", new Map().set("pt", "Um erro aconteceu ao deletar o grupo do banco de dados"));
+map.set("An error occurred trying to delete file", new Map().set("pt", "Um erro aconteceu ao tentar deletar o arquivo"));
+map.set("Error deleting the link", new Map().set("pt", "Um erro aconteceu ao tentar deletar o link"));
+map.set("deleted from the list", new Map().set("pt", "deletado da lista"));
+map.set("has been deleted", new Map().set("pt", "foi deletado"));
 
 
 function gettext(text) {

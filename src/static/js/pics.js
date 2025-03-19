@@ -83,5 +83,9 @@ function uploadFileProgress(convname, fileControl, barControl) {
     request.send(formData);
 }
 
+function deleteFile(filepath, filename) {
+    deleteFileCommon(filepath, filename, 'no');
+}
+
 
 

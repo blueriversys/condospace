@@ -145,126 +145,8 @@
           </div> <!-- closes "upload-block" -->
       </div>  <!-- close upload-container -->
 
-
-      <p class="spacer"></p>
-
-      <div class="section-title" data-aos="zoom-out">
-        <h2>{{_("Delete documents")}}</h2>
-      </div>
-
-      <div class="upload-container">
-          <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#deletion_maint_section" aria-expanded="false" aria-controls="collapseExample">
-            {{_("Click Here to Open/Close the File Deletion Section")}}
-          </button>
-
-          <div class="app-container collapse" id="deletion_maint_section">
-            <p class="spacer"></p>
-
-            <div class="card card-body">
-              <h1>{{_("Links to Documents Elsewhere")}}</h1>
-              <div class="app-container">
-                  <div class="row">
-                      {% for descr, link in links %}
-                          <div class="col-1 doc-col">
-                              {{descr}} <button id="deletebutton_id" onClick="deleteLink('{{descr}}');">{{_("deletar")}}</button>
-                          </div>
-                      {% endfor %}
-                  </div>
-              </div>
-              <p class="spacer"></p>
-
-              <h1>{{_("Bylaws Document")}}</h1>
-              <div class="app-container">
-                  <div class="row">
-                      {% for doc in bylaws %}
-                          <div class="col-1 doc-col">
-                              {{doc}} <button id="deletebutton_id" onClick="deleteFile('docs/bylaws/{{doc}}','{{doc}}');">{{_("deletar")}}</button>
-                          </div>
-                      {% endfor %}
-                  </div>
-              </div>
-              <p class="spacer"></p>
-
-              <h1>{{_("Other Documents")}}</h1>
-              <div class="app-container">
-                  <div class="row">
-                      {% for doc in otherdocs %}
-                          <div class="col-1 doc-col">
-                              {{doc}} <button id="deletebutton_id" onClick="deleteFile('docs/other/{{doc}}','{{doc}}');">{{_("deletar")}}</button>
-                          </div>
-                      {% endfor %}
-                  </div>
-              </div>
-              <p class="spacer"></p>
-
-              <h1>{{_("Open View Documents")}}</h1>
-              <div class="app-container">
-                  <div class="row">
-                      {% for doc in opendocs %}
-                          <div class="col-1 doc-col">
-                              {{doc}} <button id="deletebutton_id" onClick="deleteFile('opendocs/files/{{doc}}','{{doc}}');">{{_("deletar")}}</button>
-                          </div>
-                      {% endfor %}
-                  </div>
-              </div>
-              <p class="spacer"></p>
-
-              <h1>{{_("Pictures")}}</h1>
-              <div class="app-container">
-                  <div class="row">
-                      {% for pic in pics %}
-                          <div class="col-1 doc-col">
-                              {{pic}} <button id="deletebutton_id" onClick="deleteFile('pics/{{pic}}','{{pic}}');">{{_("deletar")}}</button>
-                          </div>
-                      {% endfor %}
-                  </div>
-              </div>
-              <p class="spacer"></p>
-
-              <h1>{{_("Financial Statements")}}</h1>
-              <h2>2023</h2>
-              <div class="app-container">
-                  <div class="row">
-                      {% for doc in findocs2023 %}
-                          <div class="col-1 doc-col">
-                              {{doc}} <button id="deletebutton_id" onClick="deleteFile('docs/financial/{{doc}}','{{doc}}');">{{_("deletar")}}</button>
-                          </div>
-                      {% endfor %}
-                  </div>
-              </div>
-              <p class="spacer"></p>
-
-              <h1>{{_("Financial Statements")}}</h1>
-              <h2>2024</h2>
-              <div class="app-container">
-                  <div class="row">
-                      {% for doc in findocs2024 %}
-                          <div class="col-1 doc-col">
-                              {{doc}} <button id="deletebutton_id" onClick="deleteFile('docs/financial/{{doc}}','{{doc}}');">{{_("deletar")}}</button>
-                          </div>
-                      {% endfor %}
-                  </div>
-              </div>
-              <p class="spacer"></p>
-
-              <h1>{{_("Financial Statements")}}</h1>
-              <h2>2025</h2>
-              <div class="app-container">
-                  <div class="row">
-                      {% for doc in findocs2025 %}
-                          <div class="col-1 doc-col">
-                              {{doc}} <button id="deletebutton_id" onClick="deleteFile('docs/financial/{{doc}}','{{doc}}');">{{_("deletar")}}</button>
-                          </div>
-                      {% endfor %}
-                  </div>
-              </div>
-            </div> <!-- close card-body -->
-          </div> <!-- close app-container -->
-      </div> <!-- close upload-container -->
-
-
-
       <div style="height: 40px;"></div>
+
       <div class="section-title" data-aos="zoom-out">
         <h2>{{_("General Maintenance")}}</h2>
       </div>
@@ -300,12 +182,6 @@
           </div> <!-- close app-container -->
 
           <p class="spacer"></p>
-
-
-
-
-
-
 
 
           <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#bulk_email_section" aria-expanded="false" aria-controls="collapseExample">
@@ -361,6 +237,9 @@
 
             </div> <!-- close card-body -->
           </div> <!-- close app-container -->
+
+          <div style="height: 40px;"></div>
+
       </div> <!-- close upload-container -->
   </div> <!-- closes content -->
 </div> <!-- closes main -->
