@@ -314,6 +314,3 @@ function deleteUserParam(user_id) {
     request.send(jsonStr);
 }
 
-function showInstructions() {
-    showDialog
-}

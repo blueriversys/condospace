@@ -64,7 +64,7 @@ map.set("Error retrieving user.", new Map().set("pt", "Erro ao recuperar usuári
 map.set("Record not found for unit", new Map().set("pt", "Registro não encontrado para usuário"));
 map.set("New password and Repeat password fields don't match", new Map().set("pt", "Campos Nova Senha e Repita Senha não são iguais"));
 map.set("New password doesn't have a minimum of 6 characters", new Map().set("pt", "Nova senha precisa ter um mínimo de 6 caracteres"));
-map.set("Record not found for User Id", new Map().set("pt", "Registro nao encontrado para usuário"));
+map.set("Record not found for User Id", new Map().set("pt", "Registro não encontrado para usuário"));
 map.set("The current password you entered doesn't match your current password on file", new Map().set("pt", "Campo Senha Atual não bate com senha atual no banco de dados"));
 map.set("New password saved to database", new Map().set("pt", "Nova senha gravada no banco de dados"));
 map.set("Error saving password to database", new Map().set("pt", "Erro ao gravar senha no banco de dados"));
@@ -104,6 +104,14 @@ map.set("An error occurred trying to delete file", new Map().set("pt", "Um erro 
 map.set("Error deleting the link", new Map().set("pt", "Um erro aconteceu ao tentar deletar o link"));
 map.set("deleted from the list", new Map().set("pt", "deletado da lista"));
 map.set("has been deleted", new Map().set("pt", "foi deletado"));
+map.set("Request a Payment", new Map().set("pt", "Emitir Uma Cobrança"));
+map.set("Issue a Fine", new Map().set("pt", "Emitir Uma Multa"));
+map.set("Add This Payment Request and Notify User", new Map().set("pt", "Adicionar Esta Cobrança e Notificar Usuário"));
+map.set("Your request is being processed", new Map().set("pt", "Informação está sendo processada"));
+map.set("Error processing this request", new Map().set("pt", "Erro executando este procedimento"));
+map.set("A message was sent to your email in the system", new Map().set("pt", "Uma mensagem foi enviada para o email cadastrado no sistema"));
+map.set("No email registered for user. Contact the Admin.", new Map().set("pt", "Email não existe para este usuário. Contate o Admin."));
+
 
 
 function gettext(text) {

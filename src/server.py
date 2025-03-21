@@ -589,6 +589,7 @@ def get_reservations(tenant):
                         arr_entry = {"name": rsv_name, "user_id": user_id, "rsv_id": rsv_id, "date": rsv_data['date'],
                                      "time_from": rsv_data['time_from'], "time_to": rsv_data['time_to']}
                         amenity_id = rsv_data['amenity_id']
+#                        print(f"this is arr_entry: {arr_entry}")
                         if amenity_id in rsv_dict:
                             rsv_dict[amenity_id].append(arr_entry)
                         else:
@@ -628,11 +629,17 @@ def save_amenity(tenant):
     user_id = request.form['created_by']
     descr = request.form['descr']
     use_default_img = True if request.form['use_default_img'] == 'yes' else False
+    paid_amenity = request.form['paid_amenity']
+    send_email = request.form['send_email']
+
+    print(f" paid: {paid_amenity},  send email: {send_email}")
 
     amenity_entry = {
         "descr": descr,
         "created_by": user_id,
-        "created_on": get_epoch_from_now()
+        "created_on": get_epoch_from_now(),
+        "paid_amenity": paid_amenity,
+        "send_email": send_email
     }
 
     # read the RESERVATIONS_FILE to add a condo to it
@@ -772,6 +779,9 @@ def make_reservation(tenant):
     time_from_m = json_obj[prefix]['time_from']['m']
     time_to_h = json_obj[prefix]['time_to']['h']
     time_to_m = json_obj[prefix]['time_to']['m']
+    send_email = json_obj[prefix]['send_email']
+
+    print(f"send email: {send_email}")
 
     rsv_entry = {
         "created_on": get_epoch_from_now(),
@@ -816,59 +826,45 @@ def make_reservation(tenant):
         lock.release()
         return return_obj
 
+    if send_email == 'true':
+        user_id = amenities[str(amenity_id)]['created_by']
+        user = users_repository.get_user_by_userid(tenant, user_id)
+        print(f"user_id: {user.userid},  email to: {user.email}")
+        info_data = get_info_data(tenant)
+        send_reservation_email(info_data, user_id, user.email, amenities[str(amenity_id)]['descr'],
+                               rsv_entry['date'], rsv_entry['time_from'], rsv_entry['time_to'])
+    else:
+        print(f"NO EMAIL TO BE SENT FOR THIS RESERVATION")
+
+
     aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": rsv_data, "amenities": amenities}))
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
 
 
-
-
-    # read the RESERVATIONS_FILE to add a reservation to it
-    # if aws.is_file_found(f"{RESERVATIONS_FILE}"):
-    #     rsv_content = get_json_from_file(f"{RESERVATIONS_FILE}")
-    #     amenities = rsv_content['amenities']
-    #
-    #     if 'reservations' in rsv_content:
-    #         rsv_data = rsv_content['reservations']
-    #         if tenant in rsv_data:
-    #             if user_id in rsv_data[tenant]:
-    #                 # find the last reservation_id for the user
-    #                 rsv_id = 0
-    #                 for id, value in rsv_data[tenant][user_id]['reservations'].items():
-    #                     id = int(id)
-    #                     rsv_id = id if id > rsv_id else rsv_id
-    #                 rsv_id += 1
-    #             else:
-    #                 rsv_id = 0
-    #         else:
-    #             rsv_id = 0
-    #     else:
-    #         rsv_id = 0
-    #         rsv_data = {'reservations': {tenant: {user_id: {"reservations": {rsv_id: rsv_entry}}}}}
-    #
-    #
-    #
-    #     # find out if tenant is already in the file
-    #     if tenant in rsv_data:
-    #         if user_id in rsv_data[tenant]:
-    #             rsv_data[tenant][user_id]['reservations'][rsv_id] = rsv_entry
-    #         else:
-    #             rsv_data[tenant][user_id] = { "reservations": {rsv_id: rsv_entry} }
-    #     else:
-    #         rsv_data['reservations'] = { tenant: {user_id: { "reservations": {rsv_id: rsv_entry} } } }
-    # else:
-    #     # if file not found, there is no amenity, therefore way to make a reservation
-    #     return_obj = json.dumps({'response': {'status': 'error'}})
-    #     lock.release()
-    #     return return_obj
-
-#    print(f"in make_reservation(): rsv_data: {rsv_data}")
-
-    # aws.upload_text_obj(f"{RESERVATIONS_FILE}", json.dumps(rsv_data))
-    # return_obj = json.dumps({'response': {'status': 'success'}})
-    # lock.release()
-    # return return_obj
+def send_reservation_email(info_data, user_id, email, amenity_descr, date, time_from, time_to):
+    if time_from['h'] < 10:
+        time_from['h'] = f"0{time_from['h']}"
+    if time_from['m'] < 10:
+        time_from['m'] = f"0{time_from['m']}"
+    if time_to['h'] < 10:
+        time_to['h'] = f"0{time_to['h']}"
+    if time_to['m'] < 10:
+        time_to['m'] = f"0{time_to['m']}"
+    if info_data['language'] == 'pt':
+        subject = "Uma reserva de espaço pago acabou de ser feita"
+        body = f"""
+Apto {user_id} fez uma reserva do espaço [{amenity_descr}],
+para a data de {date['d']}-{date['m']}-{date['y']} entre {time_from['h']}:{time_from['m']} e {time_to['h']}:{time_to['m']}.
+"""
+    else:
+        subject = "A reservation of a for-a-fee amenity was made"
+        body = f"""
+User {user_id} made a reservation of amenity [{amenity_descr}],
+for date {date['m']}-{date['d']}-{date['y']}, time between {time_from['h']}:{time_from['m']} to {time_to['h']}:{time_to['m']}.
+"""
+    send_email_redmail(email, subject, body)
 
 
 @app.route('/<tenant>/delete_reservation', methods=["POST"])
@@ -944,8 +940,13 @@ def payments(tenant):
                 entry["name"] = fine['name']
                 entry["email"] = fine['email']
                 entry['descr'] = fine['descr']
-                entry['amount'] = fine['amount']
+                amount = float(fine['amount'])
+                entry['amount'] = f"{amount:.2f}"
                 entry['due_date'] = fine['due_date']
+                if 'charge_type' in fine:
+                    entry['charge_type'] = fine['charge_type']
+                else:
+                    entry['charge_type'] = 'fine'
                 entry['status'] = "unpaid" if fine['paid_date'] is None else f"paid {fine['paid_date']['d']}/{fine['paid_date']['m']}/{fine['paid_date']['y']}"
                 fines_list.append(entry)
 
@@ -953,6 +954,11 @@ def payments(tenant):
     lock.release()
     return render_template("fines.html", tenant=tenant, units=units, fines=fines_list, user_types=staticvars.user_types, info_data=info_data)
 
+def get_payment_ref(issue_date, payment_id):
+    issue_date_str = get_string_from_epoch_format( issue_date, '%Y-%m-%d' )
+    issue_date = {'y': issue_date_str[0:4], 'm': issue_date_str[5:7], 'd': issue_date_str[8:] }
+    print(f"get_payment_ref(): issue date: {issue_date}")
+    return f"{issue_date['y']}{issue_date['m']}{issue_date['d']}-{payment_id}"
 
 @app.route('/<tenant>/savefine', methods=["POST"])
 def save_payment(tenant):
@@ -980,6 +986,7 @@ def save_payment(tenant):
     due_date_y = json_obj['payment']['due_date']['y']
     due_date_m = json_obj['payment']['due_date']['m']
     due_date_d = json_obj['payment']['due_date']['d']
+    charge_type = json_obj['payment']['charge_type']
 
     fine_entry = {
         "created_on": get_epoch_from_now(),
@@ -989,7 +996,8 @@ def save_payment(tenant):
         "amount": float(amount),
         "paid_amount": None,
         "due_date": {"y": due_date_y, "m": due_date_m, "d": due_date_d},
-        "paid_date": None
+        "paid_date": None,
+        "charge_type": charge_type
     }
 
     # read the FINES_FILE to add a fine to it
@@ -1006,6 +1014,8 @@ def save_payment(tenant):
         else:
             fine_id = 0
 
+        payment_id = fine_id
+
         if tenant in pay_data['fines']:
             if user_id in pay_data['fines'][tenant]:
                 pay_data['fines'][tenant][user_id]['fines'][fine_id] = fine_entry
@@ -1015,13 +1025,19 @@ def save_payment(tenant):
             pay_data['fines'] = { tenant: { user_id: { "name": name, "email": email, "phone": phone, "fines": { fine_id: fine_entry } } } }
     else:
         fine_id = 0
+        payment_id = fine_id
         pay_data = { 'fines': { tenant: { user_id: { "name": name, "email": email, "phone": phone, "fines": { fine_id: fine_entry } } } } }
 
     aws.upload_text_obj(f"{FINES_FILE}", json.dumps(pay_data))
 
+    issue_date_str = get_string_from_epoch_format( fine_entry['created_on'], '%Y-%m-%d' )
+    issue_date = {'y': issue_date_str[0:4], 'm': issue_date_str[5:7], 'd': issue_date_str[8:] }
+    payment_ref = get_payment_ref(fine_entry['created_on'], payment_id)
+
     if email:
         info_data = get_info_data(tenant)
-        send_fine_notification(info_data, name, email, amount, descr, due_date_y, due_date_m, due_date_d)
+        send_payment_notification(info_data, name, email, amount, descr, issue_date, fine_entry['due_date'],
+                                  charge_type, payment_ref)
 
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
@@ -1127,8 +1143,12 @@ def send_fine_reminder(tenant):
     due_date_y = json_obj[prefix]['due_date']['y']
     due_date_m = json_obj[prefix]['due_date']['m']
     due_date_d = json_obj[prefix]['due_date']['d']
+    issue_date_y = json_obj[prefix]['issue_date']['y']
+    issue_date_m = json_obj[prefix]['issue_date']['m']
+    issue_date_d = json_obj[prefix]['issue_date']['d']
+    charge_type = json_obj[prefix]['charge_type']
 
-    # read the FINES_FILE to add an additional condo to it
+    # read the FINES_FILE to add a charge to it
     if not aws.is_file_found(f"{FINES_FILE}"):
         return_obj = json.dumps({'response': {'status': 'error'}})
         lock.release()
@@ -1140,8 +1160,12 @@ def send_fine_reminder(tenant):
         lock.release()
         return return_obj
 
+    issue_date = {'y': issue_date_y, 'm': issue_date_m, 'd': issue_date_d}
+    due_date = {'y': due_date_y, 'm': due_date_m, 'd': due_date_d}
+    payment_ref = get_payment_ref(issue_date, fine_id)
+
     if email:
-        send_fine_notification(info_data, name, email, amount, descr, due_date_y, due_date_m, due_date_d)
+        send_payment_notification(info_data, name, email, amount, descr, issue_date, due_date, charge_type, payment_ref)
         print(f"end of send_contact_email()")
         return_obj = json.dumps({'response': {'status': 'success'}})
     else:
@@ -1150,24 +1174,34 @@ def send_fine_reminder(tenant):
     lock.release()
     return return_obj
 
-def send_fine_notification(info_data, name, email, amount, descr, due_date_y, due_date_m, due_date_d):
+def send_payment_notification(info_data, name, email, amount, descr, issue_date, due_date, charge_type, payment_id):
     condo_name = info_data['condo_name']
-    title = info_data['fine_title']
-    pix = info_data['pix_key']
-    text = info_data['fine_template']
+
+    if charge_type == 'fine':
+        title = info_data['fine_title']
+        pix = info_data['pix_key']
+        text = info_data['fine_template']
+    else:
+        title = info_data['pay_title']
+        pix = info_data['pay_pix_key']
+        text = info_data['pay_template']
 
     if info_data['language'] == 'pt':
-        due_date = f"{due_date_d}/{due_date_m}/{due_date_y}"
-        body = replace_text(text, ['{name}', '{descr}', '{amount}', '{due_date}', '{pix}', '{condo_name}'], [name, descr, amount, due_date, pix, condo_name])
+        issue_date_str = f"{issue_date['d']}/{issue_date['m']}/{issue_date['y']}"
+        due_date_str = f"{due_date['d']}/{due_date['m']}/{due_date['y']}"
+        body = replace_text(text, ['{name}', '{descr}', '{amount}', '{issue_date}', '{due_date}', '{pix}', '{condo_name}', '{payment_ref}'],
+                            [name, descr, amount, issue_date_str, due_date_str, pix, condo_name, payment_id])
     elif info_data['language'] == 'en':
-        due_date = f"{due_date_m}/{due_date_d}/{due_date_y}"
-        body = replace_text(text, ['{name}', '{descr}', '{amount}', '{due_date}', '{condo_name}'], [name, descr, amount, due_date, condo_name])
+        issue_date_str = f"{issue_date['m']}/{issue_date['d']}/{issue_date['y']}"
+        due_date_str = f"{due_date['m']}/{due_date['d']}/{due_date['y']}"
+        body = replace_text(text, ['{name}', '{descr}', '{amount}', '{issue_date}', '{due_date}', '{condo_name}', '{payment_ref}'],
+                            [name, descr, amount, issue_date_str, due_date_str, condo_name, payment_id])
     else:
-        due_date = f"{due_date_d}/{due_date_m}/{due_date_y}"
+        due_date = f"{due_date['m']}/{due_date['d']}/{due_date['y']}"
         body = replace_text(text, ['{name}', '{descr}', '{amount}', '{due_date}', '{condo_name}'], [name, descr, amount, due_date, condo_name])
 
     send_email_redmail(email, title, body)
-    print(f"end of send_fine_notification()")
+    print(f"end of send_payment_notification()")
 
 def replace_text(text, field_names, field_values):
     i = 0
@@ -1246,6 +1280,15 @@ def get_system_settings(tenant):
     info_data['home_message']['text'] = home_text
     info_data['about_message']['text'] = about_text
 
+    if 'pay_pix_key' not in info_data:
+        info_data['pay_pix_key'] = ''
+
+    if 'pay_title' not in info_data:
+        info_data['pay_title'] = ''
+
+    if 'pay_template' not in info_data:
+        info_data['pay_template'] = ''
+
     lock.release()
     return json.dumps(info_data)
 
@@ -1275,6 +1318,9 @@ def update_settings(tenant):
     info['config'][tenant]['pix_key'] = json_req['request']['pix_key']
     info['config'][tenant]['fine_template'] = json_req['request']['fine_template']
     info['config'][tenant]['fine_title'] = json_req['request']['fine_email_title']
+    info['config'][tenant]['pay_pix_key'] = json_req['request']['pay_pix_key']
+    info['config'][tenant]['pay_template'] = json_req['request']['pay_template']
+    info['config'][tenant]['pay_title'] = json_req['request']['pay_email_title']
     aws.upload_text_obj(f"{INFO_FILE}", json.dumps(info))
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
@@ -2454,22 +2500,28 @@ def forgot_password(tenant):
 
     info_data = get_info_data(tenant)
     if request.method == 'GET':
+        info_data['loggedin-userdata'] = { 'tenant': tenant}
         lock.release()
         return render_template("forgot_password.html", info_data=info_data, msg="An email will be sent to the email on file for the user id entered above")
+
+    json_obj = request.get_json()
+    user_id = json_obj['request']['user_id']
+    req_tenant = json_obj['request']['tenant']
+
+    print(f"tenant {req_tenant},  user_id {user_id}")
 
     load_users(tenant)
-    user_id = request.form['userid']
     user = users_repository.get_user_by_userid(tenant, user_id)
+
     if user is None:
-        flash(f"{user_id}")
-        flash(f": User Id not found in the system. Please enter a valid user id.")
+        return_obj = json.dumps({'response': {'status': 'error', 'message': "Record not found for User Id"}})
         lock.release()
-        return render_template("forgot_password.html", info_data=info_data, msg="An email will be sent to the email on file for the user id entered above")
+        return return_obj
 
     if len(user.email.strip()) == 0:
-        flash(f"There is no email registered for user {user_id}. Contact the site administrator.")
+        return_obj = json.dumps({'response': {'status': 'error', 'message': "No email registered for user. Contact the Admin."}})
         lock.release()
-        return render_template("forgot_password.html", info_data=info_data, msg="An email will be sent to the email on file for the unit (user id) entered above")
+        return return_obj
 
     if info_data['language'] == 'pt':
         body = f"Mensagem do CondoSpace.app. \nAbaixo estão as credenciais de login. Se você não solicitou, ignore este email ou avise o Administrador do website.\n\n"
@@ -2482,13 +2534,14 @@ def forgot_password(tenant):
         body += f"Your Password: {user.password}\n"
         subject = 'Message from CondoSpace.app'
     else:
-        flash(f"Preferred language not found in the system. Contact the website administrator.")
+        return_obj = json.dumps({'response': {'status': 'error', 'message': f"Preferred language not found in the system. Contact the website administrator."}})
         lock.release()
-        return render_template("forgot_password.html", info_data=info_data, msg="Preferred language not found in the system. Contact the website administrator.")
+        return return_obj
 
     send_email_redmail(user.email, subject, body)
+    return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
-    return redirect("login")
+    return return_obj
 
 
 
@@ -2618,8 +2671,22 @@ Muito obrigado.
     
 Administração, {condo_name}.
 """
+        pay_pix_key = "12345678"
+        pay_title = "Notificação de Cobrança"
+        pay_template = """
+Prezado(a) {name},
+    
+Esta é uma notificação de que o senhor(a) tem uma cobrança por {descr},
+emitida em {issue_date}, cujo número de identificação no sistema é {payment_ref},      
+a ser paga no valor de {amount}, com data de vencimento em {due_date}.
+
+O valor desta cobrança pode ser pago via PIX cuja chave recebedora é {pix}.
+
+Muito obrigado.
+    
+Administração, {condo_name}."""
     elif pref_language == 'en':
-        pix_key = ''
+        pix_key = ""
         fine_title = "Notification of Condominium Fine"
         fine_template = """
 Dear {name},
@@ -2632,10 +2699,26 @@ Thank you.
 
 Board of Directors of {condo_name}.
 """
+        pay_pix_key = ""
+        pay_title = "Payment Request"
+        pay_template = """
+Dear {name},
+This is a notification that you have been requested to make a payment in the amount of {amount},
+with due date on {due_date}.
+
+The amount may be paid with credit card or via check.
+
+Thank you.
+
+Board of Directors of {condo_name}.
+"""
     else:
         pix_key = ''
         fine_title = ''
         fine_template = ''
+        pay_pix_key = ''
+        pay_title = ''
+        pay_template = ''
 
     condo_info = {
         "admin_name": user_full_name,
@@ -2675,7 +2758,10 @@ Board of Directors of {condo_name}.
         },
         'pix_key': pix_key,
         'fine_title': fine_title,
-        'fine_template': fine_template
+        'fine_template': fine_template,
+        'pay_pix_key': pay_pix_key,
+        'pay_title': pay_title,
+        'pay_template': pay_template
     }
 
     admin_pass = f"{condo_id}@{epoch_timestamp}"
@@ -2897,6 +2983,8 @@ def get_string_from_epoch(epoch_timestamp, lang='en'):
         date_format = '%m-%d-%Y'
     return datetime.fromtimestamp(int(epoch_timestamp)).strftime(date_format)
 
+def get_string_from_epoch_format(epoch_timestamp, date_format):
+    return datetime.fromtimestamp(int(epoch_timestamp)).strftime(date_format)
 
 def send_email_relay_host(emailto, subject, body):
     TO = emailto

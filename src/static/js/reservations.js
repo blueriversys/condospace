@@ -114,6 +114,14 @@ function saveAmenity() {
     user_id = loggedin_userid_global;
     descr = document.getElementById("descr").value.trim();
     use_default_img = document.getElementById('use-default-img');
+    paid_amenity = document.getElementById("paid_radio").checked ? true : false;
+
+    if ( paid_amenity ) {
+        send_email = document.getElementById('send_email_checkbox').checked ? true : false;
+    }
+    else {
+        send_email = false;
+    }
 
     if ( descr.length == 0) {
         showMsgBox( gettext('Description is a required field') );
@@ -124,13 +132,15 @@ function saveAmenity() {
     post_url = "/" + window.loggedin_tenant_global + "/save_amenity";
     request.open('POST', post_url, true);
 
+    showSpinner();
+
     request.onload = function () {
       // Begin accessing JSON data here
       var json = JSON.parse(this.response);
 
       if (request.status >= 200 && request.status < 400) {
           if (json.response.status == 'success') {
-              showMsgBoxSuccess( gettext('Record saved to database') );
+              //showMsgBoxSuccess( gettext('Record saved to database') );
           }
           else {
               showMsgBox( gettext('Error saving record to database') );
@@ -148,6 +158,8 @@ function saveAmenity() {
     formData.append('tenant', loggedin_tenant_global);
     formData.append('created_by', user_id);
     formData.append('descr', descr);
+    formData.append('paid_amenity', String(paid_amenity));
+    formData.append('send_email', String(send_email));
 
     if ( use_default_img.checked ) {
         index = document.getElementById('default_img_id').selectedIndex;
@@ -250,35 +262,35 @@ function deleteAmenity( index ) {
     request.send(jsonStr);
 }
 
-function storeReservationData(index) {
-    console.log('index '+index);
+function storeReservationData(index, send_email) {
     window.amenity_id = index;
+    window.send_email = send_email;
 }
 
 function getIntegerTime(time_h, time_m) {
     time_h = Number(time_h);
     time_m = Number(time_m);
     ret_time = time_h * 100;
-
-    // from time
-    if ( time_m > 0 && time_m < 10) {
-        ret_time = ret_time + (time_m*10);
-    }
-    else {
-        ret_time = ret_time + time_m;
-    }
+    ret_time = ret_time + time_m;
     console.log('calc time: '+ time_h + ':' + time_m + ' = ' +ret_time);
     return ret_time;
 }
 
-function validateReservation(amenity_id, date_y, date_m, date_d, from_h, from_m, to_h, to_m) {
+function validateTime(date_y, date_m, date_d, from_h, from_m, to_h, to_m) {
     result = true;
     from_time = getIntegerTime(from_h, from_m);
     to_time = getIntegerTime(to_h, to_m);
 
     if ( from_time >= to_time) {
-        return false;
+        result = false;
     }
+    return result;
+}
+
+function checkConflict(amenity_id, date_y, date_m, date_d, from_h, from_m, to_h, to_m) {
+    result = true;
+    from_time = getIntegerTime(from_h, from_m);
+    to_time = getIntegerTime(to_h, to_m);
 
     amenity_id = amenity_id.toString();
     date_arr = rsv_date.get(amenity_id);
@@ -286,9 +298,9 @@ function validateReservation(amenity_id, date_y, date_m, date_d, from_h, from_m,
     time_to_arr = rsv_time_to.get(amenity_id);
 
     if (date_arr == null || time_from_arr == null || time_to_arr == null ) {
+        //alert('some array is equals to null');
         return true;
     }
-
 
     for (i=0; i<date_arr.length; i++) {
         if ( date_y == date_arr[i].y && date_m == date_arr[i].m && date_d == date_arr[i].d ) {
@@ -298,6 +310,7 @@ function validateReservation(amenity_id, date_y, date_m, date_d, from_h, from_m,
 
             if (from_time == e_from_time &&  to_time == e_to_time ) {
                 result = false;
+                //alert('break 1');
                 break;
             }
 
@@ -305,6 +318,7 @@ function validateReservation(amenity_id, date_y, date_m, date_d, from_h, from_m,
             if ( (from_time >= e_from_time && from_time < e_to_time) ) {
                 //console.log('from time invalid');
                 result = false;
+                //alert('break 2');
                 break;
             }
 
@@ -312,6 +326,7 @@ function validateReservation(amenity_id, date_y, date_m, date_d, from_h, from_m,
             if ( to_time > e_from_time && to_time <= e_to_time ) {
                 //console.log('to time invalid');
                 result = false;
+                //alert('break 3');
                 break;
             }
         }
@@ -334,22 +349,31 @@ function makeReservation() {
     date_y = date_from.getFullYear();
     date_m = date_from.getMonth()+1;
     date_d = date_from.getDate();
-    from_hour = date_from.getHours();
-    from_min = date_from.getMinutes();
+    hour_from = date_from.getHours();
+    min_from = date_from.getMinutes();
 
     date_to = new Date(date_str + ' ' + time_to_str);
-    to_hour = date_to.getHours();
-    to_min = date_to.getMinutes();
+    hour_to = date_to.getHours();
+    min_to = date_to.getMinutes();
+
+    isTimeValid = validateTime(date_y, date_m, date_d, hour_from, min_from, hour_to, min_to);
+
+    if ( !isTimeValid ) {
+        showMsgBox( gettext('something is wrong with your time interval') );
+        return false;
+    }
 
     /* retrieve fields from browser's memory */
     user_id = window.loggedin_userid_global;
     amenity_id = window.amenity_id;
 
-    isValidTime = validateReservation(amenity_id, date_y, date_m, date_d, from_hour, from_min, to_hour, to_min);
+    isValidTime = checkConflict(amenity_id, date_y, date_m, date_d, hour_from, min_from, hour_to, min_to);
     if ( !isValidTime ) {
         showMsgBox( gettext("This conflicts with existing reservation") );
         return;
     }
+
+    showSpinner();
 
     var request = new XMLHttpRequest();
     post_url = "/" + window.loggedin_tenant_global + "/make_reservation";
@@ -361,7 +385,7 @@ function makeReservation() {
 
       if (request.status >= 200 && request.status < 400) {
           if (json.response.status == 'success') {
-              showMsgBoxSuccess( gettext('Record saved to database') );
+              //showMsgBoxSuccess( gettext('Record saved to database') );
           }
           else {
               showMsgBox( gettext('Error saving record to database') );
@@ -374,13 +398,16 @@ function makeReservation() {
       location.reload();
     }
 
+    showSpinner();
+
     var requestObj = new Object();
     requestObj.tenant = loggedin_tenant_global;
     requestObj.user_id = user_id;
     requestObj.amenity_id = amenity_id;
     requestObj.date = {"y": date_y, "m": date_m,  "d": date_d};
-    requestObj.time_from = {"h": from_hour, "m": from_min};
-    requestObj.time_to = {"h": to_hour, "m": to_min};
+    requestObj.time_from = {"h": hour_from, "m": min_from};
+    requestObj.time_to = {"h": hour_to, "m": min_to};
+    requestObj.send_email = String(window.send_email);  // this sends the string 'yes' or 'no'
     jsonStr = '{ "reservation": ' + JSON.stringify(requestObj) + '}';
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.send(jsonStr);
@@ -428,3 +455,15 @@ function deleteReservation(user_id, rsv_id, amenity_id ) {
     request.send(jsonStr);
 }
 
+
+function paidAmenityChanged() {
+    if ( document.getElementById('paid_radio').checked ) {
+        document.getElementById('send_email_div_id').style.display = 'block';
+        document.getElementById('send_email_checkbox').checked = true;
+    }
+
+    if ( document.getElementById('free_radio').checked ) {
+        document.getElementById('send_email_div_id').style.display = 'none';
+        document.getElementById('send_email_checkbox').checked = false;
+    }
+}

@@ -19,7 +19,7 @@
       <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
       <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
       <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
-      <li class="active"><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines')}}</a></li>
+      <li class="active"><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
       <li><a class="nav-link" href="announcs"><i class="fa fa-fw fa-bullhorn"></i> {{_('Announcements')}}</a></li>
       <li><a class="nav-link" href="docs"><i class="fa fa-fw fa-book"></i> {{_('Documents')}}</a></li>
       <li><a class="nav-link" href="upload" aria-selected="false"><i class="fa fa-fw fa-cog"></i> {{_('Maintenance')}}</a></li>
@@ -41,7 +41,7 @@
     <div class="spacer"></div>
 
     <button class="button larger-button center" data-toggle="collapse" data-target="#units_section" aria-expanded="false" aria-controls="collapseExample">
-      <i class="fa fa-user"></i>&nbsp;&nbsp;{{_('Open/Close the List of Fines Already Issued')}}
+      <i class="fa fa-user"></i>&nbsp;&nbsp;{{_('Open/Close the List of Fines & Charges Already Issued')}}
     </button>
 
     <div class="spacer"></div>
@@ -52,18 +52,18 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Enter Payment Date</h5>
+            <h5 class="modal-title" id="exampleModalLabel">{{_("Enter Payment Date")}}</h5>
             <button id="modal-close" type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-              <label for="paid_date">Enter Payment Date:</label>
+              <label for="paid_date">{{_("Enter Payment Date")}}:</label>
               <input id='paid_date' type='date'>
           </div>
           <div class="modal-footer">
               <button id='paid_btn' type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-              <button id='cancel_btn' type="button" class="btn btn-primary" onClick='setFinePaymentDate()'>Mark This Fine as Paid</button>
+              <button id='cancel_btn' type="button" class="btn btn-primary" onClick='setFinePaymentDate()'>{{_("Mark This as Paid")}}</button>
           </div>
         </div>
       </div>
@@ -72,7 +72,48 @@
     <div class="app-container collapse" id="units_section">
         <div class="profile-block">
           <fieldset>
-              <legend>{{_('Residents')}}</legend>
+              <legend>{{_('Fines')}}</legend>
+              <div style="width: 98%; margin: auto;">
+                  <table class="table table-sm" id="fines_table_id">
+                    <tr>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 6%;">{{_('User')}}</th>
+                      <th style="width: 12%;">{{_("Name")}}</th>
+                      <th style="width: 12%;">{{_("Email")}}</th>
+                      <th style="width: 12%;">{{_("Description")}}</th>
+                      <th style="width: 8%;">{{_("Amount")}}</th>
+                      <th style="width: 10%;">{{_("Issued")}}</th>
+                      <th style="width: 10%;">{{_("Due Date")}}</th>
+                      <th style="width: 10%;">{{_("Status")}}</th>
+                    </tr>
+                    {% for item in fines %}
+                      {% if item['charge_type'] == 'fine' %}
+                          <tr>
+                            <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
+                            <td><button class="btn btn-primary small-btn" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
+                            <td><button id="remind" class="btn btn-primary small-btn" onClick="sendFineReminder({{loop.index}});" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
+                            <td>{{item['user_id']}}</td>
+                            <td>{{item['name']}}</td>
+                            <td>{{item['email']}}</td>
+                            <td>{{item['descr']}}</td>
+                            <td>{{item['amount']}}</td>
+                            <td>{{item['created_on']}}</td>
+                            <td>{{item['due_date']['d']}}-{{item['due_date']['m']}}-{{item['due_date']['y']}}</td>
+                            <td>{{_(item['status'])}}</td>
+                          </tr>
+                      {% endif %}
+                    {% endfor %}
+                  </table>
+              </div>
+          </fieldset>
+
+          <div class="spacer"></div>
+          <div class="spacer"></div>
+
+          <fieldset>
+              <legend>{{_('Charges')}}</legend>
               <div style="width: 98%; margin: auto;">
                   <table class="table table-sm" id="payments_table_id">
                     <tr>
@@ -89,6 +130,7 @@
                       <th style="width: 10%;">{{_("Status")}}</th>
                     </tr>
                     {% for item in fines %}
+                      {% if item['charge_type'] == 'pay' %}
                       <tr>
                         <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
                         <td><button class="btn btn-primary small-btn" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
@@ -102,10 +144,12 @@
                         <td>{{item['due_date']['d']}}-{{item['due_date']['m']}}-{{item['due_date']['y']}}</td>
                         <td>{{_(item['status'])}}</td>
                       </tr>
+                    {% endif %}
                     {% endfor %}
                   </table>
               </div>
           </fieldset>
+
         <div class="spacer"></div>
         <div class="spacer"></div>
         </div> <!-- close profile-block -->
@@ -115,8 +159,22 @@
     <div class="spacer"></div>
 
     <div class="profile-block">
+
+        <div class="center" style="font-size: 20px;">
+            <label>{{_('I want to')}}:</label>
+            <span style="margin-left: 20px;"></span>
+
+            <input type="radio" id="fine_radio" name="pay_type" value="fine" onClick="chargeTypeChanged()" style="margin-right: 1px;" checked>
+            <label for="pay_type">{{_('Issue a Fine')}}</label>
+
+            <span style="margin-left: 10px;"></span>
+
+            <input type="radio" id="pay_radio" name="pay_type" value="pay" onClick="chargeTypeChanged()" style="margin-right: 1px;">
+            <label for="pay_type">{{_("Request a Payment")}}</label>
+        </div>
+
         <fieldset>
-          <legend>{{_('Issue a New Fine')}}</legend>
+          <legend id="legend_id">{{_('Issue a Fine')}}</legend>
 
           <label for="user_id">{{_("User")}}:</label>
           <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="user_id" name="user_id" onChange="retrieveUser();">
@@ -147,7 +205,9 @@
         <div class="spacer"></div>
 
         <div class="center">
-          <button class="button larger-button" id="save_payment_btn" onClick="saveFine();"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Add This Fine and Notify User')}}</button>
+          <button class="button larger-button" id="save_payment_btn" onClick="saveFine();"><i class="fa fa-database"></i>
+              <span id="save_btn_text">{{_('Add This Fine and Notify User')}}</span>
+          </button>
         </div>
 
     </div> <!-- closes profile-block -->

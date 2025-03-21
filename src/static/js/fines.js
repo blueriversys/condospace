@@ -201,6 +201,9 @@ function saveFine() {
     phone = document.getElementById("phone").value;
     amount = document.getElementById("amount").value.trim();
     descr = document.getElementById("descr").value.trim();
+    charge_type = document.getElementById("pay_radio").checked ? 'pay' : 'fine';
+
+    console.log('charge type:' + charge_type);
 
     if ( document.getElementById("user_id").selectedIndex == 0 ) {
         showMsgBox( gettext('User is a required field') );
@@ -264,9 +267,20 @@ function saveFine() {
     requestObj.amount = amount;
     requestObj.descr = descr;
     requestObj.due_date = {"y": due_date_y, "m": due_date_m,  "d": due_date_d};
-
+    requestObj.charge_type = charge_type;
     // const person = {firstName:"John", lastName:"Doe", age:50, eyeColor:"blue"};
     jsonStr = '{ "payment": ' + JSON.stringify(requestObj) + '}';
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.send(jsonStr);
+}
+
+function chargeTypeChanged() {
+    legend_text = gettext("Issue a Fine");
+    save_button_text = gettext("Add This Fine and Notify User");
+    if ( document.getElementById("pay_radio").checked ) {
+        legend_text = gettext("Request a Payment");
+        save_button_text = gettext("Add This Payment Request and Notify User");
+    }
+    document.getElementById("legend_id").textContent = legend_text;
+    document.getElementById("save_btn_text").innerText = save_button_text;
 }

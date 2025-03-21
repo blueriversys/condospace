@@ -226,6 +226,20 @@ function showFadeout1(type, msg) {
       }, 50); // Adjust the interval for speed of fade
 }
 
+function showSpinner() {
+    text = gettext( "Your request is being processed" );
+    let dialog = bootbox.dialog({
+        message: `<div class="text-center" style="font-color: RoyalBlue;"><i class="fa fa-spinner fa-spin"></i> ${text}...</div>`,
+        closeButton: false
+    });
+
+    dialog.init(function() {
+        setTimeout(function() {
+            dialog.modal('hide');
+        }, 15000);
+    });
+}
+
 function handleRentalClick(cb) {
     if ( cb.checked ) {
         set_rental_disability(false);

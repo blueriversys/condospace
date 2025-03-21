@@ -23,7 +23,7 @@
             <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
             <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
             <li class="active"><a class="nav-link" href="reservas"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
-            <li><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines')}}</a></li>
+            <li><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
         {% elif info_data['is_authenticated'] == true %}
             <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('My Profile')}}</a></li>
             <li class="active"><a class="nav-link" href="reservas"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
@@ -74,7 +74,7 @@
                                   <img class="small-pic" style="margin-bottom: 5px;" src="reservations/{{key}}/amenity.jpg">
                               </div>
                               <div class="col-md-9 align-self-center" style="font-size: 14px; margin-bottom: 8px;">
-                                  {{key}}, {{amenity['descr']}}, {{_('Created by')}} {{amenity['created_by']}} on: {{amenity['created_on']}}
+                                  {{key}}, [{{amenity['descr']}}], [<strong>{{'paid' if amenity['paid_amenity'] == 'true' else 'free'}}</strong>], [{{_('created by')}} {{amenity['created_by']}} on {{amenity['created_on']}}]
                                   {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
                                       <button class="btn btn-danger small-btn" id="del-listing-button" onclick="deleteAmenity('{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Amenity')}}</button>
                                   {% endif  %}
@@ -91,12 +91,23 @@
 
               <div class="profile-block">
                   <fieldset>
-                      <legend>{{_('Amenity Info')}}</legend>
+                      <legend>{{_('Amenity To Be Created')}}</legend>
                       <div class="row flex h-100  align-self-center">
                           <div class="col-5  align-self-center align-items-right" style="/*border: 1px solid blue;*/">
                               <div class="form-group">
                                   <label for="descr">{{_('Description')}}:</label>
                                   <input type="text" class="form-control" style="height: 26px;" id="descr" name="descricao">
+                              </div>
+                              <div class="form-group">
+                                  <input type="radio" id="free_radio" onClick="paidAmenityChanged()" name="valve" value="free" style="margin-right: 1px;" checked>
+                                  <label for="valve">{{_('This is a complimentary amenity')}}</label>
+                                  <div style="margin-left: 12px;"></div>
+                                  <input type="radio" id="paid_radio" onClick="paidAmenityChanged()" name="valve" value="paid" style="margin-right: 1px;">
+                                  <label for="valve">{{_("This is a for-a-fee amenity")}}</label>
+                                  <div id="send_email_div_id" style="display: none;">
+                                      <input type="checkbox" id="send_email_checkbox" name="valve" value="paid" style="margin-left: 10px;">
+                                      <label for="valve">{{_("Send email to Admin on reservation")}}</label>
+                                  </div>
                               </div>
                           </div>
 
@@ -213,7 +224,7 @@
                               </div>
                           </div>
                           <div class="col-3 align-self-center" style="/*border: 1px solid blue;*/">
-                              <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}});" data-target="#makeReservationModal" title="Make a reservation of this amenity">{{_("Make a Reservation")}}</button>
+                              <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}}, {{amenity['send_email']}});" data-target="#makeReservationModal" title="Make a reservation of this amenity">{{_("Make a Reservation")}}</button>
                           </div>
                   </div> <!-- closes row -->
               {% else %}
@@ -223,7 +234,7 @@
                               {{_("No reservation yet")}}
                           </div>
                           <div class="col-3 align-self-center">
-                              <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}});" data-target="#makeReservationModal" title='{{_("Make a reservation of this amenity")}}'>{{_("Make a Reservation")}}</button>
+                              <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}}, {{amenity['send_email']}});" data-target="#makeReservationModal" title='{{_("Make a reservation of this amenity")}}'>{{_("Make a Reservation")}}</button>
                           </div>
                       </div>
                   </div> <!-- closes row -->
@@ -287,7 +298,6 @@
         {% set ns.counter = ns.counter + 1 %}
     {% endfor %}
 {% endfor %}
-
 
 {% endblock %}
 

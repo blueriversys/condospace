@@ -45,6 +45,18 @@ msgstr "Criado por"
 msgid "Delete This Amenity"
 msgstr "Deletar Este Espaço"
 
+msgid "Amenity To Be Created"
+msgstr "Espaço a Ser Criado"
+
+msgid "This is a complimentary amenity"
+msgstr "Este é um espaço gratuito"
+
+msgid "This is a for-a-fee amenity"
+msgstr "Este é um espaço pago"
+
+msgid "Send email to Admin on reservation"
+msgstr "Enviar email ao Admin ao reservar"
+
 msgid "Amenity Info"
 msgstr "Informação do Espaço"
 
@@ -104,14 +116,26 @@ msgstr "Até Hora"
 msgid "Fines"
 msgstr "Multas"
 
+msgid "Charges"
+msgstr "Cobranças"
+
+msgid "Fines & Charges"
+msgstr "Multas & Cobranças"
+
+msgid "I want to"
+msgstr "Eu quero"
+
+msgid "Issue a Fine"
+msgstr "Emitir Uma Multa"
+
+msgid "Request a Payment"
+msgstr "Emitir Uma Cobrança"
+
 msgid "Issued"
 msgstr "Emissão"
 
-msgid "Open/Close the List of Fines Already Issued"
-msgstr "Abrir/Fechar a Lista de Multas Já Emitidas"
-
-msgid "Issue a New Fine"
-msgstr "Emitir Uma Nova Multa"
+msgid "Open/Close the List of Fines & Charges Already Issued"
+msgstr "Abrir/Fechar a Lista de Multas & Cobranças Já Emitidas"
 
 msgid "select one"
 msgstr "escolha um"
@@ -155,6 +179,11 @@ msgstr "enviar lembrete ao usuário"
 msgid "Event date"
 msgstr "Data do evento"
 
+msgid "Mark This as Paid"
+msgstr "Marcar Este Como Pago"
+
+msgid "Enter Payment Date"
+msgstr "Entrar Data de Pagamento"
 
 
 #: templates/home-root.html
@@ -947,6 +976,8 @@ msgstr "Nova Senha"
 msgid "Repeat Password"
 msgstr "Repita a Senha"
 
+
+
 #: templates/upload.html
 msgid "Upload or Update System Files"
 msgstr "Subir ou Modificar Arquivos de Sistema"
@@ -1079,8 +1110,11 @@ msgstr "Atualizar Configurações"
 msgid "Multiline text"
 msgstr "Texto de múltiplas linhas"
 
-msgid "Fine Payment Request Text"
-msgstr "Texto da Solicitação de Pagamento de Multa"
+msgid "Fine Text"
+msgstr "Texto de Multa"
+
+msgid "Payment Request Text"
+msgstr "Texto de Cobrança"
 
 msgid "PIX Key"
 msgstr "Chave PIX"
@@ -1090,6 +1124,12 @@ msgstr "Título do email de notificação da multa"
 
 msgid "Body of the fine notification email"
 msgstr "Corpo do email de notificação da multa"
+
+msgid "Title of the payment request email"
+msgstr "Título do email de cobrança"
+
+msgid "Body of the payment request email"
+msgstr "Corpo do email de cobrança"
 
 msgid "The text of the email sent to the user may be configured"
 msgstr "O corpo do email enviado ao morador pode ser configurado"

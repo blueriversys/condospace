@@ -13,7 +13,7 @@
         <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
         <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
         <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
-        <li><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines')}}</a></li>
+        <li><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
         <li><a class="nav-link" href="announcs"><i class="fa fa-fw fa-bullhorn"></i> {{_("Announcements")}}</a></li>
         <li><a class="nav-link" href="docs"><i class="fa fa-fw fa-book"></i> {{_("Documents")}}</a></li>
         <li class="active"><a class="nav-link" href="upload" aria-selected="false"><i class="fa fa-fw fa-cog"></i> {{_("Maintenance")}}</a></li>
@@ -122,7 +122,7 @@
                     <div class="spacer"></div>
 
                     <fieldset>
-                        <legend>{{_("Fine Payment Request Text")}}</legend>
+                        <legend>{{_("Fine Text")}}</legend>
                         <div class="input-group mb-2">
                             <span class="input-group-addon col-lg-3 form-label">{{_("PIX Key")}}:</span>
                             <input type="text" class="form-control col-lg-5" id="pix_key" placeholder='{{_("PIX Key")}}'>
@@ -138,6 +138,26 @@
                     </fieldset>
 
                     <div class="spacer"></div>
+                    <div class="spacer"></div>
+
+                    <fieldset>
+                        <legend>{{_("Payment Request Text")}}</legend>
+                        <div class="input-group mb-2">
+                            <span class="input-group-addon col-lg-3 form-label">{{_("PIX Key")}}:</span>
+                            <input type="text" class="form-control col-lg-5" id="pay_pix_key" placeholder='{{_("PIX Key")}}'>
+                        </div>
+                        <div class="input-group mb-2">
+                            <span class="input-group-addon col-lg-3 form-label">{{_("Email Title")}}:</span>
+                            <input type="text" class="form-control col-lg-5" id="pay_email_title" placeholder='{{_("Title of the payment request email")}}'>
+                        </div>
+                        <div class="input-group mb-2">
+                            <span class="input-group-addon col-lg-3 form-label">{{_("Email Text")}}:</span>
+                            <textarea class="form-control col-lg-8 w-75" rows="6" id="pay_template" placeholder='{{_("Body of the payment request email")}}'></textarea>
+                        </div>
+                    </fieldset>
+
+                    <div class="spacer"></div>
+
                     <div class="center">
                         <button class="btn btn-primary" onClick="updateSystemSettings()">{{_("Update Settings")}}</button>
                     </div>

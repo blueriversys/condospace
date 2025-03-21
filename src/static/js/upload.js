@@ -54,6 +54,9 @@ function fillSystemSettings() {
       var pix_key = '';
       var fine_template = '';
       var fine_email_title = '';
+      var pay_pix_key = '';
+      var pay_template = '';
+      var pay_email_title = '';
 
       if (request.status >= 200 && request.status < 400) {
           if ( 'pix_key' in json ) {
@@ -66,6 +69,18 @@ function fillSystemSettings() {
 
           if ( 'fine_title' in json ) {
               fine_email_title = json['fine_title'];
+          }
+
+          if ( 'pay_pix_key' in json ) {
+              pay_pix_key = json['pay_pix_key'];
+          }
+
+          if ( 'pay_template' in json ) {
+              pay_template = json['pay_template'];
+          }
+
+          if ( 'pay_title' in json ) {
+              pay_email_title = json['pay_title'];
           }
 
           document.getElementById('condo-name').value = json['condo_name'];
@@ -81,6 +96,9 @@ function fillSystemSettings() {
           document.getElementById('fine_email_title').value = fine_email_title;
           document.getElementById('pix_key').value = pix_key;
           document.getElementById('fine_template').value = fine_template;
+          document.getElementById('pay_email_title').value = pay_email_title;
+          document.getElementById('pay_pix_key').value = pay_pix_key;
+          document.getElementById('pay_template').value = pay_template;
       }
       else {
           showMsgBox( gettext('Error retrieving announcements list') );
@@ -104,6 +122,9 @@ function updateSystemSettings() {
     pix_key = document.getElementById('pix_key').value.trim();
     fine_template = document.getElementById('fine_template').value.trim();
     fine_email_title = document.getElementById('fine_email_title').value.trim();
+    pay_pix_key = document.getElementById('pay_pix_key').value.trim();
+    pay_template = document.getElementById('pay_template').value.trim();
+    pay_email_title = document.getElementById('pay_email_title').value.trim();
 
     if ( condo_name.length == 0  ||  condo_tagline.length == 0  ||  condo_address.length == 0  ||  condo_city.length == 0  ||  condo_state.length == 0 ) {
         showMsgBox( gettext("Condo Name, Tagline, Address, ZIP and Location are required fields") );
@@ -114,6 +135,8 @@ function updateSystemSettings() {
        showMsgBox( gettext('ZIP is a required field') );
        return;
     }
+
+    showSpinner();
 
     // here we make a request to "upload_link"
     var request = new XMLHttpRequest();
@@ -129,7 +152,7 @@ function updateSystemSettings() {
               showMsgBox( gettext('error uploading system settings') );
           }
           else {
-              showMsgBoxSuccess( gettext('Settings successfully uploaded to the server') );
+              //showMsgBoxSuccess( gettext('Settings successfully uploaded to the server') );
               location.reload(true);
           }
       }
@@ -154,6 +177,9 @@ function updateSystemSettings() {
     requestObj.pix_key = pix_key;
     requestObj.fine_template = fine_template;
     requestObj.fine_email_title = fine_email_title;
+    requestObj.pay_pix_key = pay_pix_key;
+    requestObj.pay_template = pay_template;
+    requestObj.pay_email_title = pay_email_title;
     jsonStr = '{ "request": ' + JSON.stringify(requestObj) + '}';
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.send(jsonStr);
