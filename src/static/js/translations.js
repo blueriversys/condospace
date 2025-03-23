@@ -111,6 +111,7 @@ map.set("Your request is being processed", new Map().set("pt", "Informação est
 map.set("Error processing this request", new Map().set("pt", "Erro executando este procedimento"));
 map.set("A message was sent to your email in the system", new Map().set("pt", "Uma mensagem foi enviada para o email cadastrado no sistema"));
 map.set("No email registered for user. Contact the Admin.", new Map().set("pt", "Email não existe para este usuário. Contate o Admin."));
+map.set("Text is a required field", new Map().set("pt", "Texto é um campo obrigatório"));
 
 
 

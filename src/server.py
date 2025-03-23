@@ -108,7 +108,7 @@ INFO_FILE =     "info.json"
 FINES_FILE =  "fines.json"
 RESERVATIONS_FILE =  f"{UNPROTECTED_FOLDER}/reservations/reservations.json"
 LINKS_FILE =    f"{SERVER_FOLDER}/links.json"
-ANNOUNCS_FILE = f"{SERVER_FOLDER}/announcs.dat"
+ANNOUNCS_FILE = f"{UNPROTECTED_FOLDER}/announcs/announcs.json"
 LOG_FILE =      f"{SERVER_FOLDER}/messages.log"
 RESIDENTS_FILE = f"{SERVER_FOLDER}/residents.json"
 
@@ -439,6 +439,26 @@ def custom_static_amenity(tenant, amenity_id, filename):
     print(f"in custom_static_amenity(): tenant: {tenant}, amenity_id {amenity_id}, filename {filename}")
     file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/{amenity_id}/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
+
+@app.route('/<tenant>/announcs/<filename>')
+def custom_static_announc(tenant, filename):
+    print(f"in custom_static_announc(): tenant: {tenant}, filename {filename}")
+    _, file_ext = os.path.splitext(filename)
+    if file_ext == '.jpg':
+        mtype = "image/jpeg"
+    elif file_ext == ".png":
+        mtype = "image/png"
+    elif file_ext == ".pdf":
+        mtype = "application/pdf"
+    elif file_ext == '.doc':
+        mtype = "application/msword"
+    elif file_ext == '.odt':
+        mtype = 'application/vnd.oasis.opendocument.text'
+    else:
+        mtype = "text/plain"
+
+    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/announcs/{filename}")
+    return Response(response=file_obj, status=200, mimetype=mtype)
 
 @app.route('/<tenant>/event/eventpics/<title>/pics/<filename>')
 def custom_static_event(tenant, title, filename):
@@ -1243,24 +1263,6 @@ def profile(tenant):
     return render_template("profile.html", units=units, user_types=staticvars.user_types, info_data=info_data)
 
 
-@app.route('/<tenant>/getannouncs')
-def get_announc_list(tenant):
-    lock.acquire()
-    ret_tenant = get_tenant()
-    if ret_tenant == TENANT_NOT_FOUND:
-        lock.release()
-        return render_template("condo_not_found.html", tenant=tenant)
-    announc_list = []
-    string_content = aws.read_text_obj(f"{get_tenant()}/{ANNOUNCS_FILE}")
-    alist = string_content.split('\n') # create a list divided by the new-line char
-    for line in alist:
-        if len(line.strip()): # add only lines that are not blank
-            announc_list.append(line)
-    json_obj = {'announcs':announc_list} # announc_list contains no blank line as item
-    lock.release()
-    return json.dumps(json_obj)
-
-
 @app.route('/<tenant>/get_system_settings')
 @login_required
 def get_system_settings(tenant):
@@ -1327,28 +1329,115 @@ def update_settings(tenant):
     return return_obj
 
 
+#------------------------------------------------------------------------------------------
+#   Announcs related routes
+#------------------------------------------------------------------------------------------
 @app.route('/<tenant>/announcs')
 def announcs(tenant):
+    lock.acquire()
+
+    print(f"here in announcs")
+    ret_tenant = get_tenant()
+    if ret_tenant == TENANT_NOT_FOUND:
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
+    # announc_list = []
+    # string_content = aws.read_text_obj(f"{get_tenant()}/{ANNOUNCS_FILE}")
+    # announc = ''
+    # alist = string_content.split('\n') # create a list divided by the new-line char
+    # for line in alist:
+    #     if len(line.strip()): # add only lines that are not blank
+    #         announc_list.append(line)
+    # json_obj = {'announcs':announc_list} # announc_list contains no blank line as item
+
+    announcs = {}
+    if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
+        announcs = get_json_from_file(f"{tenant}/{ANNOUNCS_FILE}")['announcs']
+
+    info_data = get_info_data(tenant)
+
+    for key, announc in announcs.items():
+        announc['timestamp'] = get_string_from_epoch(announc['created_on'], info_data['language'])
+        file_name, file_ext = os.path.splitext( announc['file_name'] )
+        announc['file_ext'] = file_ext[1:] # 1 to skip the "."
+
+    lock.release()
+    return render_template("announcs.html", announcs=announcs.items(), user_types=staticvars.user_types, info_data=info_data)
+
+
+@app.route('/<tenant>/save_announc', methods=["POST"])
+def save_announc(tenant):
     lock.acquire()
     ret_tenant = get_tenant()
     if ret_tenant == TENANT_NOT_FOUND:
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
+    tenant = request.form['tenant']
+    user_id = request.form['created_by']
+    text = request.form['text']
+    file_name = request.form['attach_file_name']
 
+    print(f"tenant {tenant},  created_by {user_id},  file_name: {file_name},  text: {text}")
+
+    if aws.is_file_found(f"{get_tenant()}/{ANNOUNCS_FILE}"):
+        announcs = get_json_from_file(f"{get_tenant()}/{ANNOUNCS_FILE}")
+    else:
+        announcs = { "announcs": {} }
+
+    epoch = get_epoch_from_now()
+    timestamp = get_string_from_epoch_format(epoch, '%Y%m%d')
+    seq = 0
+    while True:
+        key = f"{timestamp}_{seq}"
+        if key not in announcs['announcs']:
+            break
+        else:
+            seq += 1
+
+    if file_name:
+        _, file_ext = os.path.splitext( file_name )
+        mod_file_name = f"{key}{file_ext}"
+    else:
+        mod_file_name = ''
+
+    announcs['announcs'][key] = {
+        "created_on": epoch,
+        "created_by": user_id,
+        "file_name": mod_file_name,
+        "text": text
+    }
+
+    # save attachment file
+    if mod_file_name:
+        print(f" mod_file_name: {mod_file_name}")
+        attach_file = request.files['attach_file']
+        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/announcs/{mod_file_name}", attach_file.read())
+
+    # save the JSON file
+    aws.upload_text_obj(f"{tenant}/{ANNOUNCS_FILE}", json.dumps(announcs))
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
+
+@app.route('/<tenant>/getannouncs')
+def get_announc_list(tenant):
+    lock.acquire()
+    ret_tenant = get_tenant()
+    if ret_tenant == TENANT_NOT_FOUND:
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
     announc_list = []
     string_content = aws.read_text_obj(f"{get_tenant()}/{ANNOUNCS_FILE}")
-    announc = ''
     alist = string_content.split('\n') # create a list divided by the new-line char
     for line in alist:
         if len(line.strip()): # add only lines that are not blank
             announc_list.append(line)
     json_obj = {'announcs':announc_list} # announc_list contains no blank line as item
-
-
-    info_data = get_info_data(tenant)
     lock.release()
-    return render_template("announcs.html", announcs=announc_list, user_types=staticvars.user_types, info_data=info_data)
+    return json.dumps(json_obj)
 
 
 @app.route('/<tenant>/docs')
@@ -1582,14 +1671,6 @@ def send_contact_email():
     print(f"end of send_contact_email()")
     return redirect(url_for('home'))
 
-
-@app.route('/saveannouncs', methods=["POST"])
-def save_announc_list():
-    announcsObj = request.get_json()
-    announcs = announcsObj['announc']['lines']
-    aws.upload_text_obj(f"{get_tenant()}/{ANNOUNCS_FILE}", announcs)
-    return_obj = json.dumps({'response': {'status': 'success'}})
-    return return_obj
 
 def print_process(route, unit, newline=True):
     #nl = "\n" if newline else ""

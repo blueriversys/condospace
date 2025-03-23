@@ -8,40 +8,9 @@ function onLoadAction() {
     window.loggedin_tenant_global = document.getElementById('loggedin-tenant').value.trim();
     window.loggedin_lang_global = document.getElementById('loggedin-lang').value;
     document.getElementById("email-progress-bar").style.display = "none";
-    fillAnnouncs();
     fillSystemSettings();
 }
 
-
-/*
-   This is invoked by upload.html to fill the announcements text box.
-   Unfortunately, this cannot be placed in announcs.js because
-   doing so would force us to import announcs.js from upload.html,
-   which would create a double "onLoadAction()" function
-*/
-function fillAnnouncs() {
-    var request = new XMLHttpRequest();
-    get_url = "/" + window.loggedin_tenant_global + "/getannouncs";
-    request.open('GET', get_url, true);
-
-    request.onload = function () {
-      // Begin accessing JSON data here
-      var json = JSON.parse(this.response);
-
-      if (request.status >= 200 && request.status < 400) {
-          var announcs_text = '';
-          for (var i=0; i<json.announcs.length; i++) {
-              announcs_text += json.announcs[i] + '\n';
-          }
-          document.getElementById('announctextfield_id').innerHTML = announcs_text;
-      }
-      else {
-          showMsgBox( gettext('Error retrieving announcements list') );
-      }
-
-    }
-    request.send();
-}
 
 function fillSystemSettings() {
     var request = new XMLHttpRequest()

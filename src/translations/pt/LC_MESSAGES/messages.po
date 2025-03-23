@@ -316,6 +316,18 @@ msgid "My Profile"
 msgstr "Meu Perfil"
 
 #: templates/announcs.html
+msgid "Create a New Announcement"
+msgstr "Criar Um Novo Anúncio"
+
+msgid "New Announcement"
+msgstr "Novo Anúncio"
+
+msgid "Attach a File (optional)"
+msgstr "Anexar Um Arquivo (opcional)"
+
+msgid "Save This Announcement"
+msgstr "Adicionar Este Anúncio"
+
 msgid "Announcements"
 msgstr "Anúncios"
 

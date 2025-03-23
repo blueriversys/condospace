@@ -1,4 +1,10 @@
 {% extends "layout.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/announcs.css') }}">
+{% endblock %}
+
 {% block body %}
 
 <div class="main">
@@ -38,25 +44,106 @@
   </nav>
  
   <div class="content">
-    {% include "mobile-menu.html" %}
+      {% include "mobile-menu.html" %}
 
-    <div class="section-title" data-aos="zoom-out">
-      <h2>{{_('Announcements')}}</h2>
-    </div>
+      <div class="section-title" data-aos="zoom-out">
+          <h2>{{_('Announcements')}}</h2>
+      </div>
 
-    <p class="spacer"></p>
-        
+      <p class="spacer"></p>
+
+      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+          <div class="spacer"></div>
+
+          <div class="center">
+              <button class="button larger-button col-6" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_announcement" aria-expanded="false" aria-controls="collapseExample">
+                {{_("Create a New Announcement")}}
+              </button>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="app-container collapse" id="add_new_announcement">
+              <div class="spacer"></div>
+
+              <div class="profile-block">
+                  <fieldset>
+                      <legend>{{_('New Announcement')}}</legend>
+                      <div class="row flex h-100  align-self-center">
+                          <div class="col-5  align-self-center align-items-right" style="/*border: 1px solid blue;*/">
+                              <div class="form-group">
+                                  <label for="announc_text">{{_('Text')}}:</label>
+                                  <textarea class="form-control" rows="6" id="announc_text"></textarea>
+                              </div>
+                          </div>
+
+                          <div class="col-4 h-100 align-self-center" id="img_group_1" style="display: block;">
+                              <div class="row">
+                                  <div id="button-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
+                                      <span class="btn btn-primary btn-file">
+                                          {{_("Attach a File (optional)")}} <input id="announc_file" type="file" onChange="pictureSelectAction('announc_file', 'announc_img')">
+                                      </span>
+                                  </div>
+                                  <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                      <img id="announc_img" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
+                                  </div>
+                                  <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                      <span id="announc_file_name" style="margin-left: 5px;"></span>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </fieldset>
+
+                  <div class="spacer"></div>
+
+                  <div class="center">
+                      <button class="button larger-button" id="save_amenity_btn" onClick="saveAnnounc();"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Save This Announcement')}}</button>
+                  </div>
+
+                  <div class="spacer"></div>
+              </div> <!-- closes closes profile-block -->
+          </div> <!-- app-container -->
+      {% endif %}
+
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+
+
     <div class="app-container">
         {% if announcs %}
-          <ul id="announc-list">
-          {% for announc in announcs %}
-              <li>{{announc}}</li>
-          {% endfor %}
-          </ul>
+            {% for key, announc in announcs %}
+                    <div class="row flex align-self-center">
+                        <div class="col d-flex align-self-center shadow p-3 mb-5 ml-2 mr-2 rounded" style="background: #def6fb; /*border: solid 1px lightgray;*/">
+
+                            <div class="align-self-center" style="width: 80px; height: 80px; margin-right: 20px; border-radius: 4px; /*border: solid 1px #555;*/">
+                                {% if announc['file_ext'] == 'pdf' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/pdf-format-red.png') }}"  width="80" height="80"></a>
+                                {% elif announc['file_ext'] == 'jpg' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/jpg-format-green.png') }}" width="80" height="80"></a>
+                                {% elif announc['file_ext'] == 'png' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/png-format-blue-sm.png') }}" width="80" height="80"></a>
+                                {% elif announc['file_ext'] == 'txt' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file-format-orange.png') }}" width="80" height="80"></a>
+                                {% elif announc['file_ext'] == 'doc' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/doc-format-blue.png') }}" width="80" height="80"></a>
+                                {% else %}
+                                   <img src="{{ url_for('static', filename='img/bullhorn-format.png') }}" width="80" height="80">
+                                {% endif %}
+                            </div>
+                            <div class="ms-4 align-self-center" style="font-size: 16px; color: #716262;">
+                                {{ announc['text'] }}
+                            </div>
+
+                        </div>
+                    <!--    <div class="col-1" style=""></div>  -->
+                    </div>
+            {% endfor %}
         {% else %}
-          <div>{{_('No announcements yet, go to the Maintenance page when you need to make one.')}}</div>
+            <div>{{_('No announcements yet, go to the Maintenance page when you need to make one.')}}</div>
         {% endif %}
     </div>
+
 
     <p class="spacer"></p>
     <p class="spacer"></p>
