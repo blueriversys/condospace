@@ -1024,15 +1024,18 @@ def save_payment(tenant):
     if aws.is_file_found(f"{FINES_FILE}"):
         pay_data = get_json_from_file(f"{FINES_FILE}")
 
-        # find the last fine_id for the user
-        if user_id in pay_data['fines'][tenant]:
+        if tenant not in pay_data['fines']:
             fine_id = 0
-            for id, value in pay_data['fines'][tenant][user_id]['fines'].items():
-                id = int(id)
-                fine_id = id if id > fine_id else fine_id
-            fine_id += 1
         else:
-            fine_id = 0
+            # find the last fine_id for the user
+            if user_id in pay_data['fines'][tenant]:
+                fine_id = 0
+                for id, value in pay_data['fines'][tenant][user_id]['fines'].items():
+                    id = int(id)
+                    fine_id = id if id > fine_id else fine_id
+                fine_id += 1
+            else:
+                fine_id = 0
 
         payment_id = fine_id
 
@@ -1163,9 +1166,6 @@ def send_fine_reminder(tenant):
     due_date_y = json_obj[prefix]['due_date']['y']
     due_date_m = json_obj[prefix]['due_date']['m']
     due_date_d = json_obj[prefix]['due_date']['d']
-    issue_date_y = json_obj[prefix]['issue_date']['y']
-    issue_date_m = json_obj[prefix]['issue_date']['m']
-    issue_date_d = json_obj[prefix]['issue_date']['d']
     charge_type = json_obj[prefix]['charge_type']
 
     # read the FINES_FILE to add a charge to it
@@ -1180,9 +1180,10 @@ def send_fine_reminder(tenant):
         lock.release()
         return return_obj
 
-    issue_date = {'y': issue_date_y, 'm': issue_date_m, 'd': issue_date_d}
+    created_on = pay_data['fines'][tenant][user_id]['fines'][fine_id]['created_on']
     due_date = {'y': due_date_y, 'm': due_date_m, 'd': due_date_d}
-    payment_ref = get_payment_ref(issue_date, fine_id)
+    payment_ref = get_payment_ref(created_on, fine_id)
+    issue_date = get_date_dict_from_epoch(created_on)
 
     if email:
         send_payment_notification(info_data, name, email, amount, descr, issue_date, due_date, charge_type, payment_ref)
@@ -2989,7 +2990,7 @@ Board of Directors of {condo_name}.
     initial_announcs = f"{get_timestamp()}: {condo_name} estabeleceu presença online."
     aws.upload_text_obj(f"{condo_id}/{RESIDENTS_FILE}", json.dumps(initial_resident))
     aws.upload_text_obj(f"{condo_id}/{LINKS_FILE}", json.dumps(initial_links))
-    aws.upload_text_obj(f"{condo_id}/{ANNOUNCS_FILE}", initial_announcs)
+#    aws.upload_text_obj(f"{condo_id}/{ANNOUNCS_FILE}", initial_announcs)
 
     # read the INFO_FILE to add an additional condo to it
     if aws.is_file_found(f"{INFO_FILE}"):
@@ -3117,6 +3118,11 @@ def get_string_from_epoch(epoch_timestamp, lang='en'):
 
 def get_string_from_epoch_format(epoch_timestamp, date_format):
     return datetime.fromtimestamp(int(epoch_timestamp)).strftime(date_format)
+
+def get_date_dict_from_epoch(epoch_timestamp):
+    str_date = get_string_from_epoch_format(epoch_timestamp, '%Y%m%d')
+    date_dict = { 'y': int(str_date[:4]), 'm': int(str_date[4:6]), 'd': int(str_date[6:8]) }
+    return date_dict
 
 def send_email_relay_host(emailto, subject, body):
     TO = emailto

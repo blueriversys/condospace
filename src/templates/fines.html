@@ -93,7 +93,7 @@
                           <tr>
                             <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
                             <td><button class="btn btn-primary small-btn" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
-                            <td><button id="remind" class="btn btn-primary small-btn" onClick="sendFineReminder({{loop.index}});" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
+                            <td><button id="remind" class="btn btn-primary small-btn" onClick="sendFineReminder({{loop.index}}, 'fine');" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
                             <td>{{item['user_id']}}</td>
                             <td>{{item['name']}}</td>
                             <td>{{item['email']}}</td>
@@ -134,7 +134,7 @@
                       <tr>
                         <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
                         <td><button class="btn btn-primary small-btn" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
-                        <td><button id="remind" class="btn btn-primary small-btn" onClick="sendFineReminder({{loop.index}});" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
+                        <td><button id="remind" class="btn btn-primary small-btn" onClick="sendFineReminder({{loop.index}}, 'pay');" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
                         <td>{{item['user_id']}}</td>
                         <td>{{item['name']}}</td>
                         <td>{{item['email']}}</td>
