@@ -340,6 +340,10 @@ msgstr "Manutenção"
 msgid "Pictures"
 msgstr "Fotos"
 
+msgid "No announcements yet."
+msgstr "Nenhum anúncio ainda."
+
+
 #: templates/alisting.html
 msgid "Listings"
 msgstr "À Venda"

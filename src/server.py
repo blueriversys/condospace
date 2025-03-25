@@ -61,7 +61,7 @@ from flask_babel import format_decimal
 from threading import Thread, Lock
 from time import sleep
 import requests
-
+from functools import cache
 
 #import logging
 # https://realpython.com/python-logging/
@@ -1421,6 +1421,57 @@ def save_announc(tenant):
     lock.release()
     return return_obj
 
+@app.route('/<tenant>/delete_announc', methods=["POST"])
+@login_required
+def delete_announc(tenant):
+    lock.acquire()
+    print(f"here in delete_announc()")
+    json_obj = request.get_json()
+    prefix = "announc"
+    tenant_json = json_obj[prefix]['tenant']
+
+    if tenant != tenant_json:
+        return_obj = json.dumps({'response': {'status': 'error', 'pid': os.getpid()}})
+        lock.release()
+        return return_obj
+
+    user_id = json_obj[prefix]['user_id']
+    announc_id = json_obj[prefix]['announc_id']
+
+    print(f"tenant: {tenant},  user_id: {user_id},  announc_id: {announc_id}")
+
+    if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
+        announcs_content = get_json_from_file(f"{tenant}/{ANNOUNCS_FILE}")
+        if 'announcs' not in announcs_content:
+            return_obj = json.dumps({'response': {'status': 'success'}})
+            lock.release()
+            return return_obj
+    else:
+        return_obj = json.dumps({'response': {'status': 'file_not_found'}})
+        lock.release()
+        return return_obj
+
+    if announc_id in announcs_content['announcs']:
+        file_name = announcs_content['announcs'][announc_id]['file_name']
+        del announcs_content['announcs'][announc_id]
+        print(f"announcement deleted. file_name: {file_name}")
+    else:
+        return_obj = json.dumps({'response': {'status': 'announc_not_found'}})
+        lock.release()
+        return return_obj
+
+    # first update the ANNOUNCS_FILE
+    aws.upload_text_obj(f"{tenant}/{ANNOUNCS_FILE}", json.dumps(announcs_content))
+
+    # now, delete the attachment file, if any
+    if file_name:
+        aws.delete_object(f"{tenant}/uploadedfiles/unprotected/announcs/{file_name}")
+        print(f"attach file deleted")
+
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
 
 @app.route('/<tenant>/getannouncs')
 def get_announc_list(tenant):
@@ -1440,6 +1491,9 @@ def get_announc_list(tenant):
     return json.dumps(json_obj)
 
 
+#------------------------------------------------------------------------------------------
+#   Docs related routes
+#------------------------------------------------------------------------------------------
 @app.route('/<tenant>/docs')
 def get_docs(tenant):
     print(f"here in get_docs: tenant: {tenant}")
@@ -1450,7 +1504,7 @@ def get_docs(tenant):
         lock.release()
         return page
 
-    open_docs = get_files(UNPROTECTED_FOLDER + '/opendocs/files', '')
+    open_docs = get_files(f"{UNPROTECTED_FOLDER}/opendocs/files", '')
     info_data = get_info_data(tenant)
 
     if error_code == USER_NOT_AUTHENTICATED_CODE:
@@ -1465,11 +1519,8 @@ def get_docs(tenant):
         docs = get_files(f"{PROTECTED_FOLDER}/docs/financial/{year}", f"Fin-{year}")
         if len(docs) > 0:
             fin_docs[year] = docs
-    # docs2023 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2023')
-    # docs2024 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2024')
-    # docs2025 = get_files(PROTECTED_FOLDER + '/docs/financial', 'Fin-2025')
-    bylaws = get_files(PROTECTED_FOLDER + '/docs/bylaws', '')
-    other_docs = get_files(PROTECTED_FOLDER + '/docs/other', '')
+    bylaws = get_files(f"{PROTECTED_FOLDER}/docs/bylaws", '')
+    other_docs = get_files(f"{PROTECTED_FOLDER}/docs/other", '')
     links = get_json_from_file(f"{tenant}/{LINKS_FILE}")
     bylaws = [] if bylaws is None else bylaws
     other_docs = [] if other_docs is None else other_docs
@@ -3244,7 +3295,6 @@ def load_user(internal_user_id):
     else:
         ret_user = user
     return ret_user
-
 
 def get_files(folder, pattern):
     #print(f"in get_files(): tenant: {get_tenant()}")

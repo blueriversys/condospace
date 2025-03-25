@@ -134,21 +134,53 @@ function pictureSelectAction(img_file_control, img_control) {
     }
     else {
         if ( file_ext == '.pdf' ) {
-            file_name = '/common/img/pdf-format-red.png';
+            file_name = '/common/img/file_format_sm_pdf_red.png';
         }
         else
         if ( file_ext == '.txt' ) {
-            file_name = '/common/img/file-format-orange.png';
+            file_name = '/common/img/file_format_sm_orange.png';
         }
         else
         if ( file_ext == '.doc' ) {
-            file_name = '/common/img/doc-format-blue.png';
+            file_name = '/common/img/file_format_sm_doc_blue.png';
         }
 
         document.getElementById(img_control).src = file_name;
         document.getElementById(img_control).style.display = 'block';
         document.getElementById("announc_file_name").textContent = '';
     }
+}
+
+function deleteAnnounc(announc_id) {
+    // here we make a request to "delete_announc"
+    var request = new XMLHttpRequest();
+    post_url = "/" + window.loggedin_tenant_global + "/delete_announc";
+    request.open('POST', post_url, true);
+
+    showSpinner();
+
+    request.onload = function () {
+      // Begin accessing JSON data here
+      var json = JSON.parse(this.response);
+
+      if (request.status >= 200 && request.status < 400) {
+          if (json.response.status == 'success') {
+              location.reload();
+              return;
+          }
+      }
+
+      showMsgBox( gettext('Error executing this action') );
+      return;
+    }
+
+    var requestObj = new Object();
+    requestObj.tenant = window.loggedin_tenant_global;
+    requestObj.user_id = window.loggedin_userid_global;
+    requestObj.announc_id = announc_id;
+    jsonStr = '{ "announc": ' + JSON.stringify(requestObj) + '}';
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.send(jsonStr);
 }
 
 
