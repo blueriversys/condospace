@@ -139,8 +139,8 @@ COVER_PREF_HEIGHT = 80
 
 # for PROD, change the file serverfiles/config-prod.dat
 with open(CONFIG_FILE, 'r') as f:
-    str_content = f.read()
-    config = json.loads(str_content)['config']
+    config_file_content = f.read()
+    config = json.loads(config_file_content)['config']
     print(f"\nSome of the config vars:")
     print(f"API Url: {config['api_url']}")
     print(f"API app type: {config['api_app_type']}")
@@ -160,28 +160,89 @@ tenant_global = ""
 # 'user' : user, 'last_active': datetime.now()
 logged_in_users = dict()
 
+# to cache the content of any JSON file
+# the key is tenant + file name
+json_file_cache = {}
+
+# to cache the content of any JSON file with not under tenant
+# the key is file name
+json_file_cache_no_tenant = {}
+
+# to cache the docs file
+# the key is tenant + file name
+doc_files_cache = {}
+
+
 
 # define the lock object
 lock = Lock()
+
 
 cgitb.enable()
 
 def is_tenant_found(tenant):
     if not aws.is_file_found(f"{INFO_FILE}"):
         return False
-    info_json = get_json_from_file(f"{INFO_FILE}")
+    info_json = get_json_from_file_no_tenant(f"{INFO_FILE}")
     if tenant in info_json['config']:
         global tenant_global
         tenant_global = tenant
         return True
     return False
 
-def get_json_from_file(file_path):
+def get_doc_files_cache(tenant, path, pattern):
+    # key = f"{tenant}-{path}"
+    # if key in doc_files_cache:
+    #     print(f"return mem docs")
+    #     return doc_files_cache[key]
+    #
+    docs = get_files(path, pattern)
+    # doc_files_cache[key] = docs
+    print(f"return aws docs")
+    return docs
+
+def get_json_from_file(tenant, file_path):
+    key = f"{tenant}-{file_path}"
+    if key in json_file_cache:
+        print(f"return from cache, key: {key}")
+        return json.loads(json_file_cache[key])
+
+    full_path = f"{tenant}/{file_path}"
+    if not aws.is_file_found(full_path):
+        return None
+
+    string_content = aws.read_text_obj(full_path)
+    json_file_cache[key] = string_content
+    json_obj = json.loads(string_content)
+    print(f"return from file, storing key: {key}")
+    return json_obj
+
+def save_json_to_file(tenant, file_path, content):
+    string_content = json.dumps(content)
+    aws.upload_text_obj(f"{tenant}/{file_path}", string_content)
+    key = f"{tenant}-{file_path}"
+    global json_file_cache
+    json_file_cache[key] = string_content
+
+def get_json_from_file_no_tenant(file_path):
+    if file_path in json_file_cache_no_tenant:
+        print(f"file_no_tenant: returning mem content")
+        return json.loads(json_file_cache_no_tenant[file_path])
+
     if not aws.is_file_found(file_path):
         return None
+
     string_content = aws.read_text_obj(file_path)
+    json_file_cache_no_tenant[file_path] = string_content
     return json.loads(string_content)
-    
+
+def save_json_to_file_no_tenant(file_path, content):
+    str_content = json.dumps(content)
+    aws.upload_text_obj(f"{file_path}", str_content)
+    print(f"file_no_tenant: returning file content")
+    global json_file_cache_no_tenant
+    json_file_cache_no_tenant[file_path] = str_content
+
 
 def get_tenant():
     url = request.path
@@ -209,7 +270,7 @@ def get_info_data(tenant):
         return None
 
     try:
-        json_obj = get_json_from_file(f"{INFO_FILE}")
+        json_obj = get_json_from_file_no_tenant(f"{INFO_FILE}")
         if tenant in json_obj['config']:
             info_data = json_obj['config'][tenant]
         else:
@@ -224,8 +285,8 @@ def get_info_data(tenant):
         return info_data
     except:
         print(f"get_info_data(): unable to get info for tenant: {tenant}, file {INFO_FILE}")
-        log(get_tenant(), f"Error trying to read file {INFO_FILE}")
-        exit(1)
+        log(tenant, f"Error trying to read file {INFO_FILE}")
+        return None
 
 
 def get_current_user_data():
@@ -591,7 +652,7 @@ def get_reservations(tenant):
 
     # test if the amenities file exists
     if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
-        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        rsv_content = get_json_from_file(tenant, RESERVATIONS_FILE)
         if 'amenities' in rsv_content:
             amenities = rsv_content['amenities']
             if len(amenities) > 0:
@@ -664,7 +725,7 @@ def save_amenity(tenant):
 
     # read the RESERVATIONS_FILE to add a condo to it
     if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
-        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        rsv_content = get_json_from_file(tenant, RESERVATIONS_FILE)
         if 'reservations' in rsv_content:
             reservations = rsv_content['reservations']
         else:
@@ -700,7 +761,8 @@ def save_amenity(tenant):
         _, img_bytes = reduce_image_enh(img_bytes, COVER_PREF_WIDTH, COVER_PREF_HEIGHT)
         aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/reservations/{amenity_id}/amenity.jpg", img_bytes)
 
-    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": reservations, "amenities": amenities}) )
+    data_to_persist = {"reservations": reservations, "amenities": amenities}
+    save_json_to_file(tenant, RESERVATIONS_FILE, data_to_persist )
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -730,7 +792,7 @@ def delete_amenity(tenant):
 
     # make sure there is no reservation for the amenity to be deleted
     if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
-        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        rsv_content = get_json_from_file(tenant, RESERVATIONS_FILE)
         if 'reservations' in rsv_content:
             reservations = rsv_content['reservations']
         else:
@@ -767,7 +829,8 @@ def delete_amenity(tenant):
     # here we know there is no reservation for the amenity
     if amenity_id in amenities:
         del amenities[amenity_id]
-        aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": reservations, "amenities": amenities}))
+        data_to_persist = {"reservations": reservations, "amenities": amenities}
+        save_json_to_file(tenant, RESERVATIONS_FILE, data_to_persist)
     else:
         print(f"amenity_id not found for tenant {tenant}")
 
@@ -813,7 +876,7 @@ def make_reservation(tenant):
 
     # read the RESERVATIONS_FILE to add a reservation to it
     if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
-        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        rsv_content = get_json_from_file(tenant, RESERVATIONS_FILE)
 
         if 'amenities' in rsv_content:
             amenities = rsv_content['amenities']
@@ -856,8 +919,8 @@ def make_reservation(tenant):
     else:
         print(f"NO EMAIL TO BE SENT FOR THIS RESERVATION")
 
-
-    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": rsv_data, "amenities": amenities}))
+    data_to_persist = {"reservations": rsv_data, "amenities": amenities}
+    save_json_to_file(tenant, RESERVATIONS_FILE, data_to_persist)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -907,7 +970,7 @@ def delete_reservation(tenant):
 #    print(f"tenant: {tenant},   user_id: {user_id},   rsv_id {rsv_id}  rsv_id type: {type(rsv_id)}")
 
     if aws.is_file_found(f"{tenant}/{RESERVATIONS_FILE}"):
-        rsv_content = get_json_from_file(f"{tenant}/{RESERVATIONS_FILE}")
+        rsv_content = get_json_from_file(tenant, RESERVATIONS_FILE)
         if not 'amenities' in rsv_content or not 'reservations' in rsv_content:
             return_obj = json.dumps({'response': {'status': 'error'}})
             lock.release()
@@ -928,7 +991,8 @@ def delete_reservation(tenant):
         lock.release()
         return return_obj
 
-    aws.upload_text_obj(f"{tenant}/{RESERVATIONS_FILE}", json.dumps({"reservations": rsv_data, "amenities": amenities}))
+    data_to_persist = {"reservations": rsv_data, "amenities": amenities}
+    save_json_to_file(tenant, RESERVATIONS_FILE, data_to_persist)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -947,7 +1011,7 @@ def payments(tenant):
         return page
 
     info_data = get_info_data(tenant)
-    pay_json = get_json_from_file(f"{FINES_FILE}")
+    pay_json = get_json_from_file_no_tenant(f"{FINES_FILE}")
     fines_list = []
 
     if pay_json is not None and tenant in pay_json['fines']:
@@ -1022,7 +1086,7 @@ def save_payment(tenant):
 
     # read the FINES_FILE to add a fine to it
     if aws.is_file_found(f"{FINES_FILE}"):
-        pay_data = get_json_from_file(f"{FINES_FILE}")
+        pay_data = get_json_from_file_no_tenant(f"{FINES_FILE}")
 
         # find the last fine_id for the user
         if user_id in pay_data['fines'][tenant]:
@@ -1048,8 +1112,7 @@ def save_payment(tenant):
         payment_id = fine_id
         pay_data = { 'fines': { tenant: { user_id: { "name": name, "email": email, "phone": phone, "fines": { fine_id: fine_entry } } } } }
 
-    aws.upload_text_obj(f"{FINES_FILE}", json.dumps(pay_data))
-
+    save_json_to_file_no_tenant(FINES_FILE, pay_data)
     issue_date_str = get_string_from_epoch_format( fine_entry['created_on'], '%Y-%m-%d' )
     issue_date = {'y': issue_date_str[0:4], 'm': issue_date_str[5:7], 'd': issue_date_str[8:] }
     payment_ref = get_payment_ref(fine_entry['created_on'], payment_id)
@@ -1093,9 +1156,9 @@ def set_payment(tenant):
     if not aws.is_file_found(f"{FINES_FILE}"):
         return_obj = json.dumps({'response': {'status': 'error'}})
     else:
-        pay_data = get_json_from_file(f"{FINES_FILE}")
+        pay_data = get_json_from_file_no_tenant(f"{FINES_FILE}")
         pay_data['fines'][tenant][user_id]['fines'][fine_id]['paid_date'] = { 'y': date_year, 'm': date_month, 'd': date_day }
-        aws.upload_text_obj(f"{FINES_FILE}", json.dumps(pay_data))
+        save_json_to_file_no_tenant(FINES_FILE, pay_data)
         return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -1127,10 +1190,11 @@ def delete_fine(tenant):
     if not aws.is_file_found(f"{FINES_FILE}"):
         return_obj = json.dumps({'response': {'status': 'error'}})
     else:
-        pay_data = get_json_from_file(f"{FINES_FILE}")
+        pay_data = get_json_from_file_no_tenant(f"{FINES_FILE}")
         if fine_id in pay_data['fines'][tenant][user_id]['fines']:
             del pay_data['fines'][tenant][user_id]['fines'][fine_id]
-            aws.upload_text_obj(f"{FINES_FILE}", json.dumps(pay_data))
+            save_json_to_file_no_tenant(FINES_FILE, pay_data)
+
         return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -1163,9 +1227,6 @@ def send_fine_reminder(tenant):
     due_date_y = json_obj[prefix]['due_date']['y']
     due_date_m = json_obj[prefix]['due_date']['m']
     due_date_d = json_obj[prefix]['due_date']['d']
-    issue_date_y = json_obj[prefix]['issue_date']['y']
-    issue_date_m = json_obj[prefix]['issue_date']['m']
-    issue_date_d = json_obj[prefix]['issue_date']['d']
     charge_type = json_obj[prefix]['charge_type']
 
     # read the FINES_FILE to add a charge to it
@@ -1174,15 +1235,18 @@ def send_fine_reminder(tenant):
         lock.release()
         return return_obj
 
-    pay_data = get_json_from_file(f"{FINES_FILE}")
+    pay_data = get_json_from_file_no_tenant(f"{FINES_FILE}")
     if fine_id not in pay_data['fines'][tenant][user_id]['fines']:
         return_obj = json.dumps({'response': {'status': 'error'}})
         lock.release()
         return return_obj
 
-    issue_date = {'y': issue_date_y, 'm': issue_date_m, 'd': issue_date_d}
+    created_on = pay_data['fines'][tenant][user_id]['fines'][fine_id]['created_on']
+#    issue_date = {'y': issue_date_y, 'm': issue_date_m, 'd': issue_date_d}
     due_date = {'y': due_date_y, 'm': due_date_m, 'd': due_date_d}
-    payment_ref = get_payment_ref(issue_date, fine_id)
+    payment_ref = get_payment_ref(created_on, fine_id)
+    issue_date = get_date_dict_from_epoch(created_on)
+    print(f"issue date: {issue_date}")
 
     if email:
         send_payment_notification(info_data, name, email, amount, descr, issue_date, due_date, charge_type, payment_ref)
@@ -1196,6 +1260,7 @@ def send_fine_reminder(tenant):
 
 def send_payment_notification(info_data, name, email, amount, descr, issue_date, due_date, charge_type, payment_id):
     condo_name = info_data['condo_name']
+    print(f"charge type: {charge_type}")
 
     if charge_type == 'fine':
         title = info_data['fine_title']
@@ -1239,13 +1304,13 @@ def about(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
     info_data = get_info_data(tenant)
-    employers = get_files(UNPROTECTED_FOLDER + '/logos', 'emp-')
-    schools = get_files(UNPROTECTED_FOLDER + '/logos', 'school-')
-    hospitals = get_files(UNPROTECTED_FOLDER + '/logos', 'hosp-')
-    shopping = get_files(UNPROTECTED_FOLDER + '/logos', 'shop-')
+    # employers = get_files(UNPROTECTED_FOLDER + '/logos', 'emp-')
+    # schools = get_files(UNPROTECTED_FOLDER + '/logos', 'school-')
+    # hospitals = get_files(UNPROTECTED_FOLDER + '/logos', 'hosp-')
+    # shopping = get_files(UNPROTECTED_FOLDER + '/logos', 'shop-')
     lock.release()
     return render_template("about.html", v_number=config['version']['number'], v_date=config['version']['date'],
-                           emp_logos=employers, school_logos=schools, hosp_logos=hospitals, shop_logos=shopping, user_types=staticvars.user_types, info_data=info_data)
+                           user_types=staticvars.user_types, info_data=info_data)
 
 @app.route('/<tenant>/profile')
 @login_required
@@ -1300,7 +1365,7 @@ def update_settings(tenant):
     lock.acquire()
     print(f"here in upload_settings()")
     json_req = request.get_json()
-    info = get_json_from_file(f"{INFO_FILE}")
+    info = get_json_from_file_no_tenant(f"{INFO_FILE}")
     info['config'][tenant]['condo_name'] = json_req['request']['condo_name']
     info['config'][tenant]['tagline'] = json_req['request']['condo_tagline']
     info['config'][tenant]['condo_city'] = json_req['request']['condo_city']
@@ -1323,7 +1388,7 @@ def update_settings(tenant):
     info['config'][tenant]['pay_pix_key'] = json_req['request']['pay_pix_key']
     info['config'][tenant]['pay_template'] = json_req['request']['pay_template']
     info['config'][tenant]['pay_title'] = json_req['request']['pay_email_title']
-    aws.upload_text_obj(f"{INFO_FILE}", json.dumps(info))
+    save_json_to_file_no_tenant(f"{INFO_FILE}", json.dumps(info))
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -1351,9 +1416,10 @@ def announcs(tenant):
     #         announc_list.append(line)
     # json_obj = {'announcs':announc_list} # announc_list contains no blank line as item
 
-    announcs = {}
     if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
-        announcs = get_json_from_file(f"{tenant}/{ANNOUNCS_FILE}")['announcs']
+        announcs = get_json_from_file(tenant, ANNOUNCS_FILE)['announcs']
+    else:
+        announcs = {}
 
     info_data = get_info_data(tenant)
 
@@ -1381,8 +1447,8 @@ def save_announc(tenant):
 
     print(f"tenant {tenant},  created_by {user_id},  file_name: {file_name},  text: {text}")
 
-    if aws.is_file_found(f"{get_tenant()}/{ANNOUNCS_FILE}"):
-        announcs = get_json_from_file(f"{get_tenant()}/{ANNOUNCS_FILE}")
+    if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
+        announcs = get_json_from_file(tenant, ANNOUNCS_FILE)
     else:
         announcs = { "announcs": {} }
 
@@ -1416,7 +1482,7 @@ def save_announc(tenant):
         aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/announcs/{mod_file_name}", attach_file.read())
 
     # save the JSON file
-    aws.upload_text_obj(f"{tenant}/{ANNOUNCS_FILE}", json.dumps(announcs))
+    save_json_to_file(tenant, ANNOUNCS_FILE, announcs)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -1441,7 +1507,7 @@ def delete_announc(tenant):
     print(f"tenant: {tenant},  user_id: {user_id},  announc_id: {announc_id}")
 
     if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
-        announcs_content = get_json_from_file(f"{tenant}/{ANNOUNCS_FILE}")
+        announcs_content = get_json_from_file(tenant, ANNOUNCS_FILE)
         if 'announcs' not in announcs_content:
             return_obj = json.dumps({'response': {'status': 'success'}})
             lock.release()
@@ -1461,7 +1527,7 @@ def delete_announc(tenant):
         return return_obj
 
     # first update the ANNOUNCS_FILE
-    aws.upload_text_obj(f"{tenant}/{ANNOUNCS_FILE}", json.dumps(announcs_content))
+    save_json_to_file(tenant, ANNOUNCS_FILE, announcs_content)
 
     # now, delete the attachment file, if any
     if file_name:
@@ -1481,7 +1547,7 @@ def get_announc_list(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
     announc_list = []
-    string_content = aws.read_text_obj(f"{get_tenant()}/{ANNOUNCS_FILE}")
+    string_content = get_json_from_file(tenant, ANNOUNCS_FILE)
     alist = string_content.split('\n') # create a list divided by the new-line char
     for line in alist:
         if len(line.strip()): # add only lines that are not blank
@@ -1504,7 +1570,7 @@ def get_docs(tenant):
         lock.release()
         return page
 
-    open_docs = get_files(f"{UNPROTECTED_FOLDER}/opendocs/files", '')
+    open_docs = get_doc_files_cache(tenant, f"{UNPROTECTED_FOLDER}/opendocs/files", '')
     info_data = get_info_data(tenant)
 
     if error_code == USER_NOT_AUTHENTICATED_CODE:
@@ -1516,19 +1582,17 @@ def get_docs(tenant):
     fin_docs = {}
     for year in range(10):
         year = start_year + year
-        docs = get_files(f"{PROTECTED_FOLDER}/docs/financial/{year}", f"Fin-{year}")
+        docs = get_doc_files_cache(tenant, f"{PROTECTED_FOLDER}/docs/financial/{year}", f"Fin-{year}")
         if len(docs) > 0:
             fin_docs[year] = docs
-    bylaws = get_files(f"{PROTECTED_FOLDER}/docs/bylaws", '')
-    other_docs = get_files(f"{PROTECTED_FOLDER}/docs/other", '')
-    links = get_json_from_file(f"{tenant}/{LINKS_FILE}")
+
+    bylaws = get_doc_files_cache(tenant, f"{PROTECTED_FOLDER}/docs/bylaws", '')
+    other_docs = get_doc_files_cache(tenant, f"{PROTECTED_FOLDER}/docs/other", '')
+    links = get_json_from_file(tenant, LINKS_FILE)
     bylaws = [] if bylaws is None else bylaws
     other_docs = [] if other_docs is None else other_docs
     open_docs = [] if open_docs is None else open_docs
     links = [] if links is None else links['links'].items()
-    # docs2023 = [] if docs2023 is None else docs2023
-    # docs2024 = [] if docs2024 is None else docs2024
-    # docs2025 = [] if docs2025 is None else docs2025
     lock.release()
     return render_template("docs.html", bylaws=bylaws, otherdocs=other_docs, opendocs=open_docs,
         findocs=fin_docs.items(), links=links,
@@ -1541,9 +1605,9 @@ def delete_fin_doc_group(tenant):
     lock.acquire()
     print(f"here in delete_fin_doc_group()")
     json_req = request.get_json()
-    # info = get_json_from_file(f"{INFO_FILE}")
     year = json_req['request']['year']
-    docs = get_files(f"{PROTECTED_FOLDER}/docs/financial/{year}", f"Fin-{year}")
+    partial_path = f"{PROTECTED_FOLDER}/docs/financial/{year}"
+    docs = get_doc_files_cache(tenant, partial_path, f"Fin-{year}")
     status = 'success'
 
     for doc in docs:
@@ -1556,6 +1620,13 @@ def delete_fin_doc_group(tenant):
             status = 'failure'
             print(f"deletion failed: {filepath}")
             break
+
+    key = f"{tenant}-{partial_path}"
+    print(f"key to be deleted: {key}")
+    if key in doc_files_cache:
+        print(f"key found, will be deleted: {key}")
+        del doc_files_cache[key]  # to force an aws read next time
+
     return_obj = { 'response': {'status': status} }
     lock.release()
     return json.dumps(return_obj)
@@ -1638,7 +1709,7 @@ def pics(tenant):
         lock.release()
         return render_template("pics.html", pics=pictures, events=None, user_types=staticvars.user_types, info_data=get_info_data(tenant))
 
-    events = get_json_from_file(f"{get_tenant()}/{EVENT_PICS_FILE}")
+    events = get_json_from_file(tenant, EVENT_PICS_FILE)
 
     # convert from epoch to string date format
     for event_key, event_data in events['event_pictures'].items():
@@ -1676,19 +1747,26 @@ def delete_file(tenant):
     file_path = file_obj['request']['filepath']
     protected = file_obj['request']['protected']
 
-    file_path = f"{tenant}/{PROTECTED_FOLDER}/{file_path}" if protected == 'yes' else f"{tenant}/{UNPROTECTED_FOLDER}/{file_path}"
-    print(f"file to be deleted: {file_path}")
+    file_path_del = f"{tenant}/{PROTECTED_FOLDER}/{file_path}" if protected == 'yes' else f"{tenant}/{UNPROTECTED_FOLDER}/{file_path}"
+    print(f"file to be deleted: {file_path_del}")
+    partial_path = f"{PROTECTED_FOLDER}/{file_path}" if protected == 'yes' else f"{UNPROTECTED_FOLDER}/{file_path}"
+    partial_path = os.path.dirname(partial_path)
 
-    if not aws.is_file_found(file_path):
+    if not aws.is_file_found(file_path_del):
         return_obj = {'status': 'success'}
         lock.release()
         return json.dumps(return_obj)
 
-    resp = aws.delete_object(f"{file_path}")
-    if resp:
-        status = 'success'
-    else:
-        status = 'failure'
+    resp = aws.delete_object(f"{file_path_del}")
+    if partial_path:
+        key = f"{tenant}-{partial_path}"
+        print(f"key to be deleted: {key}")
+        if key in doc_files_cache:
+            print(f"key found, will be deleted: {key}")
+            del doc_files_cache[key]  # to force an aws read next time
+
+#    status = 'success' if resp == 'success' else 'failure'
+    status = 'success'
     return_obj = {'status': status}
     lock.release()
     return json.dumps(return_obj)
@@ -1996,10 +2074,14 @@ def change_password(tenant):
 def upload_link(tenant):
     lock.acquire()
     json_req = request.get_json()
-    links = get_json_from_file(f"{get_tenant()}/{LINKS_FILE}")
-    links_dict = {"links": links['links']}
+    links = get_json_from_file(tenant, LINKS_FILE)
+    if links is None:
+        links_dict = { "links": {} }
+    else:
+        links_dict = { "links": links['links']}
     links_dict['links'][json_req['request']['link_descr']] = { 'url': json_req['request']['link_url'] }
-    aws.upload_text_obj(f"{get_tenant()}/{LINKS_FILE}", json.dumps(links_dict))
+    print(f"new links are: {links_dict}")
+    save_json_to_file(tenant, LINKS_FILE, links_dict)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -2056,7 +2138,7 @@ def change_userid():
 def get_one_listing(tenant, unit, listing_id):
     lock.acquire()
     print(f"get_one_listing()")
-    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+    listings = get_json_from_file(tenant, LISTINGS_FILE)
     info_data = get_info_data(tenant)
     alisting = None
     pictures = None
@@ -2118,7 +2200,7 @@ def upload_listing(tenant):
 
     # read the LISTINGS_FILE to add an additional condo to it
     if aws.is_file_found(f"{get_tenant()}/{LISTINGS_FILE}"):
-        listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+        listings = get_json_from_file(tenant, LISTINGS_FILE)
 
         # find the last listing_id for the user
         if user_id in listings['listings']:
@@ -2136,7 +2218,7 @@ def upload_listing(tenant):
         listings = { 'listings': {
             user_id: { "items": { listing_id: new_listing } } } }
 
-    aws.upload_text_obj(f"{tenant}/{LISTINGS_FILE}", json.dumps(listings))
+    save_json_to_file(tenant, LISTINGS_FILE, listings)
 
     # here we know the listing_id, let's upload the files
     for file in upload_files:
@@ -2162,7 +2244,7 @@ def get_listings(tenant):
         return render_template("listings.html", units=get_unit_list(), listings=None,
                                user_types=staticvars.user_types, info_data=get_info_data(tenant))
 
-    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+    listings = get_json_from_file(tenant, LISTINGS_FILE)
     info_data = get_info_data(tenant)
     listings_arr = []
 
@@ -2197,9 +2279,10 @@ def delete_listing(tenant):
         pic_name = pic_name[ len(BUCKET_PREFIX + "/"): ]
         aws.delete_object(pic_name)
 
-    listings = get_json_from_file(f"{tenant}/{LISTINGS_FILE}")
+    listings = get_json_from_file(tenant, LISTINGS_FILE)
     del listings['listings'][user_id]['items'][listing_id]
-    aws.upload_text_obj(f"{tenant}/{LISTINGS_FILE}", json.dumps(listings))
+    save_json_to_file(tenant, LISTINGS_FILE, listings)
+
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -2213,7 +2296,7 @@ def get_event_pics(tenant, title):
     lock.acquire()
     print(f"in get_event_pics(): tenant: {tenant}")
     pictures = get_files(f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
-    events = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
+    events = get_json_from_file(tenant, EVENT_PICS_FILE)
     info_data = get_info_data(tenant)
     if title not in events['event_pictures']:
         event = None
@@ -2300,7 +2383,7 @@ def upload_event_pics(tenant):
     print(f"event_date epoch: {event_date_epoch}")
 
     if aws.is_file_found(f"{tenant}/{EVENT_PICS_FILE}"):
-        event_pics = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
+        event_pics = get_json_from_file(tenant, EVENT_PICS_FILE)
         new_event = {'title': f'{request.form["title"]}', 'date': event_date_epoch, 'cover_file': f'{cover_name}' }
         event_pics['event_pictures'][folder_name] = new_event
     else:
@@ -2309,7 +2392,7 @@ def upload_event_pics(tenant):
         event_pics = {"event_pictures": { f"{folder_name}": new_event } }
 
     # now we upload/update the json file itself with the new content
-    aws.upload_text_obj(f"{tenant}/{EVENT_PICS_FILE}", json.dumps(event_pics))
+    save_json_to_file(tenant, EVENT_PICS_FILE, event_pics)
 
     # prepare response
     return_obj = json.dumps({'response': {'status': 'success'}})
@@ -2337,9 +2420,9 @@ def delete_event_pics(tenant):
     #aws.delete_object(f"{get_tenant()}/{UNPROTECTED_FOLDER}/listings/{unit}/pics")
     #aws.delete_object(f"{get_tenant()}/{UNPROTECTED_FOLDER}/listings/{unit}")
 
-    events = get_json_from_file(f"{tenant}/{EVENT_PICS_FILE}")
+    events = get_json_from_file(tenant, EVENT_PICS_FILE)
     events['event_pictures'].pop(title, None)
-    aws.upload_text_obj(f"{tenant}/{EVENT_PICS_FILE}", json.dumps(events))
+    save_json_to_file(tenant, EVENT_PICS_FILE, events)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -2356,9 +2439,9 @@ def delete_link(tenant):
 
     descr = request.get_json()['request']['link_descr']
     print(f"tenant: {tenant}    link to be deleted: {descr}")
-    links = get_json_from_file(f"{tenant}/{LINKS_FILE}")
+    links = get_json_from_file(tenant, LINKS_FILE)
     links['links'].pop(descr, None)
-    aws.upload_text_obj(f"{tenant}/{LINKS_FILE}", json.dumps(links))
+    save_json_to_file(tenant, LINKS_FILE, links)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -2417,23 +2500,12 @@ def upload(tenant):
     if request.method == 'POST':
         uploaded_file = request.files['file']
         uploaded_convname = request.form['convname']
-        file_size = request.form['filesize']
-        log(tenant, f'size {file_size}  file name received {uploaded_file.filename}  special name: {uploaded_convname}')
+        # log(tenant, f'size {file_size}  file name received {uploaded_file.filename}  special name: {uploaded_convname}')
         filename = secure_filename(uploaded_file.filename)
         filename = filename.replace('_', '-')
         filename = filename.replace(' ', '-')
         fullpath = ''
-        if uploaded_convname == 'announc':
-            fullpath = UNPROTECTED_FOLDER + '/opendocs/announcs/' + filename
-        elif uploaded_convname == 'pubfile':
-            fullpath = UNPROTECTED_FOLDER + '/opendocs/files/' + filename
-        elif uploaded_convname == 'bylaws':
-            fullpath = PROTECTED_FOLDER + '/docs/bylaws/' + filename
-        elif uploaded_convname == 'otherdoc':
-            fullpath = PROTECTED_FOLDER + '/docs/other/' + filename
-        elif uploaded_convname == 'picture':
-            fullpath = UNPROTECTED_FOLDER + '/pics/' + filename
-        elif uploaded_convname == 'homepic':
+        if uploaded_convname == 'homepic':
             fullpath = UNPROTECTED_FOLDER + '/branding/home.jpg'
         elif uploaded_convname == 'logopic':
             fullpath = UNPROTECTED_FOLDER + '/branding/logo.jpg'
@@ -2451,37 +2523,19 @@ def upload(tenant):
         else:
             aws.upload_binary_obj(f"{tenant}/{fullpath}", uploaded_file.read())
 
-        #aws.upload_binary_obj(f"{tenant}/{fullpath}", uploaded_file.read())
-
         if uploaded_convname == 'homepic':
             info_data['default_home_pic'] = False
             print(f"info data: \n{info_data}")
-            info_obj = get_json_from_file(f"{INFO_FILE}")
+            info_obj = get_json_from_file_no_tenant(f"{INFO_FILE}")
             info_obj['config'][tenant] = info_data
-            aws.upload_text_obj(f"{INFO_FILE}", json.dumps(info_obj))
+            save_json_to_file_no_tenant(INFO_FILE, info_obj)
 
         lock.release()
         return render_template("upload.html", user_types=staticvars.user_types, info_data=info_data)
     else:
-        docs2023 = get_files(f"{PROTECTED_FOLDER}/docs/financial/2023", 'Fin-2023')
-        docs2024 = get_files(f"{PROTECTED_FOLDER}/docs/financial/2024", 'Fin-2024')
-        docs2025 = get_files(f"{PROTECTED_FOLDER}/docs/financial/2025", 'Fin-2025')
-        bylaws = get_files(PROTECTED_FOLDER + '/docs/bylaws', '')
-        otherdocs = get_files(PROTECTED_FOLDER + '/docs/other', '')
-        opendocs = get_files(UNPROTECTED_FOLDER + '/opendocs/files', '')
-        picts = get_files(UNPROTECTED_FOLDER + '/pics', '')
-        links = get_json_from_file(f"{get_tenant()}/{LINKS_FILE}")
         info_data = get_info_data(tenant)
-        fin_docs = {'2023': docs2023, '2024': docs2024, '2025': docs2025}
-
         lock.release()
-        return render_template("upload.html", bylaws=bylaws, otherdocs=otherdocs, opendocs=opendocs,
-                               findocs2023=docs2023, findocs2024=docs2024, findocs2025=docs2025,
-                               findocs=fin_docs.items(),
-                               pics=picts, census_forms_pdf=f"docs/restricted/{CENSUS_FORM_PDF_FILE_NAME}",
-                               links=links['links'].items(),
-                               user_types=staticvars.user_types,
-                               info_data=info_data)
+        return render_template("upload.html", user_types=staticvars.user_types, info_data=info_data)
 
 
 @app.route('/<tenant>/generatepdf', methods=['GET'])
@@ -2520,9 +2574,9 @@ def gen_pdf(tenant):
     # update the info.json file
     date = datetime.today().strftime('%d-%b-%Y')
     info_data[CENSUS_FORMS_DATE_STRING] = date
-    info_obj = get_json_from_file(f"{INFO_FILE}")
+    info_obj = get_json_from_file_no_tenant(f"{INFO_FILE}")
     info_obj['config'][tenant] = info_data
-    aws.upload_text_obj(f"{INFO_FILE}", json.dumps(info_obj))
+    save_json_to_file_no_tenant(INFO_FILE, info_obj)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -2541,7 +2595,7 @@ def download_pdf(tenant):
 
 @app.route('/<tenant>/login', methods=['GET' , 'POST'])
 def login_tenant(tenant):
-    print(f"here in login_tenant(), {request.path}")
+    # print(f"here in login_tenant(), {request.path}")
     lock.acquire()
 
     # check to see if the tenant even exists in our database
@@ -2552,7 +2606,7 @@ def login_tenant(tenant):
 
     if request.method == 'GET':
         if current_user.is_authenticated:
-            print(f"login_tenant(): there is a user already logged in: {current_user.id}")
+            # print(f"login_tenant(): there is a user already logged in: {current_user.id}")
             next_page = request.args.get('next') if request.args.get('next') is not None else f'/{tenant}/home'
             lock.release()
             return redirect(next_page)
@@ -2575,12 +2629,12 @@ def login_tenant(tenant):
 
     # from here on down, it's a POST request
     if current_user.is_authenticated:
-        print(f"login_tenant(): there is a user already logged in: {current_user.id}")
+        # print(f"login_tenant(): there is a user already logged in: {current_user.id}")
         next_page = request.args.get('next') if request.args.get('next') is not None else f'/{tenant}/home'
         lock.release()
         return redirect(next_page)
 
-    print(f"login_tenant(): current_user {current_user} is not authenticated")
+    # print(f"login_tenant(): current_user {current_user} is not authenticated")
     userid = request.form['userid']
     password = request.form['password']
     load_users(tenant)
@@ -2591,7 +2645,7 @@ def login_tenant(tenant):
     #     lock.release()
     #     return redirect(f"/{tenant}/home")
 
-    print(f"login_tenant(): tenant: {tenant}, userid: {userid}")
+    # print(f"login_tenant(): tenant: {tenant}, userid: {userid}")
     info_data = get_info_data(tenant)
     registered_user = users_repository.get_user_by_userid(tenant, userid)
 
@@ -2609,7 +2663,7 @@ def login_tenant(tenant):
         # add_to_logged_in_users(tenant, registered_user)
         session["tenant"] = tenant
         session['userid'] = userid
-        print(f"login_tenant(): we just logged in {session['userid']} of tenant {session['tenant']}, session obj: {session}")
+        # print(f"login_tenant(): we just logged in {session['userid']} of tenant {session['tenant']}, session obj: {session}")
         lock.release()
         return redirect(next_page)
     else:
@@ -2987,18 +3041,18 @@ Board of Directors of {condo_name}.
 
     initial_links = { "links" : {}}
     initial_announcs = f"{get_timestamp()}: {condo_name} estabeleceu presença online."
-    aws.upload_text_obj(f"{condo_id}/{RESIDENTS_FILE}", json.dumps(initial_resident))
-    aws.upload_text_obj(f"{condo_id}/{LINKS_FILE}", json.dumps(initial_links))
-    aws.upload_text_obj(f"{condo_id}/{ANNOUNCS_FILE}", initial_announcs)
+    save_json_to_file(condo_id, RESIDENTS_FILE, initial_resident)
+    save_json_to_file(condo_id, LINKS_FILE, initial_links)
+#    save_json_to_file(condo_id, ANNOUNCS_FILE, initial_announcs)
 
     # read the INFO_FILE to add an additional condo to it
     if aws.is_file_found(f"{INFO_FILE}"):
-        info_data = get_json_from_file(f"{INFO_FILE}")
+        info_data = get_json_from_file_no_tenant(f"{INFO_FILE}")
         info_data['config'][condo_id] = condo_info
     else:
         info_data = { 'config': { condo_id: condo_info } }
 
-    aws.upload_text_obj(f"{INFO_FILE}", json.dumps(info_data))
+    save_json_to_file_no_tenant(INFO_FILE, info_data)
 
     if use_default_img:
         home_pic = open(f"{app.static_folder}/img/branding/home.jpg", "rb")
@@ -3117,6 +3171,11 @@ def get_string_from_epoch(epoch_timestamp, lang='en'):
 
 def get_string_from_epoch_format(epoch_timestamp, date_format):
     return datetime.fromtimestamp(int(epoch_timestamp)).strftime(date_format)
+
+def get_date_dict_from_epoch(epoch_timestamp):
+    str_date = get_string_from_epoch_format(epoch_timestamp, '%Y%m%d')
+    date_dict = { 'y': int(str_date[:4]), 'm': int(str_date[4:6]), 'd': int(str_date[6:8]) }
+    return date_dict
 
 def send_email_relay_host(emailto, subject, body):
     TO = emailto

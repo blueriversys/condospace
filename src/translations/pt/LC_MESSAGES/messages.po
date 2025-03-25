@@ -171,7 +171,7 @@ msgid "delete this fine"
 msgstr "deletar esta multa"
 
 msgid "mark this as paid"
-msgstr "marcar multa como paga"
+msgstr "marcar como paga"
 
 msgid "send reminder to user"
 msgstr "enviar lembrete ao usuário"
@@ -180,7 +180,7 @@ msgid "Event date"
 msgstr "Data do evento"
 
 msgid "Mark This as Paid"
-msgstr "Marcar Este Como Pago"
+msgstr "Marcar Como Paga"
 
 msgid "Enter Payment Date"
 msgstr "Entrar Data de Pagamento"

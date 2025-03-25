@@ -35,18 +35,20 @@
         <div class="upload-block">
           <p>{{_("Pictures")}}</p>
           <div class="upload-block-row">
-                  <div class="upload-browse">
-                    <input id="homepic" type="file"/>
-                    <button id="upload-button" onclick="uploadFileProgress('homepic', 'homepic', 'progressBar-homepic')"> {{_("Upload the Home Picture")}}</button>
-                    <progress id="progressBar-homepic" value="0" max="100"/>
-                  </div>
+              <div class="upload-browse">
+                <img id="home_pic_id" style="width: 120px; height: 80px; border-radius: 6px; margin-top:6px; margin-bottom: 6px; margin-right: 26px;" src="/{{info_data['domain']}}/branding/home.jpg">
+                <input id="homepic" type="file" onChange="handlePictureChange('homepic', 'home_pic_id')"/>
+                <button id="upload-button" onclick="uploadFileProgress('homepic', 'homepic', 'progressBar-homepic')"> {{_("Upload the Home Picture")}}</button>
+                <progress id="progressBar-homepic" value="0" max="100"/>
+              </div>
           </div>
           <div class="upload-block-row">
-                  <div class="upload-browse">
-                    <input id="logopic" type="file"/>
-                    <button id="upload-button" onclick="uploadFileProgress('logopic', 'logopic', 'progressBar-logopic')"> {{_("Upload the Logo Picture")}}</button>
-                    <progress id="progressBar-logopic" value="0" max="100"/>
-                  </div>
+              <div class="upload-browse">
+                <img id="logo_pic_id" style="width: 120px; height: 80px; border-radius: 6px; margin-top:6px; margin-bottom: 6px; margin-right: 26px;" src="/{{info_data['domain']}}/branding/logo.jpg">
+                <input id="logopic" type="file" onChange="handlePictureChange('logopic', 'logo_pic_id')"/>
+                <button id="upload-button" onclick="uploadFileProgress('logopic', 'logopic', 'progressBar-logopic')"> {{_("Upload the Logo Picture")}}</button>
+                <progress id="progressBar-logopic" value="0" max="100"/>
+              </div>
           </div>
         </div>
       </div>  <!-- close upload-container -->

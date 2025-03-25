@@ -231,26 +231,25 @@ function deleteAmenity( index ) {
     amenity_id = index;
 
     request.onload = function () {
-      // Begin accessing JSON data here
-      var json = JSON.parse(this.response);
+        // Begin accessing JSON data here
+        var json = JSON.parse(this.response);
 
-      if (request.status >= 200 && request.status < 400) {
-          if (json.response.status == 'success') {
-              showMsgBoxSuccess( gettext('Record deleted from the database') );
-          }
-          else
-          if ( json.response.status == 'found_rsv' ) {
-              showMsgBox( gettext('Cannot delete, reservation found for this amenity') );
-          }
-          else {
-              showMsgBox( gettext('Error deleting record') );
-          }
-      }
-      else {
-          showMsgBox( gettext('Error deleting record') );
-      }
-
-      location.reload();
+        if (request.status >= 200 && request.status < 400) {
+            if (json.response.status == 'success') {
+                showMsgBoxSuccess( gettext('Record deleted from the database') );
+                location.reload();
+            }
+            else
+            if ( json.response.status == 'found_rsv' ) {
+                showMsgBox( gettext('Cannot delete, reservation found for this amenity') );
+            }
+            else {
+                showMsgBox( gettext('Error deleting record') );
+            }
+        }
+        else {
+            showMsgBox( gettext('Error deleting record') );
+        }
     }
 
     var requestObj = new Object();

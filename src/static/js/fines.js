@@ -119,7 +119,7 @@ function deleteFine( index ) {
     request.send(jsonStr);
 }
 
-function sendFineReminder( index ) {
+function sendFineReminder( index, charge_type ) {
     /* retrieve fields from browser's memory */
     user_id = document.getElementById(index + "_user_id").value;
     fine_id = document.getElementById(index + "_fine_id").value;
@@ -165,6 +165,7 @@ function sendFineReminder( index ) {
     requestObj.email = email;
     requestObj.amount = amount;
     requestObj.descr = descr;
+    requestObj.charge_type = charge_type;
     requestObj.due_date = {"y": due_date_y, "m": due_date_m,  "d": due_date_d};
     jsonStr = '{ "fine": ' + JSON.stringify(requestObj) + '}';
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");

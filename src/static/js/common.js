@@ -141,6 +141,19 @@ function showConfirmMsgBox(text) {
     return outer_resp;
 }
 
+function showAlertMsgBox(text) {
+    outer_resp = false;
+    bootbox.confirm({
+        message: text,
+        buttons: {
+            confirm: { label: 'Yes', className: 'btn-success' }
+        },
+        callback: function (resp) {
+            outer_resp = resp; // returns true or false
+        }
+    });
+    return outer_resp;
+}
 
 function showFadingMsg(msg) {
     showFadingMsgParam(ERROR_MSG, msg);  // default is ERROR_MSG
