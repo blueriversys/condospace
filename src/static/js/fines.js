@@ -167,6 +167,7 @@ function sendFineReminder( index, charge_type ) {
     requestObj.descr = descr;
     requestObj.charge_type = charge_type;
     requestObj.due_date = {"y": due_date_y, "m": due_date_m,  "d": due_date_d};
+    requestObj.charge_type = charge_type;
     jsonStr = '{ "fine": ' + JSON.stringify(requestObj) + '}';
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.send(jsonStr);

@@ -33,6 +33,9 @@ msgstr "Reserva de Espaços Comuns"
 msgid "Reservations"
 msgstr "Reservas"
 
+msgid "Make This Reservation"
+msgstr "Fazer Esta Reserva"
+
 msgid "Add a New Amenity"
 msgstr "Adicionar um Novo Espaço"
 

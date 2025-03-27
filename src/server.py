@@ -136,6 +136,7 @@ USER_NOT_AUTHENTICATED_CODE = 2
 COVER_PREF_WIDTH = 120
 COVER_PREF_HEIGHT = 80
 
+ACCEPTED_GRAPHIC_FILE_TYPES = (".jpg", ".jpeg", ".png", ".gif")
 
 # for PROD, change the file serverfiles/config-prod.dat
 with open(CONFIG_FILE, 'r') as f:
@@ -180,6 +181,13 @@ lock = Lock()
 
 cgitb.enable()
 
+def is_valid_graphic_file(file_name):
+    f_name, f_ext = os.path.splitext(file_name)
+    f_ext = f_ext.lower()
+    if f_ext not in ACCEPTED_GRAPHIC_FILE_TYPES:
+        return False
+    return True
+
 def is_tenant_found(tenant):
     if not aws.is_file_found(f"{INFO_FILE}"):
         return False
@@ -191,15 +199,23 @@ def is_tenant_found(tenant):
     return False
 
 def get_doc_files_cache(tenant, path, pattern):
-    # key = f"{tenant}-{path}"
-    # if key in doc_files_cache:
-    #     print(f"return mem docs")
-    #     return doc_files_cache[key]
-    #
-    docs = get_files(path, pattern)
-    # doc_files_cache[key] = docs
-    print(f"return aws docs")
-    return docs
+    key = f"{tenant}-{path}"
+    if key in doc_files_cache:
+        print(f"key {key} found. return doc_files from cache")
+        return doc_files_cache[key]
+
+    docs = get_files(tenant, path, pattern)
+    doc_files_cache[key] = docs
+    print(f"key {key} not found in cache. return doc_files from aws")
+    return doc_files_cache[key]
+
+def invalidate_doc_files_cache(tenant, path):
+    key = f"{tenant}-{path}"
+    if key in doc_files_cache:
+        del doc_files_cache[key]  # to force an aws read next time
+        print(f"key {key} found. doc_files_cache invalidated")
+    else:
+        print(f"key {key} not found in cache. No deletion")
 
 def get_json_from_file(tenant, file_path):
     key = f"{tenant}-{file_path}"
@@ -222,6 +238,7 @@ def save_json_to_file(tenant, file_path, content):
     aws.upload_text_obj(f"{tenant}/{file_path}", string_content)
     key = f"{tenant}-{file_path}"
     global json_file_cache
+    print(f"cached to mem: {key}, {string_content}")
     json_file_cache[key] = string_content
 
 def get_json_from_file_no_tenant(file_path):
@@ -1388,7 +1405,7 @@ def update_settings(tenant):
     info['config'][tenant]['pay_pix_key'] = json_req['request']['pay_pix_key']
     info['config'][tenant]['pay_template'] = json_req['request']['pay_template']
     info['config'][tenant]['pay_title'] = json_req['request']['pay_email_title']
-    save_json_to_file_no_tenant(f"{INFO_FILE}", json.dumps(info))
+    save_json_to_file_no_tenant(f"{INFO_FILE}", info)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -1577,6 +1594,9 @@ def get_docs(tenant):
         lock.release()
         return render_template("docs-open.html", opendocs=open_docs, info_data=info_data)
 
+    # f"{PROTECTED_FOLDER}/docs/financial/{doc_year}"
+    # f"{PROTECTED_FOLDER}/docs/financial/{year}"
+
     # here user is authenticated, aka logged in
     start_year = datetime.now().year - 4
     fin_docs = {}
@@ -1625,7 +1645,7 @@ def delete_fin_doc_group(tenant):
     print(f"key to be deleted: {key}")
     if key in doc_files_cache:
         print(f"key found, will be deleted: {key}")
-        del doc_files_cache[key]  # to force an aws read next time
+        invalidate_doc_files_cache(tenant, partial_path)  # to force an aws read next time
 
     return_obj = { 'response': {'status': status} }
     lock.release()
@@ -1703,7 +1723,7 @@ def pics(tenant):
         return render_template("condo_not_found.html", tenant=tenant)
 
     info_data = get_info_data(tenant)
-    pictures = get_files(UNPROTECTED_FOLDER + '/pics', '')
+    pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/pics", '')
 
     if not aws.is_file_found(f"{tenant}/{EVENT_PICS_FILE}"):
         lock.release()
@@ -1763,7 +1783,7 @@ def delete_file(tenant):
         print(f"key to be deleted: {key}")
         if key in doc_files_cache:
             print(f"key found, will be deleted: {key}")
-            del doc_files_cache[key]  # to force an aws read next time
+            invalidate_doc_files_cache(tenant, partial_path)  # to force an aws read next time
 
 #    status = 'success' if resp == 'success' else 'failure'
     status = 'success'
@@ -2148,7 +2168,7 @@ def get_one_listing(tenant, unit, listing_id):
         alisting['listing_id'] = listing_id
         alisting['date'] = get_string_from_epoch(alisting['date'], info_data['language'])
         alisting['price'] = format_decimal(alisting['price'])
-        pictures = get_files(f"{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics", '')
+        pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics", '')
 
     lock.release()
     return render_template("alisting.html", unit=unit, listing=alisting, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
@@ -2172,6 +2192,8 @@ def upload_listing(tenant):
 
     # this is to find the cover file name, if any
     for file in upload_files:
+        if not is_valid_graphic_file(file.filename):
+            continue
         if file.filename.startswith("cover"):
             cover_found = True
             cover_name = file.filename
@@ -2222,6 +2244,8 @@ def upload_listing(tenant):
 
     # here we know the listing_id, let's upload the files
     for file in upload_files:
+        if not is_valid_graphic_file(file.filename):
+            continue
         aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{user_id}/{listing_id}/pics/{file.filename}", file.read())
 
     if cover_found is False and img_bytes is not None:
@@ -2295,7 +2319,7 @@ def delete_listing(tenant):
 def get_event_pics(tenant, title):
     lock.acquire()
     print(f"in get_event_pics(): tenant: {tenant}")
-    pictures = get_files(f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
+    pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
     events = get_json_from_file(tenant, EVENT_PICS_FILE)
     info_data = get_info_data(tenant)
     if title not in events['event_pictures']:
@@ -2459,8 +2483,9 @@ def upload_event():
         for file in upload_files:
             print(f'file name: {file.filename}')
 
-    pictures = get_files(UNPROTECTED_FOLDER + '/pics', '')
-    return render_template("pics.html", pics=pictures, info_data=get_info_data())
+    tenant = get_tenant()
+    pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/pics", '')
+    return render_template("pics.html", pics=pictures, info_data=get_info_data(tenant))
 
 
 @app.route('/<tenant>/upload_financial', methods=['GET' , 'POST'])
@@ -2478,8 +2503,10 @@ def upload_financial(tenant):
     doc_year = request.form['year']
     doc_month = request.form['month']
     file_size = request.form['filesize']
-    fullpath = f"{PROTECTED_FOLDER}/docs/financial/{doc_year}/Fin-{doc_year}-{doc_month}.pdf"
+    partial_path = f"{PROTECTED_FOLDER}/docs/financial/{doc_year}"
+    fullpath = f"{partial_path}/Fin-{doc_year}-{doc_month}.pdf"
     aws.upload_binary_obj(f"{tenant}/{fullpath}", uploaded_file.read())
+    invalidate_doc_files_cache(tenant, partial_path)
     lock.release()
     return redirect(f"/{tenant}/docs")
 
@@ -2500,17 +2527,30 @@ def upload(tenant):
     if request.method == 'POST':
         uploaded_file = request.files['file']
         uploaded_convname = request.form['convname']
-        # log(tenant, f'size {file_size}  file name received {uploaded_file.filename}  special name: {uploaded_convname}')
         filename = secure_filename(uploaded_file.filename)
         filename = filename.replace('_', '-')
         filename = filename.replace(' ', '-')
-        fullpath = ''
-        if uploaded_convname == 'homepic':
-            fullpath = UNPROTECTED_FOLDER + '/branding/home.jpg'
+        invalidate_cache = False
+
+        if uploaded_convname == 'pubfile':
+            partial_path = f"{UNPROTECTED_FOLDER}/opendocs/files"
+            invalidate_cache = True
+        elif uploaded_convname == 'bylaws':
+            partial_path = f"{PROTECTED_FOLDER}/docs/bylaws"
+            invalidate_cache = True
+        elif uploaded_convname == 'otherdoc':
+            partial_path = f"{PROTECTED_FOLDER}/docs/other"
+            invalidate_cache = True
+        elif uploaded_convname == 'picture':
+            partial_path = f"{UNPROTECTED_FOLDER}/pics"
         elif uploaded_convname == 'logopic':
-            fullpath = UNPROTECTED_FOLDER + '/branding/logo.jpg'
+            partial_path = ''
+        elif uploaded_convname == 'homepic':
+            partial_path = ''
         else:
-            fullpath = PROTECTED_FOLDER + '/docs/financial/' + "Fin-" + uploaded_convname + ".pdf"
+            print(f"upload(): No file uploaded. Unexpected file type: {uploaded_convname}")
+            lock.release()
+            return render_template("upload.html", user_types=staticvars.user_types, info_data=info_data)
 
         uploaded_file.stream.seek(0)
 
@@ -2520,15 +2560,21 @@ def upload(tenant):
             logo_name = "logo.jpg" if img_format == 'JPEG' else "logo.png"
             fullpath = f"{UNPROTECTED_FOLDER}/branding/{logo_name}"
             aws.upload_binary_obj(f"{tenant}/{fullpath}", new_img_bytes)
-        else:
+        elif uploaded_convname == 'homepic':
+            fullpath = f"{UNPROTECTED_FOLDER}/branding/home.jpg"
             aws.upload_binary_obj(f"{tenant}/{fullpath}", uploaded_file.read())
-
-        if uploaded_convname == 'homepic':
             info_data['default_home_pic'] = False
-            print(f"info data: \n{info_data}")
             info_obj = get_json_from_file_no_tenant(f"{INFO_FILE}")
             info_obj['config'][tenant] = info_data
             save_json_to_file_no_tenant(INFO_FILE, info_obj)
+        else:
+            fullpath = f"{partial_path}/{filename}"
+            aws.upload_binary_obj(f"{tenant}/{fullpath}", uploaded_file.read())
+            print(f"just uploaded this file: {tenant}/{fullpath}")
+
+        if invalidate_cache:
+            print(f"upload(): prior to call invalidate_do_files_cache()")
+            invalidate_doc_files_cache(tenant, partial_path)
 
         lock.release()
         return render_template("upload.html", user_types=staticvars.user_types, info_data=info_data)
@@ -3355,9 +3401,8 @@ def load_user(internal_user_id):
         ret_user = user
     return ret_user
 
-def get_files(folder, pattern):
-    #print(f"in get_files(): tenant: {get_tenant()}")
-    files = aws.get_file_list_folder(get_tenant(), folder)
+def get_files(tenant, folder, pattern):
+    files = aws.get_file_list_folder(tenant, folder)
     if pattern:
         arr = [x for x in files if x.startswith(f"{BUCKET_PREFIX}/{get_tenant()}/{folder}/{pattern}")]
     else:
