@@ -2,7 +2,7 @@
 fieldset {
     margin-left: 10px;
     margin-right: 10px;
-    background-color: #cceef9;
+    background-color: var(--data-entry-color);
     padding: 5px 10px;
     border: 1px solid blue;
     border-radius: 8px;

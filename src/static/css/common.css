@@ -1,5 +1,12 @@
+
+/* TODO: find a way to not duplicate these definitions */
+:root {
+  --data-entry-color: #b1d2f2;
+  --data-entry-color-alt: #ffb8b8;
+}
+
 fieldset {
-    background-color: #cceef9;
+    background-color: var(--data-entry-color);
     padding: 0px 5px 5px 5px;
     border: 1px solid blue;
     border-radius: 8px;

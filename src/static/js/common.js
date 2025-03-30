@@ -40,6 +40,9 @@ const SELECTED_FILES_CONTROL = "selectedFiles";
 
 document.addEventListener("DOMContentLoaded", init, false);
 
+const DATA_ENTRY_COLOR = "#b1d2f2";
+const DATA_ENTRY_COLOR_ALT = "#ffb8b8"
+
 /* these are global variables; used in multiple .js files
    For this to work: import common.js first; import the page's .js file; in the onLoadAction(), populate these vars
 */
@@ -439,7 +442,7 @@ function populateTable(json, table_id, user_type_param) {
 
         if (json.residents[i].userid != loggedin_userid_global) {
             click_str = "deleteUserParam('" + json.residents[i].userid + "');";
-            del_btn_cell.innerHTML = '<button id="delete" class="button small-button" onClick="' + click_str + '" title="delete user from database">delete</button>';
+            del_btn_cell.innerHTML = '<button id="delete" class="btn btn-danger btn-sm d-inline-flex align-items-center" style="height: 20px; font-size: 11px;" onClick="' + click_str + '" title="delete user from database">delete</button>';
         }
 
 //        var unit = json.residents[i].unit;

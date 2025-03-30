@@ -57,11 +57,11 @@ from io import BytesIO
 from redmail import gmail
 from flask_babel import Babel, gettext, lazy_gettext, _
 from flask_babel import format_decimal
+import requests
+
 ''' for simulation of long running tasks '''
 from threading import Thread, Lock
 from time import sleep
-import requests
-from functools import cache
 
 #import logging
 # https://realpython.com/python-logging/
@@ -77,6 +77,8 @@ app = Flask(
            )
 
 app.config['SECRET_KEY'] = 'secret@whitegate#key'
+app.url_map.strict_slashes = False
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login_tenant'
 login_manager.refresh_view = 'login_tenant'
@@ -84,14 +86,6 @@ login_manager.needs_refresh_message = (u'Due to inactivity, you have been logged
 login_manager.login_message = lazy_gettext('Login is required to access the page you want')
 login_manager.needs_refresh_message_category = 'info'
 
-WHITEGATE_EMAIL = 'info@whitegatecondo.com'
-WHITEGATE_NAME = 'Whitegate Condo'
-GMAIL_WHITEGATE_EMAIL = 'whitegatecondoinfo@gmail.com'
-GMAIL_BLUERIVER_EMAIL = "blueriver02703@gmail.com"
-CONTACT_TARGET_EMAIL = "joesilva01862@gmail.com"
-GMAIL_BLUERIVER_EMAIL_APP_PASSWORD = "anda ppxi wyab wyla"
-BLUERIVER_CONTACT_EMAIL = "contact@blueriversys.com"
-BLUERIVER_CONTACT_PASSWORD = "cvgx xptp wihv swwa"
 CONFIG_FOLDER = 'config'
 SERVER_FOLDER = 'serverfiles'
 UPLOADED_FOLDER = 'uploadedfiles'
@@ -149,6 +143,14 @@ with open(CONFIG_FILE, 'r') as f:
     print(f"Domain name: {config['domain']}")
     print(f"Version #: {config['version']['number']},  version date: {config['version']['date']}")
 
+WHITEGATE_EMAIL = config['WHITEGATE_EMAIL']
+WHITEGATE_NAME = config['WHITEGATE_NAME']
+GMAIL_WHITEGATE_EMAIL = config['GMAIL_WHITEGATE_EMAIL']
+GMAIL_BLUERIVER_EMAIL = config['GMAIL_BLUERIVER_EMAIL']
+CONTACT_TARGET_EMAIL = config['CONTACT_TARGET_EMAIL']
+GMAIL_BLUERIVER_EMAIL_APP_PASSWORD = config['GMAIL_BLUERIVER_EMAIL_APP_PASSWORD']
+BLUERIVER_CONTACT_EMAIL = config['BLUERIVER_CONTACT_EMAIL']
+BLUERIVER_CONTACT_PASSWORD = config['BLUERIVER_CONTACT_PASSWORD']
 
 aws = AWS(BUCKET_PREFIX, config['bucket_name'], config['aws_access_key_id'], config['aws_secret_access_key'])
 
@@ -177,7 +179,6 @@ doc_files_cache = {}
 
 # define the lock object
 lock = Lock()
-
 
 cgitb.enable()
 
@@ -234,12 +235,13 @@ def get_json_from_file(tenant, file_path):
     return json_obj
 
 def save_json_to_file(tenant, file_path, content):
-    string_content = json.dumps(content)
-    aws.upload_text_obj(f"{tenant}/{file_path}", string_content)
+    string_content = json.dumps(content, indent=4, ensure_ascii=False)
+    resp = aws.upload_text_obj(f"{tenant}/{file_path}", string_content)
     key = f"{tenant}-{file_path}"
     global json_file_cache
-    print(f"cached to mem: {key}, {string_content}")
+    #print(f"cached to mem: {key}, {string_content}")
     json_file_cache[key] = string_content
+    return resp
 
 def get_json_from_file_no_tenant(file_path):
     if file_path in json_file_cache_no_tenant:
@@ -254,7 +256,7 @@ def get_json_from_file_no_tenant(file_path):
     return json.loads(string_content)
 
 def save_json_to_file_no_tenant(file_path, content):
-    str_content = json.dumps(content)
+    str_content = json.dumps(content, indent=4, ensure_ascii=False)
     aws.upload_text_obj(f"{file_path}", str_content)
     print(f"file_no_tenant: returning file content")
     global json_file_cache_no_tenant
@@ -427,14 +429,14 @@ def load_users(tenant):
 
 
 ''' These are long running related functions '''
-def email_task(subject, body):
+def email_task(email_list, subject, body):
     global email_percent
-    email_to = get_all_emails()
-    total_count = len(email_to)
+    total_count = len(email_list)
     #print(f" total count {total_count}")
     count = 0
-    for single_email_to in email_to:
-        send_email_relay_host(single_email_to, subject, body)
+    for single_email_to in email_list:
+#        send_email_relay_host(single_email_to, subject, body)
+        send_email_redmail()
         count += 1
         email_percent = int( (count / total_count ) * 100 )
         #sleep(2)
@@ -454,11 +456,17 @@ def email_task(subject, body):
   will send email to all residents, one by one
 '''
 @app.route('/sendmail', methods=['POST'])
-def start_email_task():
+def send_email_to_all(tenant, subject, body):
+    email_list = []
+    for user in users_repository.get_users(tenant):
+        if user.get_email():
+            email_list.append(user.get_email())
+    print(f"email count to be sent: {len(email_list)}")
     global email_percent
     email_percent = 1
-    t1 = Thread(target=email_task, args=(request.get_json()['subject'], request.get_json()['body']))
-    t1.start()
+    # t1 = Thread(target=email_task, args=(email_list, subject, body))
+    # t1.start()
+    send_email_redmail_all(email_list, subject, body)
     status = {'percent': email_percent}
     return json.dumps(status)
 
@@ -515,7 +523,7 @@ def custom_static_listing(tenant, unit, listing_id, filename):
 @app.route('/<tenant>/reservations/<amenity_id>/<filename>')
 def custom_static_amenity(tenant, amenity_id, filename):
     print(f"in custom_static_amenity(): tenant: {tenant}, amenity_id {amenity_id}, filename {filename}")
-    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/{amenity_id}/{filename}")
+    file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/amenity_{amenity_id}.jpg")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
 @app.route('/<tenant>/announcs/<filename>')
@@ -770,13 +778,13 @@ def save_amenity(tenant):
         pic_file_name = os.path.basename(request.form['default_img_name'])
         print(f"static folder: {app.static_folder}    pic file: {pic_file_name}")
         amenity_pic = open(f"{app.static_folder}/img/{pic_file_name}", "rb")
-        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/reservations/{amenity_id}/amenity.jpg", amenity_pic.read())
+        aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/amenity_{amenity_id}.jpg", amenity_pic.read())
     else:
         amenity_pic = request.files['amenity_pic']
         amenity_pic.stream.seek(0)
         img_bytes = amenity_pic.read()
         _, img_bytes = reduce_image_enh(img_bytes, COVER_PREF_WIDTH, COVER_PREF_HEIGHT)
-        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/reservations/{amenity_id}/amenity.jpg", img_bytes)
+        aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/amenity_{amenity_id}.jpg", img_bytes)
 
     data_to_persist = {"reservations": reservations, "amenities": amenities}
     save_json_to_file(tenant, RESERVATIONS_FILE, data_to_persist )
@@ -848,6 +856,8 @@ def delete_amenity(tenant):
         del amenities[amenity_id]
         data_to_persist = {"reservations": reservations, "amenities": amenities}
         save_json_to_file(tenant, RESERVATIONS_FILE, data_to_persist)
+        # now delete amenity picture file
+        aws.delete_object(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/amenity_{amenity_id}.jpg")
     else:
         print(f"amenity_id not found for tenant {tenant}")
 
@@ -1105,25 +1115,31 @@ def save_payment(tenant):
     if aws.is_file_found(f"{FINES_FILE}"):
         pay_data = get_json_from_file_no_tenant(f"{FINES_FILE}")
 
-        # find the last fine_id for the user
-        if user_id in pay_data['fines'][tenant]:
-            fine_id = 0
-            for id, value in pay_data['fines'][tenant][user_id]['fines'].items():
-                id = int(id)
-                fine_id = id if id > fine_id else fine_id
-            fine_id += 1
-        else:
-            fine_id = 0
-
-        payment_id = fine_id
-
         if tenant in pay_data['fines']:
+            # find the last fine_id for the user
             if user_id in pay_data['fines'][tenant]:
+                fine_id = 0
+                for id, value in pay_data['fines'][tenant][user_id]['fines'].items():
+                    id = int(id)
+                    fine_id = id if id > fine_id else fine_id
+                fine_id += 1
                 pay_data['fines'][tenant][user_id]['fines'][fine_id] = fine_entry
             else:
+                fine_id = 0
                 pay_data['fines'][tenant][user_id] = { "name": name, "email": email, "phone": phone, "fines": { fine_id: fine_entry } }
         else:
+            fine_id = 0
             pay_data['fines'] = { tenant: { user_id: { "name": name, "email": email, "phone": phone, "fines": { fine_id: fine_entry } } } }
+
+        payment_id = fine_id
+        #
+        # if tenant in pay_data['fines']:
+        #     if user_id in pay_data['fines'][tenant]:
+        #         pay_data['fines'][tenant][user_id]['fines'][fine_id] = fine_entry
+        #     else:
+        #         pay_data['fines'][tenant][user_id] = { "name": name, "email": email, "phone": phone, "fines": { fine_id: fine_entry } }
+        # else:
+        #     pay_data['fines'] = { tenant: { user_id: { "name": name, "email": email, "phone": phone, "fines": { fine_id: fine_entry } } } }
     else:
         fine_id = 0
         payment_id = fine_id
@@ -1415,23 +1431,14 @@ def update_settings(tenant):
 #   Announcs related routes
 #------------------------------------------------------------------------------------------
 @app.route('/<tenant>/announcs')
-def announcs(tenant):
+def get_announcs(tenant):
     lock.acquire()
 
-    print(f"here in announcs")
+    print(f"here in announcs()")
     ret_tenant = get_tenant()
     if ret_tenant == TENANT_NOT_FOUND:
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
-
-    # announc_list = []
-    # string_content = aws.read_text_obj(f"{get_tenant()}/{ANNOUNCS_FILE}")
-    # announc = ''
-    # alist = string_content.split('\n') # create a list divided by the new-line char
-    # for line in alist:
-    #     if len(line.strip()): # add only lines that are not blank
-    #         announc_list.append(line)
-    # json_obj = {'announcs':announc_list} # announc_list contains no blank line as item
 
     if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
         announcs = get_json_from_file(tenant, ANNOUNCS_FILE)['announcs']
@@ -1439,14 +1446,23 @@ def announcs(tenant):
         announcs = {}
 
     info_data = get_info_data(tenant)
+    announcs_list = []
 
     for key, announc in announcs.items():
         announc['timestamp'] = get_string_from_epoch(announc['created_on'], info_data['language'])
         file_name, file_ext = os.path.splitext( announc['file_name'] )
         announc['file_ext'] = file_ext[1:] # 1 to skip the "."
+        announc['key'] = key
+        announcs_list.append(announc)
+
+    # sort in descending order by date
+    announcs_list.sort(key=sort_announcs_descend)
 
     lock.release()
-    return render_template("announcs.html", announcs=announcs.items(), user_types=staticvars.user_types, info_data=info_data)
+    return render_template("announcs.html", announcs=announcs_list, user_types=staticvars.user_types, info_data=info_data)
+
+def sort_announcs_descend(obj):
+    return -obj['created_on'] # the "-" sign reverses the order
 
 
 @app.route('/<tenant>/save_announc', methods=["POST"])
@@ -1461,7 +1477,17 @@ def save_announc(tenant):
     user_id = request.form['created_by']
     text = request.form['text']
     file_name = request.form['attach_file_name']
+    if file_name:
+        attach_file = request.files['attach_file'].read()
+    else:
+        attach_file = None
 
+    save_announc_common(tenant, user_id, text, file_name, attach_file)
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
+def save_announc_common(tenant, user_id, text, file_name, attach_file):
     print(f"tenant {tenant},  created_by {user_id},  file_name: {file_name},  text: {text}")
 
     if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
@@ -1482,6 +1508,8 @@ def save_announc(tenant):
     if file_name:
         _, file_ext = os.path.splitext( file_name )
         mod_file_name = f"{key}{file_ext}"
+        print(f"mod_file_name: {mod_file_name}")
+        aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/announcs/{mod_file_name}", attach_file)
     else:
         mod_file_name = ''
 
@@ -1492,17 +1520,10 @@ def save_announc(tenant):
         "text": text
     }
 
-    # save attachment file
-    if mod_file_name:
-        print(f" mod_file_name: {mod_file_name}")
-        attach_file = request.files['attach_file']
-        aws.upload_binary_obj(f"{tenant}/uploadedfiles/unprotected/announcs/{mod_file_name}", attach_file.read())
-
     # save the JSON file
-    save_json_to_file(tenant, ANNOUNCS_FILE, announcs)
-    return_obj = json.dumps({'response': {'status': 'success'}})
-    lock.release()
-    return return_obj
+    resp = save_json_to_file(tenant, ANNOUNCS_FILE, announcs)
+    print(f"aws resp: {resp}")
+
 
 @app.route('/<tenant>/delete_announc', methods=["POST"])
 @login_required
@@ -1551,6 +1572,65 @@ def delete_announc(tenant):
         aws.delete_object(f"{tenant}/uploadedfiles/unprotected/announcs/{file_name}")
         print(f"attach file deleted")
 
+    return_obj = json.dumps({'response': {'status': 'success'}})
+    lock.release()
+    return return_obj
+
+
+@app.route('/<tenant>/email_announc', methods=["POST"])
+@login_required
+def email_announc(tenant):
+    lock.acquire()
+    print(f"here in email_announc()")
+    json_obj = request.get_json()
+    prefix = "announc"
+    tenant_json = json_obj[prefix]['tenant']
+
+    if tenant != tenant_json:
+        return_obj = json.dumps({'response': {'status': 'error', 'pid': os.getpid()}})
+        lock.release()
+        return return_obj
+
+    user_id = json_obj[prefix]['user_id']
+    announc_id = json_obj[prefix]['announc_id']
+
+    print(f"tenant: {tenant},  user_id: {user_id},  announc_id: {announc_id}")
+
+    if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
+        announcs_content = get_json_from_file(tenant, ANNOUNCS_FILE)
+        if 'announcs' not in announcs_content:
+            return_obj = json.dumps({'response': {'status': 'error'}})
+            lock.release()
+            return return_obj
+    else:
+        return_obj = json.dumps({'response': {'status': 'file_not_found'}})
+        lock.release()
+        return return_obj
+
+    if announc_id in announcs_content['announcs']:
+        text = announcs_content['announcs'][announc_id]['text']
+    else:
+        return_obj = json.dumps({'response': {'status': 'announc_not_found'}})
+        lock.release()
+        return return_obj
+
+    info_data = get_info_data(tenant)
+
+    if info_data['language'] == 'pt':
+        subject = "Um novo anúncio acaba de ser postado"
+        body = f"""Prezados Moradores, um novo anúncio acaba de ser postado. Por favor veja a seção de Anúncios do nosso website.
+\nResumo do anúncio:
+{text}
+        """
+    else:
+        subject = "A new Announcement has been posted"
+        body = f"""Dear residents, a new announcement has been posted. Please see the Announcement section of the website.
+\nSummary of the announcement:
+{text}
+        """
+
+    print(f"subject: {subject}, body: {body}")
+    send_email_to_all(tenant, subject, body)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -3086,10 +3166,15 @@ Board of Directors of {condo_name}.
     }
 
     initial_links = { "links" : {}}
-    initial_announcs = f"{get_timestamp()}: {condo_name} estabeleceu presença online."
     save_json_to_file(condo_id, RESIDENTS_FILE, initial_resident)
     save_json_to_file(condo_id, LINKS_FILE, initial_links)
-#    save_json_to_file(condo_id, ANNOUNCS_FILE, initial_announcs)
+
+    if pref_language == 'pt':
+        announc_text = f"{condo_name} estabeleceu presença online."
+    else:
+        announc_text = f"{condo_name} established online presence."
+
+    save_announc_common(condo_id, userid, announc_text, None, None)
 
     # read the INFO_FILE to add an additional condo to it
     if aws.is_file_found(f"{INFO_FILE}"):
@@ -3246,11 +3331,15 @@ def send_email_relay_host(emailto, subject, body):
     server.quit()
 
 def send_email_redmail(email_to, subject, body):
-    # gmail.username = GMAIL_BLUERIVER_EMAIL
-    # gmail.password = GMAIL_BLUERIVER_EMAIL_APP_PASSWORD
     gmail.username = BLUERIVER_CONTACT_EMAIL
     gmail.password = BLUERIVER_CONTACT_PASSWORD
-    gmail.send(subject=subject, receivers=[email_to, 'info@condospace.app'], text=body)
+    gmail.send(receivers=[email_to, 'info@condospace.app'], subject=subject, text=body)
+
+def send_email_redmail_all(email_list, subject, body):
+    gmail.username = BLUERIVER_CONTACT_EMAIL
+    gmail.password = BLUERIVER_CONTACT_PASSWORD
+    gmail.send(bcc=email_list, subject=subject, text=body)
+
 
 # THIS DIDN'T WORK
 def send_email_google(email_to, subject, body):

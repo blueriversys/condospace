@@ -51,6 +51,28 @@
 
       <div class="spacer"></div>
 
+      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+          <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#add_new_pic_section" aria-expanded="false" aria-controls="collapseExample">
+            {{_("Add a New Picture (open/close)")}}
+          </button>
+
+          <div class="app-container collapse" id="add_new_pic_section">
+              <div class="spacer"></div>
+              <div class="profile-block">
+                  <div class="upload-block-row">
+                      <div class="upload-browse">
+                          <input id="picture" type="file"/>
+                          <button id="upload-button" onclick="uploadFileProgress('picture', 'picture', 'progressBar-pic')"> {{_("Upload a Common Area Picture")}}</button>
+                          <progress id="progressBar-pic" value="0" max="100"/>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      {% endif %}
+
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+
       {% if (pics is defined) and pics %}
           <div class="row">
             {% for pic in pics %}
@@ -71,30 +93,65 @@
 
       <div class="spacer"></div>
       <div class="spacer"></div>
-
-      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-          <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#add_new_pic_section" aria-expanded="false" aria-controls="collapseExample">
-            {{_("Click to Add a New Picture")}}
-          </button>
-
-          <div class="app-container collapse" id="add_new_pic_section">
-              <div class="upload-block-row">
-                  <div class="upload-browse">
-                      <input id="picture" type="file"/>
-                      <button id="upload-button" onclick="uploadFileProgress('picture', 'picture', 'progressBar-pic')"> {{_("Upload a Common Area Picture")}}</button>
-                      <progress id="progressBar-pic" value="0" max="100"/>
-                  </div>
-              </div>
-          </div>
-      {% endif %}
-
-      <div class="spacer"></div>
-      <div class="spacer"></div>
       <div class="spacer"></div>
 
       <div class="section-title" data-aos="zoom-out">
           <h2>{{_('Events')}}</h2>
       </div>
+
+      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+          <div class="spacer"></div>
+
+          <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#add_new_event_section" aria-expanded="false" aria-controls="collapseExample">
+            {{_("Add a New Event (open/close)")}}
+          </button>
+
+          <div class="app-container collapse" id="add_new_event_section">
+              <div class="spacer"></div>
+
+              <div class="profile-block" style="font-size: 14px;">
+                  <fieldset>
+                      <legend>{{_('Event Info')}}</legend>
+                      <div>
+                          <label for="title">{{_('Title')}}:</label>
+                          <input class="title-input" type="text" id="title" name="title">
+                      </div>
+                      <label class="separator-spacer"></label>
+                      <div>
+                          <label for="event_date">{{_('Date')}}:</label>
+                          <input class="date-input" type="date" id="event_date" name="event_date">
+                      </div>
+                  </fieldset>
+                  <div class="spacer"></div>
+                  <fieldset>
+                      <legend>{{_('Pictures')}}</legend>
+                      <div style="margin: 6px;">
+                          <div>
+                              <label for="files_cntrl" class="button larger-button"><i class="fa fa-folder-o"></i>&nbsp;&nbsp;{{_('Choose the Folder Where Your Pictures Are')}}</label>
+                              <input id="files_cntrl" type="file" style="display: none" title="Click to Select a Folder" webkitdirectory directory multiple="false"/>
+                          </div>
+                          <div>
+                              <fieldset style="margin-left: 1px; min-height: 80px;">
+                                  <legend>{{_('Picture Files')}}</legend>
+                                  <div class="selected-files" id="selectedFiles"></div>
+                              </fieldset>
+                          </div>
+                      </div>
+                  </fieldset>
+                  <div class="spacer"></div>
+                  <div class="spacer"></div>
+                  <div class="center">
+                      <button class="button larger-button" id="upload_button" onclick="uploadPictureFiles('event_picture', 'files_cntrl', 'progress_bar')" disabled>
+                      <i class="fa fa-upload"></i>&nbsp;&nbsp;{{_('Upload pictures & Create this new event')}}</button>
+                      <progress id="progress_bar" value="0" max="100"/>
+                  </div>
+              </div>
+
+          </div> <!-- closes app-container -->
+      {% endif %}
+
+      <div class="spacer"></div>
+      <div class="spacer"></div>
 
       {% if events is not none %}
           <div style="font-size: 16px;">
@@ -115,49 +172,6 @@
       {% else %}
           <div class="no-item-msg">{{_('No events yet.')}}</div>
       {% endif  %}
-
-      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-          <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#add_new_event_section" aria-expanded="false" aria-controls="collapseExample">
-            {{_("Click to Add a New Event")}}
-          </button>
-
-          <div class="app-container collapse" id="add_new_event_section">
-              <div class="spacer"></div>
-
-              <div class="profile-block" style="font-size: 14px;">
-                  <fieldset>
-                      <legend>{{_('Event Info')}}</legend>
-                      <label for="title">{{_('Title')}}:</label>
-                      <input class="title-input" type="text" id="title" name="title">
-                      <label class="separator-spacer"></label>
-                      <label for="event_date">{{_('Date')}}:</label>
-                      <input class="date-input" type="date" id="event_date" name="event_date">
-                  </fieldset>
-                  <div class="spacer"></div>
-                  <fieldset>
-                      <legend>{{_('Pictures')}}</legend>
-                      <div>
-                          <label for="files_cntrl" class="button larger-button"><i class="fa fa-folder-o"></i>&nbsp;&nbsp;{{_('Choose the Folder Where Your Pictures Are')}}</label>
-                          <input id="files_cntrl" type="file" style="display: none" title="Click to Select a Folder" webkitdirectory directory multiple="false"/>
-                      </div>
-                      <div>
-                          <fieldset>
-                              <legend>{{_('Picture Files')}}</legend>
-                              <div class="selected-files" id="selectedFiles"></div>
-                          </fieldset>
-                      </div>
-                  </fieldset>
-                  <div class="spacer"></div>
-                  <div class="spacer"></div>
-                  <div class="center">
-                      <button class="button larger-button" id="upload_button" onclick="uploadPictureFiles('event_picture', 'files_cntrl', 'progress_bar')" disabled>
-                      <i class="fa fa-upload"></i>&nbsp;&nbsp;{{_('Upload pictures & Create this new event')}}</button>
-                      <progress id="progress_bar" value="0" max="100"/>
-                  </div>
-              </div>
-
-          </div> <!-- closes app-container -->
-      {% endif %}
 
   </div> <!-- closes content -->
 

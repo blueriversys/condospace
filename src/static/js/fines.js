@@ -277,12 +277,15 @@ function saveFine() {
 }
 
 function chargeTypeChanged() {
+    bg_color = DATA_ENTRY_COLOR;
     legend_text = gettext("Issue a Fine");
     save_button_text = gettext("Add This Fine and Notify User");
     if ( document.getElementById("pay_radio").checked ) {
+        bg_color = DATA_ENTRY_COLOR_ALT;
         legend_text = gettext("Request a Payment");
         save_button_text = gettext("Add This Payment Request and Notify User");
     }
+    document.getElementById("fieldset_id").style.setProperty("background-color", bg_color);
     document.getElementById("legend_id").textContent = legend_text;
     document.getElementById("save_btn_text").innerText = save_button_text;
 }

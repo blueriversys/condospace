@@ -51,6 +51,90 @@
           <h2>{{_('Current Listings')}}</h2>
       </div>
 
+      <div class="spacer"></div>
+
+      {% if info_data['is_authenticated'] == true %}
+          <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#add_new_listing_section" aria-expanded="false" aria-controls="collapseExample">
+            {{_("Add a New Listing (open/close)")}}
+          </button>
+
+          <div class="app-container collapse" id="add_new_listing_section">
+              <div class="spacer"></div>
+
+              <div class="profile-block">
+                  <div>
+                      <fieldset>
+                          <legend>{{_('Listing Info')}}</legend>
+                          <div class="row" style="margin-left: 12px;">
+                          <div>
+                              <label for="unit">{{_('Unit')}}:</label>
+                              <select style="width: 100px;" id="unit" name="unit" onClick="handleUnitSelected();">
+                                  <option value="none" selected disabled hidden>{{_("select one")}}</option>
+                                  {% for unit in units %}
+                                      {% if not unit['userid'].startswith('admin') %}
+                                          <option value="{{unit['userid']}}">{{unit['userid']}}</option>
+                                      {% endif %}
+                                  {% endfor %}
+                              </select>
+                          </div>
+                          <label class="separator-spacer"></label>
+                          <div>
+                              <label for="title">{{_('Description')}}:</label>
+                              <input id="title" class="title-input" type="text" name="title">
+                          </div>
+                          <label class="separator-spacer"></label>
+                          <div>
+                              <label for="email">{{_('Email')}}:</label>
+                              <input id="email" class="email-input" type="email" name="email" required>
+                          </div>
+                          <label class="separator-spacer"></label>
+                          <div>
+                              <label for="phone">{{_('Phone')}}:</label>
+                              <input id="phone" class="phone-input" type="text" name="phone">
+                          </div>
+                          <label class="separator-spacer"></label>
+                          <div>
+                              <label for="price">{{_('Price')}}:</label>
+                              <input class="price-input" type="text" onkeypress="return isNumberKey(this, event)" id="price" name="price" title='{{_("Enter an integer value, no decimal point")}}'>
+                          </div>
+                          </div>
+                      </fieldset>
+                  </div>
+
+                  <div class="spacer"></div>
+
+                  <div>
+                      <fieldset>
+                          <legend>{{_('Pictures')}}</legend>
+                          <div style="margin-left: 6px;">
+                              <div>
+                                  <label for="files_cntrl" class="button larger-button"><i class="fa fa-folder-o"></i>&nbsp;&nbsp;{{_('Choose the Folder Where Your Pictures Are')}}</label>
+                                  <input id="files_cntrl" type="file" style="display: none" title="Click to Select a Folder" webkitdirectory directory multiple="false"/>
+                              </div>
+                              <div>
+                                  <fieldset style="margin-left: 1px; min-height: 80px;">
+                                      <legend>{{_('Picture Files')}}</legend>
+                                      <div class="selected-files" id="selectedFiles"></div>
+                                  </fieldset>
+                              </div>
+                          </div>
+                      </fieldset>
+                      <div class="spacer"></div>
+                      <div class="spacer"></div>
+                      <div class="center">
+                          <button class="button larger-button disabled" id="upload_button" type="submit" onclick="uploadPictureFiles('listing', 'files_cntrl', 'progress_bar')" disabled>
+                          <i class="fa fa-upload"></i>&nbsp;&nbsp;{{_('Upload pictures & Create this new listing')}}</button>
+                          <progress id="progress_bar" value="0" max="100"/>
+                      </div>
+                      <div class="spacer"></div>
+                  </div>
+              </div> <!-- /container -->
+          </div> <!-- app-container -->
+      {% endif %}
+
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+
       {% if listings is not none %}
           <div style="font-size: 16px;">
               <div>
@@ -71,69 +155,6 @@
       {% else %}
           <div class="no-item-msg">{{_('No listings yet.')}}</div>
       {% endif  %}
-
-
-      {% if info_data['is_authenticated'] == true %}
-          <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#add_new_listing_section" aria-expanded="false" aria-controls="collapseExample">
-            {{_("Click to Add a New Listing")}}
-          </button>
-
-          <div class="app-container collapse" id="add_new_listing_section">
-              <div class="spacer"></div>
-
-              <div class="profile-block">
-                  <div>
-                      <fieldset>
-                          <legend>{{_('Listing Info')}}</legend>
-                          <label for="unit">{{_('Unit')}}:</label>
-                          <select style="width: 100px;" id="unit" name="unit" onClick="handleUnitSelected();">
-                              <option value="none" selected disabled hidden>{{_("select one")}}</option>
-                              {% for unit in units %}
-                                  {% if not unit['userid'].startswith('admin') %}
-                                      <option value="{{unit['userid']}}">{{unit['userid']}}</option>
-                                  {% endif %}
-                              {% endfor %}
-                          </select>
-                          <label class="separator-spacer"></label>
-                          <label for="title">{{_('Description')}}:</label>
-                          <input id="title" class="title-input" type="text" name="title">
-                          <label class="separator-spacer"></label>
-                          <label for="email">{{_('Email')}}:</label>
-                          <input id="email" class="email-input" type="email" name="email" required>
-                          <label class="separator-spacer"></label>
-                          <label for="phone">{{_('Phone')}}:</label>
-                          <input id="phone" class="phone-input" type="text" name="phone">
-                          <div>
-                              <label for="price">{{_('Price')}}:</label>
-                              <input class="price-input" type="text" onkeypress="return isNumberKey(this, event)" id="price" name="price" title='{{_("Enter an integer value, no decimal point")}}'>
-                          </div>
-                      </fieldset>
-                      <div class="spacer"></div>
-                      <fieldset>
-                          <legend>{{_('Pictures')}}</legend>
-                          <div>
-                              <label for="files_cntrl" class="button larger-button"><i class="fa fa-folder-o"></i>&nbsp;&nbsp;{{_('Choose the Folder Where Your Pictures Are')}}</label>
-                              <input id="files_cntrl" type="file" style="display: none" title="Click to Select a Folder" webkitdirectory directory multiple="false"/>
-                          </div>
-                          <div>
-                              <fieldset>
-                                  <legend>{{_('Picture Files')}}</legend>
-                                  <div class="selected-files" id="selectedFiles"></div>
-                              </fieldset>
-                          </div>
-                      </fieldset>
-                      <div class="spacer"></div>
-                      <div class="spacer"></div>
-                      <div class="center">
-                          <button class="button larger-button disabled" id="upload_button" type="submit" onclick="uploadPictureFiles('listing', 'files_cntrl', 'progress_bar')" disabled>
-                          <i class="fa fa-upload"></i>&nbsp;&nbsp;{{_('Upload pictures & Create this new listing')}}</button>
-                          <progress id="progress_bar" value="0" max="100"/>
-                      </div>
-                      <div class="spacer"></div>
-                  </div>
-              </div> <!-- /container -->
-          </div> <!-- app-container -->
-      {% endif %}
 
   </div> <!-- closes content -->
 

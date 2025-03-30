@@ -91,7 +91,7 @@ function saveAnnounc() {
     formData.append('tenant', loggedin_tenant_global);
     formData.append('created_by', user_id);
     formData.append('text', announc_text);
-    formData.append("attach_file_name", file_name);
+    formData.append("attach_file_name", file_name); // will be empty if no file was chosen
     formData.append("attach_file", attach_file);
 
     // send request to the server
@@ -183,5 +183,35 @@ function deleteAnnounc(announc_id) {
     request.send(jsonStr);
 }
 
+function sendEmailToResidents(announc_id) {
+    // here we make a request to "delete_announc"
+    var request = new XMLHttpRequest();
+    post_url = "/" + window.loggedin_tenant_global + "/email_announc";
+    request.open('POST', post_url, true);
 
+    showSpinner();
+
+    request.onload = function () {
+      // Begin accessing JSON data here
+      var json = JSON.parse(this.response);
+
+      if (request.status >= 200 && request.status < 400) {
+          if (json.response.status == 'success') {
+              location.reload();
+              return;
+          }
+      }
+
+      showMsgBox( gettext('Error executing this action') );
+      return;
+    }
+
+    var requestObj = new Object();
+    requestObj.tenant = window.loggedin_tenant_global;
+    requestObj.user_id = window.loggedin_userid_global;
+    requestObj.announc_id = announc_id;
+    jsonStr = '{ "announc": ' + JSON.stringify(requestObj) + '}';
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.send(jsonStr);
+}
 

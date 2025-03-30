@@ -57,7 +57,7 @@
 
           <div class="center">
               <button class="button larger-button col-6" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_announcement" aria-expanded="false" aria-controls="collapseExample">
-                {{_("Create a New Announcement")}}
+                {{_("Create a New Announcement (open/close)")}}
               </button>
           </div>
 
@@ -112,7 +112,7 @@
 
     <div class="app-container">
         {% if announcs %}
-            {% for key, announc in announcs %}
+            {% for announc in announcs %}
                     <div class="row flex align-self-center">
                         <div class="col d-flex align-self-center shadow p-3 mb-5 ml-2 mr-2 rounded" style="background: #def6fb; /*border: solid 1px lightgray;*/">
                             <div class="align-self-center" style="width: 80px; height: 80px; margin-right: 20px; border-radius: 4px; /*border: solid 1px #555;*/">
@@ -144,8 +144,9 @@
                                 
                                 {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
                                 <div class="row">
-                                    <div class="center">
-                                        <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="deleteAnnounc('{{key}}');">{{_('delete')}}</button>
+                                    <div>
+                                        <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="deleteAnnounc('{{announc['key']}}');">{{_('delete')}}</button>
+                                        <button class="btn btn-success btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="sendEmailToResidents('{{announc['key']}}');">{{_('send email to residents')}}</button>
                                     </div>
                                 </div>
                                 {% endif %}

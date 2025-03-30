@@ -36,8 +36,8 @@ msgstr "Reservas"
 msgid "Make This Reservation"
 msgstr "Fazer Esta Reserva"
 
-msgid "Add a New Amenity"
-msgstr "Adicionar um Novo Espaço"
+msgid "Add a New Amenity (open/close)"
+msgstr "Adicionar um Novo Espaço (abrir/fechar)"
 
 msgid "Existing Amenities"
 msgstr "Espaços Existentes"
@@ -319,8 +319,11 @@ msgid "My Profile"
 msgstr "Meu Perfil"
 
 #: templates/announcs.html
-msgid "Create a New Announcement"
-msgstr "Criar Um Novo Anúncio"
+msgid "Create a New Announcement (open/close)"
+msgstr "Criar Um Novo Anúncio (abrir/fechar)"
+
+msgid "send email to residents"
+msgstr "enviar email aos moradores"
 
 msgid "New Announcement"
 msgstr "Novo Anúncio"
@@ -431,11 +434,11 @@ msgstr ""
 "limitada, porque acessando deste modo você verá apenas o que o grande "
 "público ver."
 
-msgid "Ability to issue Fines"
-msgstr "Módulo de cobrança de multas"
+msgid "Ability to issue Fines and Request Payments ($)"
+msgstr "Módulo de Multas e Cobranças ($)"
 
-msgid "Make reservations of common areas (soon)"
-msgstr "Fazer reservas de áreas comuns (breve)"
+msgid "Make reservations of common areas ($)"
+msgstr "Fazer reservas de áreas comuns ($)"
 
 msgid "Here's how it works"
 msgstr "Eis como funciona"
@@ -469,10 +472,10 @@ msgstr ""
 
 msgid ""
 "Ability to list apartments for sale with pictures (especially useful for "
-"FSBOs)"
+"FSBOs) ($)"
 msgstr ""
 "Habilidade de listar apartamentos ou outros objetos de grande valor para "
-"venda (muito útil para quem quer vender sem corretor)"
+"venda (muito útil para quem quer vender sem corretor) ($)"
 
 msgid ""
 "Why wait? It's much more affordable than you think. Register your condo "
@@ -587,11 +590,11 @@ msgstr "Nenhum evento ainda."
 msgid "Delete This Event"
 msgstr "Deletar Este Evento"
 
-msgid "Click to Add a New Picture"
-msgstr "Clique Para Adicionar Uma Nova Foto"
+msgid "Add a New Picture (open/close)"
+msgstr "Adicionar Uma Nova Foto (abrir/fechar)"
 
-msgid "Click to Add a New Event"
-msgstr "Clique Para Adicionar Um Novo Evento"
+msgid "Add a New Event (open/close)"
+msgstr "Adicionar Um Novo Evento (abrir/fechar)"
 
 msgid "Event Pictures"
 msgstr "Fotos do Evento"
@@ -642,8 +645,9 @@ msgstr "Nenhum ítem à venda ainda."
 msgid "Delete This Listing"
 msgstr "Deletar Este Ítem"
 
-msgid "Click to Add a New Listing"
-msgstr "Clique Para Adicionar Um Novo Item"
+msgid "Add a New Listing (open/close)"
+msgstr "Adicionar Um Novo Item (abrir/fechar)"
+
 
 #: and logout.html templates/login.html
 msgid "User Id"

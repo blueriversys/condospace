@@ -14,6 +14,7 @@
   --button-hover-textcolor: rgb(16, 60, 160);
   --button-border-radius: 6px;
   --main-color: hsl(201, 54%, 46%);
+  --doc-col-color: #84b7e2;
 }
 
 .wrapper {
@@ -439,7 +440,7 @@ a[data-toggle="collapse"] {
   min-width: 180px;
   line-height: 0.9rem;
   text-align: center;
-  background-color: rgb(168, 214, 230);
+  background-color: var(--doc-col-color);
   margin-top: 8px;
   margin-right: 8px;
   border-radius: 8px;
@@ -483,7 +484,7 @@ a[data-toggle="collapse"] {
   padding: 4px;
   border: solid 1px #555;
 /*  background: hsl(186, 35%, 89%); */
-  background: #cceef9;
+  background: var(--data-entry-color);
   margin-top: 5px;
   margin-bottom: 5px;
   margin-left: 15%;
@@ -1050,7 +1051,7 @@ img {
 }
 
 fieldset {
-    background-color: #cceef9;
+    background-color: var(--data-entry-color);
     padding: 0px 5px 5px 5px;
     border: 1px solid blue;
     border-radius: 8px;
