@@ -1161,6 +1161,7 @@ def save_payment(tenant):
 
 
 @app.route('/<tenant>/setpayment', methods=["POST"])
+@login_required
 def set_payment(tenant):
     lock.acquire()
     print(f"in set_payment(): tenant {tenant}")
@@ -3032,9 +3033,13 @@ Board of Directors of {condo_name}.
         pay_title = ''
         pay_template = ''
 
+    admin_pass = f"{condo_id}@{epoch_timestamp}"
+
     condo_info = {
         "admin_name": user_full_name,
         "admin_email": user_email,
+        "admin_userid": userid,
+        "admin_pass": admin_pass,
         "payment_link": "",
         "license_pay_date": None,
         "license_pay_amount": None,
@@ -3075,8 +3080,6 @@ Board of Directors of {condo_name}.
         'pay_title': pay_title,
         'pay_template': pay_template
     }
-
-    admin_pass = f"{condo_id}@{epoch_timestamp}"
 
     initial_resident = {
       "residents": [
@@ -3392,15 +3395,6 @@ def send_email_local(email_to, subject, body, email_server, port, user, password
     msg.attach(MIMEText(BODY))
     email_list = TO.split(',') # creates a list from a comma-separated string
 
-    # google gmail credentials
-    #email_user = GMAIL_BLUERIVER_EMAIL
-    #password = "em99eveu"
-
-    # these are used with SSL
-    #server = smtplib.SMTP_SSL(email_server, port)
-    #server.starttls()
-    # (optional) server.login(user, password)
-
     server = smtplib.SMTP(email_server, port)
     server.ehlo()
 
@@ -3555,13 +3549,20 @@ def test_new_users_rep():
     print(f"\n user count in belavista: {users_repo.get_user_count_by_tenant('belavista')}")
     print(f"\n total user count: {users_repo.get_user_count_total()}")
 
+
+def create_app():
+    app_name = 'server.py'
+    print(f"app name: {app_name}")
+    return app
+
+
 '''
   host='0.0.0.0' means "accept connections from any client ip address".
 '''
-def main():
-    # we need to tell Babel which function to call for "locale_selector"
-    app.run(host='0.0.0.0', debug=False)
-
-if __name__ == '__main__':
-    main()
+# def main():
+#     # we need to tell Babel which function to call for "locale_selector"
+#     app.run(host='0.0.0.0', debug=False)
+#
+# if __name__ == '__main__':
+#     main()
 

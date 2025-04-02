@@ -120,3 +120,21 @@ class AWS():
             return False
         return True
 
+    def delete_folder(self, folder_path):
+        paginator = self.s3.get_paginator('list_objects_v2')
+        # the trailing slash is important after folder_path to delete only that folder
+        pages = paginator.paginate(Prefix=f"{self.prefix}/{folder_path}/", Bucket=self.bucket_name)
+
+        delete_us = dict(Objects=[])
+        for item in pages.search('Contents'):
+            delete_us['Objects'].append(dict(Key=item['Key']))
+
+            # flush once aws limit reached
+            if len(delete_us['Objects']) >= 1000:
+                self.s3.delete_objects(Bucket=self.bucket_name, Delete=delete_us)
+                delete_us = dict(Objects=[])
+
+        # flush rest
+        if len(delete_us['Objects']):
+            self.s3.delete_objects(Bucket=self.bucket_name, Delete=delete_us)
+

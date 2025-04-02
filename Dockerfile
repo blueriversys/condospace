@@ -26,9 +26,12 @@ RUN pip install -r requirements.txt
 COPY src/aws.py .
 COPY src/functions.py .
 COPY src/pdf.py .
+COPY src/run_both.py .
 COPY src/server.py .
+COPY src/server_adm.py .
 COPY src/staticvars.py .
 COPY src/users.py .
+COPY src/users_adm.py .
 
 # copy folders into the working directory
 COPY src/static         ./static/
@@ -45,4 +48,4 @@ RUN cat ./config/config.json
 # Specify the command to run on container start
 # --error-logfile FILE (if flag not used, it spits to stderr by default)
 # --log-level LEVEL (LEVEL can be 'debug', 'info', 'warning', 'error' or 'critical')
-CMD ["gunicorn", "--workers=1", "--threads=4", "--keep-alive=65", "--bind=0.0.0.0:5000", "server:app"]
+CMD ["gunicorn", "--workers=1", "--threads=4", "--keep-alive=65", "--bind=0.0.0.0:5000", "run_both:app"]

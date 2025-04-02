@@ -66,37 +66,37 @@
                       <fieldset>
                           <legend>{{_('Listing Info')}}</legend>
                           <div class="row" style="margin-left: 12px;">
-                          <div>
-                              <label for="unit">{{_('Unit')}}:</label>
-                              <select style="width: 100px;" id="unit" name="unit" onClick="handleUnitSelected();">
-                                  <option value="none" selected disabled hidden>{{_("select one")}}</option>
-                                  {% for unit in units %}
-                                      {% if not unit['userid'].startswith('admin') %}
-                                          <option value="{{unit['userid']}}">{{unit['userid']}}</option>
-                                      {% endif %}
-                                  {% endfor %}
-                              </select>
-                          </div>
-                          <label class="separator-spacer"></label>
-                          <div>
-                              <label for="title">{{_('Description')}}:</label>
-                              <input id="title" class="title-input" type="text" name="title">
-                          </div>
-                          <label class="separator-spacer"></label>
-                          <div>
-                              <label for="email">{{_('Email')}}:</label>
-                              <input id="email" class="email-input" type="email" name="email" required>
-                          </div>
-                          <label class="separator-spacer"></label>
-                          <div>
-                              <label for="phone">{{_('Phone')}}:</label>
-                              <input id="phone" class="phone-input" type="text" name="phone">
-                          </div>
-                          <label class="separator-spacer"></label>
-                          <div>
-                              <label for="price">{{_('Price')}}:</label>
-                              <input class="price-input" type="text" onkeypress="return isNumberKey(this, event)" id="price" name="price" title='{{_("Enter an integer value, no decimal point")}}'>
-                          </div>
+                              <div>
+                                  <label for="unit">{{_('Unit')}}:</label>
+                                  <select style="width: 100px;" id="unit" name="unit" onClick="handleUnitSelected();">
+                                      <option value="none" selected disabled hidden>{{_("select one")}}</option>
+                                      {% for unit in units %}
+                                          {% if not unit['userid'].startswith('admin') %}
+                                              <option value="{{unit['userid']}}">{{unit['userid']}}</option>
+                                          {% endif %}
+                                      {% endfor %}
+                                  </select>
+                              </div>
+                              <label class="separator-spacer"></label>
+                              <div>
+                                  <label for="title">{{_('Description')}}:</label>
+                                  <input id="title" class="title-input" type="text" name="title">
+                              </div>
+                              <label class="separator-spacer"></label>
+                              <div>
+                                  <label for="email">{{_('Email')}}:</label>
+                                  <input id="email" class="email-input" type="email" name="email" required>
+                              </div>
+                              <label class="separator-spacer"></label>
+                              <div>
+                                  <label for="phone">{{_('Phone')}}:</label>
+                                  <input id="phone" class="phone-input" type="text" name="phone">
+                              </div>
+                              <label class="separator-spacer"></label>
+                              <div>
+                                  <label for="price">{{_('Price')}}:</label>
+                                  <input class="price-input" type="text" onkeypress="return isNumberKey(this, event)" id="price" name="price" title='{{_("Enter an integer value, no decimal point")}}'>
+                              </div>
                           </div>
                       </fieldset>
                   </div>

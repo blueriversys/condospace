@@ -1,9 +1,9 @@
 
     {% if info_data['is_authenticated'] == true %}
-        <li><a class="nav-link" href="logout" aria-selected="false"><i class="fa fa-fw fa-sign-out"></i> {{_('Logout')}}</a></li>
+        <li><a class="nav-link" href="logout" aria-selected="false"><i class="fa fa-fw fa-sign-out"></i> {{('Logout')}}</a></li>
         <li class="menu-userid">[{{current_user.userid}}]</li>
     {% else %}
-        <li><a class="nav-link" href="login" aria-selected="false"><i class="fa fa-fw fa-sign-in"></i> {{_('Login')}}</a></li>
+        <li><a class="nav-link" href="login" aria-selected="false"><i class="fa fa-fw fa-sign-in"></i> {{('Login')}}</a></li>
     {% endif %}
 
     {% include "info_short.html" %}
