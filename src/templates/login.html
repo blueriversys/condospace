@@ -1,4 +1,9 @@
 {% extends "layout.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
 {% block body %}
 
 <div class="main">
@@ -48,7 +53,7 @@
         <div class="spacer"></div>
         <div class="spacer"></div>
 
-        <div style="margin-left: 30%; margin-right: 30%; width: 40%; border-radius: 6px; padding: 20px; border: 1px solid orange;">
+        <div class="login-box">
             <!-- this shows the font-awesome LOGIN human head icon -->
             <i class="fa fa-user-circle-o" style="font-size:160px; color:#3392ff"></i>
 

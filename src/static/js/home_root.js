@@ -137,7 +137,7 @@ function changeCondoIdIcon(type) {
 
     var elem = document.getElementById('condo_id_group');
     elem.classList = `fa ${icon}`;
-    elem.style = `color: ${color}; display: block; line-height: 40px; padding-left: 3px;`;
+    elem.style = `color: ${color}; display: block; font-size: 20px; padding-left: 3px;`;
 }
 
 function condoIdOnBlur() {

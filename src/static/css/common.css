@@ -124,6 +124,7 @@ button:disabled, button[disabled] {
 }
 
 .larger-button.button {
+    font-size: 18px;
     padding: 3px 10px 3px 10px; /* top right bottom left */
     height: 30px;
 }

@@ -193,8 +193,8 @@ msgstr "Entrar Data de Pagamento"
 msgid "Welcome to the CondoSpace App"
 msgstr "Bem-vindo ao CondoSpace App"
 
-msgid "Want to See Some of the Benefits in Using CondoSpace?"
-msgstr "Quer Ver Alguns dos Benefícios de Usar o CondoSpace?"
+msgid "Some of the Benefits of Using CondoSpace?"
+msgstr "Alguns dos Benefícios de Usar o CondoSpace?"
 
 msgid "This is the home page of the Condominium Web Application."
 msgstr "Esta é a página raiz da Aplicação de Condomínio na Web"
@@ -252,8 +252,8 @@ msgstr "Endereço do Condomínio"
 msgid "Condominium City & State"
 msgstr "Cidade e Estado do Condomínio"
 
-msgid "Register Your Condo"
-msgstr "Registre o Seu Condo"
+msgid "Register My Condo"
+msgstr "Registre o Meu Condo"
 
 msgid "Follow Us on Social Media"
 msgstr "Siga-nos nas Mídias Sociais"
