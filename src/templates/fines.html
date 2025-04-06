@@ -40,9 +40,11 @@
 
     <div class="spacer"></div>
 
-    <button class="button larger-button center" data-toggle="collapse" data-target="#units_section" aria-expanded="false" aria-controls="collapseExample">
-      <i class="fa fa-user"></i>&nbsp;&nbsp;{{_('Open/Close the List of Fines & Charges Already Issued')}}
-    </button>
+    <div class="center button-var-width">
+        <button class="button-special button-var-font" data-toggle="collapse" data-target="#new_fine_section" aria-expanded="false" aria-controls="collapseExample">
+          <i class="fa fa-user"></i>&nbsp;&nbsp;{{_('Issue a New Fine or Payment Request (open/close)')}}
+        </button>
+    </div>
 
     <div class="spacer"></div>
     <div class="spacer"></div>
@@ -69,12 +71,76 @@
       </div>
     </div>
 
-    <div class="app-container collapse" id="units_section">
+    <!-- data entry screen to create a new fine or payment request -->
+    <div class="app-container collapse" id="new_fine_section">
         <div class="profile-block">
+
+            <div class="center" style="font-size: 20px;">
+                <label>{{_('I want to')}}:</label>
+                <span style="margin-left: 20px;"></span>
+
+                <input type="radio" id="fine_radio" name="pay_type" value="fine" onClick="chargeTypeChanged()" style="margin-right: 1px;" checked>
+                <label>{{_('Issue a Fine')}}</label>
+
+                <span style="margin-left: 10px;"></span>
+
+                <input type="radio" id="pay_radio" name="pay_type" value="pay" onClick="chargeTypeChanged()" style="margin-right: 1px;">
+                <label>{{_("Request a Payment")}}</label>
+            </div>
+
+            <fieldset id="fieldset_id">
+              <legend id="legend_id">{{_('Issue a Fine')}}</legend>
+
+              <label for="user_id">{{_("User")}}:</label>
+              <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="user_id" name="user_id" onChange="retrieveUser();">
+                <option value="none" selected disabled hidden>{{_("select one")}}</option>
+                {% for unit in units %}
+                    <option value="{{unit['userid']}}">{{unit['userid']}}</option>
+                {% endfor %}
+              </select>
+
+              <label for="name">{{_('Name')}}:</label>
+              <input class="name-input" type="text" id="name" name="name">
+              <label for="email">Email:</label>
+              <input class="email-input" type="email" id="email" name="email" onBlur="emailOnBlur()" >
+              <label for="phone">{{_('Phone')}}:</label>
+              <input class="phone-input" id="phone" name="phone" readonly>
+              <div>
+                  <label for="amount">{{_('Amount')}}:</label>
+                  <input class="amount-input" type="number" onBlur="amountOnBlur()" min="1" step="1" id="amount" name="amount">
+                  <label for="descr">{{_('Description')}}:</label>
+                  <input class="descr-input" type="text" id="descr" name="descr">
+                  <label for="due_date">{{_('Due Date')}}:</label>
+                  <input class="due-date-input" type="date" id="due_date" name="due_date" required>
+              </div>
+            </fieldset>
+
+            <div class="spacer"></div>
+            <div class="center">{{_('The text of the email sent to the user may be configured')}} <a href="upload">{{_('here')}}</a></div>
+            <div class="spacer"></div>
+
+            <div class="center">
+              <button class="button larger-button" id="save_payment_btn" onClick="saveFine();"><i class="fa fa-database"></i>
+                  <span id="save_btn_text">{{_('Add This Fine and Notify User')}}</span>
+              </button>
+            </div>
+
+            <div class="spacer"></div>
+        </div>
+        <div class="spacer"></div>
+    </div>  <!-- closes new_fine_section  -->
+
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+
+    <!-- Table of fines and charges already in the system -->
+    <div class="app-container">
+        <div class="profile-block">
+
           <fieldset>
               <legend>{{_('Fines')}}</legend>
               <div style="width: 98%; margin: auto;">
-                  <table class="table table-sm" id="fines_table_id">
+                  <table class="table table-sm table-responsive-sm table-responsive-md table-var-font" id="fines_table_id">
                     <tr>
                       <th style="width: 2%;"></th>
                       <th style="width: 2%;"></th>
@@ -91,9 +157,9 @@
                     {% for item in fines %}
                       {% if item['charge_type'] == 'fine' %}
                           <tr>
-                            <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
-                            <td><button class="btn btn-primary small-btn" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
-                            <td><button id="remind" class="btn btn-primary small-btn" onClick="sendFineReminder({{loop.index}}, 'fine');" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
+                            <td><button class="btn btn-danger btn-micro" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
+                            <td><button class="btn btn-primary btn-micro" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
+                            <td><button class="btn btn-primary btn-micro" onClick="sendFineReminder({{loop.index}}, 'fine');" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
                             <td>{{item['user_id']}}</td>
                             <td>{{item['name']}}</td>
                             <td>{{item['email']}}</td>
@@ -107,7 +173,7 @@
                     {% endfor %}
                   </table>
               </div>
-          </fieldset>
+          </fieldset>  <!-- end of table of fines -->
 
           <div class="spacer"></div>
           <div class="spacer"></div>
@@ -115,7 +181,7 @@
           <fieldset>
               <legend>{{_('Charges')}}</legend>
               <div style="width: 98%; margin: auto;">
-                  <table class="table table-sm" id="payments_table_id">
+                  <table class="table table-sm table-responsive-sm table-responsive-md table-var-font" id="payments_table_id">
                     <tr>
                       <th style="width: 2%;"></th>
                       <th style="width: 2%;"></th>
@@ -132,9 +198,9 @@
                     {% for item in fines %}
                       {% if item['charge_type'] == 'pay' %}
                       <tr>
-                        <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
-                        <td><button class="btn btn-primary small-btn" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
-                        <td><button id="remind" class="btn btn-primary small-btn" onClick="sendFineReminder({{loop.index}}, 'pay');" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
+                        <td><button id="delete" class="btn btn-danger btn-micro" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
+                        <td><button class="btn btn-primary btn-micro" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
+                        <td><button id="remind" class="btn btn-primary btn-micro" onClick="sendFineReminder({{loop.index}}, 'pay');" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
                         <td>{{item['user_id']}}</td>
                         <td>{{item['name']}}</td>
                         <td>{{item['email']}}</td>
@@ -148,73 +214,11 @@
                     {% endfor %}
                   </table>
               </div>
-          </fieldset>
-
-        <div class="spacer"></div>
-        <div class="spacer"></div>
+          </fieldset>  <!-- end of table of charges -->
+          <div class="spacer"></div>
+          <div class="spacer"></div>
         </div> <!-- close profile-block -->
     </div> <!-- close app-container -->
-
-    <div class="spacer"></div>
-    <div class="spacer"></div>
-
-    <div class="profile-block">
-
-        <div class="center" style="font-size: 20px;">
-            <label>{{_('I want to')}}:</label>
-            <span style="margin-left: 20px;"></span>
-
-            <input type="radio" id="fine_radio" name="pay_type" value="fine" onClick="chargeTypeChanged()" style="margin-right: 1px;" checked>
-            <label for="pay_type">{{_('Issue a Fine')}}</label>
-
-            <span style="margin-left: 10px;"></span>
-
-            <input type="radio" id="pay_radio" name="pay_type" value="pay" onClick="chargeTypeChanged()" style="margin-right: 1px;">
-            <label for="pay_type">{{_("Request a Payment")}}</label>
-        </div>
-
-        <fieldset id="fieldset_id">
-          <legend id="legend_id">{{_('Issue a Fine')}}</legend>
-
-          <label for="user_id">{{_("User")}}:</label>
-          <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="user_id" name="user_id" onChange="retrieveUser();">
-            <option value="none" selected disabled hidden>{{_("select one")}}</option>
-            {% for unit in units %}
-                <option value="{{unit['userid']}}">{{unit['userid']}}</option>
-            {% endfor %}
-          </select>
-
-          <label for="name">{{_('Name')}}:</label>
-          <input class="name-input" type="text" id="name" name="name">
-          <label for="email">Email:</label>
-          <input class="email-input" type="email" id="email" name="email" onBlur="emailOnBlur()" >
-          <label for="phone">{{_('Phone')}}:</label>
-          <input class="phone-input" id="phone" name="phone" readonly>
-          <div>
-              <label for="amount">{{_('Amount')}}:</label>
-              <input class="amount-input" type="number" onBlur="amountOnBlur()" min="1" step="1" id="amount" name="amount">
-              <label for="descr">{{_('Description')}}:</label>
-              <input class="descr-input" type="text" id="descr" name="descr">
-              <label for="due_date">{{_('Due Date')}}:</label>
-              <input class="due-date-input" type="date" id="due_date" name="due_date" required>
-          </div>
-        </fieldset>
-
-        <div class="spacer"></div>
-        <div class="center">{{_('The text of the email sent to the user may be configured')}} <a href="upload">{{_('here')}}</a></div>
-        <div class="spacer"></div>
-
-        <div class="center">
-          <button class="button larger-button" id="save_payment_btn" onClick="saveFine();"><i class="fa fa-database"></i>
-              <span id="save_btn_text">{{_('Add This Fine and Notify User')}}</span>
-          </button>
-        </div>
-
-    </div> <!-- closes profile-block -->
-
-    <div class="spacer"></div>
-    <div class="spacer"></div>
-
   </div> <!-- closes content -->
 
 

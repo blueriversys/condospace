@@ -55,8 +55,8 @@
       {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
           <div class="spacer"></div>
 
-          <div class="center">
-              <button class="button larger-button col-6" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_announcement" aria-expanded="false" aria-controls="collapseExample">
+          <div class="center button-var-width">
+              <button class="button larger-button col-lg-10" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_announcement" aria-expanded="false" aria-controls="collapseExample">
                 {{_("Create a New Announcement (open/close)")}}
               </button>
           </div>
@@ -69,27 +69,34 @@
               <div class="profile-block">
                   <fieldset>
                       <legend>{{_('New Announcement')}}</legend>
-                      <div class="row flex h-100  align-self-center">
-                          <div class="col-5  align-self-center align-items-right" style="/*border: 1px solid blue;*/">
-                              <div class="form-group">
+                      <div class="container">
+                          <div class="row flex">
+                              <div style="width: 100%; /*width: 400px; border: 1px solid blue;*/">
                                   <label for="announc_text">{{_('Text')}}:</label>
                                   <textarea class="form-control" rows="6" id="announc_text"></textarea>
                               </div>
                           </div>
 
-                          <div class="col-4 h-100 align-self-center" id="img_group_1" style="display: block;">
-                              <div class="row">
-                                  <div id="button-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
-                                      <span class="btn btn-primary btn-file">
-                                          {{_("Attach a File (optional)")}} <input id="announc_file" type="file" onChange="pictureSelectAction('announc_file', 'announc_img')">
-                                      </span>
-                                  </div>
-                                  <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
-                                      <img id="announc_img" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
-                                  </div>
-                                  <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
-                                      <span id="announc_file_name" style="margin-left: 5px;"></span>
-                                  </div>
+                          <div class="spacer"></div>
+
+                          <div class="row">
+                              <div id="button-div" class="align-self-center" style="/*border: 1px solid blue;*/">
+                                  <span class="btn btn-primary btn-file">
+                                      {{_("Attach a File (optional)")}} <input id="announc_file" type="file" onChange="pictureSelectAction('announc_file', 'announc_img')">
+                                  </span>
+                              </div>
+                          </div>
+
+<!--                              <div class="container h-100 align-self-center" id="img_group_1" style="display: block;"> -->
+
+                          <div class="spacer"></div>
+
+                          <div class="row flex">
+                              <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                  <img id="announc_img" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
+                              </div>
+                              <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                  <span id="announc_file_name" style="margin-left: 5px;"></span>
                               </div>
                           </div>
                       </div>

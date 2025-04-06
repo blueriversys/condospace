@@ -24,8 +24,8 @@ msgstr "Nome do principal ocupante é obrigatório"
 
 
 #: templates/reservations.html
-msgid "No amenity has been created yet. Ask the Admin to create it."
-msgstr "Nenhum espaço foi criado ainda. Peça para o Admin criar."
+msgid "No amenity has been created yet."
+msgstr "Nenhum espaço foi criado ainda."
 
 msgid "Reservation of Common Areas"
 msgstr "Reserva de Espaços Comuns"
@@ -137,8 +137,8 @@ msgstr "Emitir Uma Cobrança"
 msgid "Issued"
 msgstr "Emissão"
 
-msgid "Open/Close the List of Fines & Charges Already Issued"
-msgstr "Abrir/Fechar a Lista de Multas & Cobranças Já Emitidas"
+msgid "Issue a New Fine or Payment Request (open/close)"
+msgstr "Emitir Uma Nova Multa ou Cobrança (abrir/fechar)"
 
 msgid "select one"
 msgstr "escolha um"
@@ -162,7 +162,7 @@ msgid "mark"
 msgstr "marcar"
 
 msgid "remind"
-msgstr "lembrete"
+msgstr "lembrar"
 
 msgid "unpaid"
 msgstr "a receber"
@@ -487,6 +487,7 @@ msgstr ""
 msgid "Enter an integer value, no decimal point"
 msgstr "Digite um valor inteiro, sem vírgula"
 
+
 #: templates/docs.html
 msgid "delete entire group"
 msgstr "deletar o grupo inteiro"
@@ -526,8 +527,8 @@ msgstr "Nenhum link adicionado ainda."
 msgid "No statement uploaded for this year yet."
 msgstr "Nenhum relatório ainda para este ano."
 
-msgid "Open/Close To Add a Financial Statement"
-msgstr "Abrir/Fechar Para Adicionar Um Novo Relatório Financeiro"
+msgid "Add a Financial Statement (open/close)"
+msgstr "Adicionar Um Novo Relatório Financeiro (abrir/fechar)"
 
 msgid "Upload This Financial Statement"
 msgstr "Subir Este Relatório Financeiro"
@@ -535,20 +536,21 @@ msgstr "Subir Este Relatório Financeiro"
 msgid "Month"
 msgstr "Mês"
 
-msgid "Open/Close To Upload a Bylaws"
-msgstr "Abrir/Fechar Para Subir um Regimento Interno"
+msgid "Upload a Bylaws (open/close)"
+msgstr "Subir um Regimento Interno (abrir/fechar)"
 
-msgid "Open/Close To Upload a Document"
-msgstr "Abrir/Fechar Para Subir um Documento"
+msgid "Upload a Document (open/close)"
+msgstr "Subir um Documento (abrir/fechar)"
 
-msgid "Open/Close To Add a New Link"
-msgstr "Abrir/Fechar Para Adicionar Um Novo Link"
+msgid "Add a New Link (open/close)"
+msgstr "Adicionar Um Novo Link (abrir/fechar)"
 
 msgid "Choose a document"
 msgstr "Escolha um documento"
 
 msgid "ZIP with 5 or 9 digits"
 msgstr "CEP com 5 ou 8 digitos"
+
 
 #: templates/pics.html
 msgid "Condominium Common Areas"
@@ -759,8 +761,8 @@ msgstr "Criar Um Apartamento ou Unidade, e o Morador Atual"
 msgid "Only a user registered as Admin will see this Setup section"
 msgstr "Apenas um usuário com privilégios de Admin tem acesso a área de Cadastrar"
 
-msgid "Open/Close the List of Units/Users Already in the System"
-msgstr "Clique Para Mostrar ou Esconder a Lista de Moradores Já Cadastrados"
+msgid "List of Units/Users Already in the System (open/close)"
+msgstr "Lista de Moradores Já Cadastrados (abrir/fechar)"
 
 msgid "Type"
 msgstr "Tipo"

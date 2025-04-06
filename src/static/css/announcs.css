@@ -31,4 +31,18 @@ legend {
   display: block;
 }
 
+.button-var-width {
+    height: 30px;
+    width: 40%;
+}
+
+
+/* behavior for screens 576px and below*/
+@media (max-width: 576px) {
+    .button-var-width {
+        height: 20px;
+        width: 90%;
+    }
+}
+
 
