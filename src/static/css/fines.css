@@ -108,6 +108,17 @@ input:focus {
     font-size: 12px;
 }
 
+.input-group-prepend {
+    height: 28px;
+    border: 1px solid lightblue;
+}
+
+.form-control {
+    height: 28px;
+    border: 1px solid lightblue;
+}
+
+
 .flexible-row {
     display: flex;
     flex-direction: row;

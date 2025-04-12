@@ -519,8 +519,11 @@ a[data-toggle="collapse"] {
 }
 
 .upload-block {
-  background: hsl(203, 39%, 94%);
-  border-radius: 6px;
+    margin-left: 4px;
+    margin-right: 4px;
+    font-size: 14px;
+    background: hsl(203, 39%, 94%);
+    border-radius: 6px;
 }
 
 .upload-block-row {
@@ -1027,11 +1030,16 @@ img {
   border-radius: 5px;
 }
 
+.general-settings {
+    margin-left: 8px;
+    margin-right: 8px;
+    font-size: 14px;
+}
 
 .general-settings .item {
 	border-radius: 6px;
     margin-bottom: 8px;
-    padding: 10px 20px;
+    padding-top: 10px;
 }
 
 .general-settings .field {

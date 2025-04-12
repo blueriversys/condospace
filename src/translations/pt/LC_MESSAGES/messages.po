@@ -114,6 +114,12 @@ msgstr "Da Hora"
 msgid "Time To"
 msgstr "Até Hora"
 
+msgid "paid"
+msgstr "pago"
+
+msgid "free"
+msgstr "grátis"
+
 
 #: templates/fines.html
 msgid "Fines"

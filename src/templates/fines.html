@@ -91,29 +91,82 @@
             <fieldset id="fieldset_id">
               <legend id="legend_id">{{_('Issue a Fine')}}</legend>
 
-              <label for="user_id">{{_("User")}}:</label>
-              <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="user_id" name="user_id" onChange="retrieveUser();">
-                <option value="none" selected disabled hidden>{{_("select one")}}</option>
-                {% for unit in units %}
-                    <option value="{{unit['userid']}}">{{unit['userid']}}</option>
-                {% endfor %}
-              </select>
+              <div class="container">
+                  <div class="row">
+                      <div>
+                          <label for="user_id">{{_("User")}}:</label>
+                          <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="user_id" name="user_id" onChange="retrieveUser();">
+                            <option value="none" selected disabled hidden>{{_("select one")}}</option>
+                            {% for unit in units %}
+                                <option value="{{unit['userid']}}">{{unit['userid']}}</option>
+                            {% endfor %}
+                          </select>
+                      </div>
+                  </div>
 
-              <label for="name">{{_('Name')}}:</label>
-              <input class="name-input" type="text" id="name" name="name">
-              <label for="email">Email:</label>
-              <input class="email-input" type="email" id="email" name="email" onBlur="emailOnBlur()" >
-              <label for="phone">{{_('Phone')}}:</label>
-              <input class="phone-input" id="phone" name="phone" readonly>
-              <div>
-                  <label for="amount">{{_('Amount')}}:</label>
-                  <input class="amount-input" type="number" onBlur="amountOnBlur()" min="1" step="1" id="amount" name="amount">
-                  <label for="descr">{{_('Description')}}:</label>
-                  <input class="descr-input" type="text" id="descr" name="descr">
-                  <label for="due_date">{{_('Due Date')}}:</label>
-                  <input class="due-date-input" type="date" id="due_date" name="due_date" required>
+                  <div class="row">
+                      <div>
+                          <label for="name">{{_('Name')}}:</label>
+                          <input class="name-input" type="text" id="name" name="name">
+                      </div>
+                      <div>
+                          <label for="email">Email:</label>
+                          <input class="email-input" type="email" id="email" name="email" onBlur="emailOnBlur()" >
+                      </div>
+                      <div>
+                          <label for="phone">{{_('Phone')}}:</label>
+                          <input class="phone-input" id="phone" name="phone" readonly>
+                      </div>
+                      <div>
+                          <label for="amount">{{_('Amount')}}:</label>
+                          <input class="amount-input" type="number" onBlur="amountOnBlur()" min="1" step="1" id="amount" name="amount">
+                      </div>
+                      <div>
+                          <label for="descr">{{_('Description')}}:</label>
+                          <input class="descr-input" style="width: 260px;" type="text" id="descr" name="descr">
+                      </div>
+                      <div>
+                          <label for="due_date">{{_('Due Date')}}:</label>
+                          <input class="due-date-input" type="date" id="due_date" name="due_date" required>
+                      </div>
+                  </div>
               </div>
             </fieldset>
+
+<!--            <div class="spacer"></div>-->
+<!--            <div class="spacer"></div>-->
+<!--            <fieldset>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-text">{{_('Name')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text">-->
+<!--                </div>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-text">{{_('Email')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text">-->
+<!--                </div>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-text">{{_('Phone')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text">-->
+<!--                </div>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-integer">{{_('Amount')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text">-->
+<!--                </div>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-text">{{_('Description')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text" id="myInput">-->
+<!--                </div>-->
+<!--            </fieldset>-->
 
             <div class="spacer"></div>
             <div class="center">{{_('The text of the email sent to the user may be configured')}} <a href="upload">{{_('here')}}</a></div>

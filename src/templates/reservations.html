@@ -54,124 +54,125 @@
       {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
           <div class="spacer"></div>
 
-          <div class="center">
-              <button class="button larger-button col-6" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_amenity_section" aria-expanded="false" aria-controls="collapseExample">
+          <div class="center button-var-width">
+              <button class="button-special button-var-font" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_amenity_section" aria-expanded="false" aria-controls="collapseExample">
                 {{_("Add a New Amenity (open/close)")}}
               </button>
           </div>
 
           <div class="spacer"></div>
 
-          <div class="app-container collapse" id="add_new_amenity_section">
+          <div class="profile-block-inside collapse" id="add_new_amenity_section">
+              <!-- if there are existing amenities, we show them here -->
               {% if amenities %}
-              <div class="profile-block">
-                  <fieldset>
-                      <legend>{{_('Existing Amenities')}}</legend>
-                      <div>
-                          {% for key, amenity in amenities %}
-                          <div class="row m-2">
-                              <div class="col-md-3 text-right align-self-center">
-                                  <img class="small-pic" style="margin-bottom: 5px;" src="reservations/{{key}}/amenity.jpg">
-                              </div>
-                              <div class="col-md-9 align-self-center" style="font-size: 14px; margin-bottom: 8px;">
-                                  {{key}}, [{{amenity['descr']}}], [<strong>{{'paid' if amenity['paid_amenity'] == 'true' else 'free'}}</strong>], [{{_('created by')}} {{amenity['created_by']}} on {{amenity['created_on']}}]
-                                  {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-                                      <button class="btn btn-danger small-btn" id="del-listing-button" onclick="deleteAmenity('{{key}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Amenity')}}</button>
-                                  {% endif  %}
-                              </div>
-                          </div>
-                          {% endfor %}
+              <fieldset>
+                  <legend>{{_('Existing Amenities')}}</legend>
+                  <div class="row justify-content-center">
+                      <div class="table-responsive" style="width: 94%;">
+                          <table class="table table-var-font"  style="margin: 4px;">
+                              {% for key, amenity in amenities %}
+                              <tr>
+                                  <td style="vertical-align: middle;"><button class="btn btn-danger small-btn" id="del-listing-button" onclick="deleteAmenity('{{key}}')">{{_('delete')}}</button></td>
+                                  <td style="vertical-align: middle;"><img class="small-pic-reserv" style="margin-bottom: 5px;" src="reservations/{{key}}/amenity.jpg"></td>
+                                  <td style="vertical-align: middle;">{{key}}, [{{amenity['descr']}}], [<strong>{{_('paid') if amenity['paid_amenity'] == 'true' else _('free')}}</strong>], [{{_('created by')}} {{amenity['created_by']}} on {{amenity['created_on']}}]</td>
+                              </tr>
+                              {% endfor %}
+                          </table>
                       </div>
-                  </fieldset>
-                  <div class="spacer"></div>
-              </div>
+                  </div>
+              </fieldset>
+              <div class="spacer"></div>
               {% endif %}
 
               <div class="spacer"></div>
+              <div class="spacer"></div>
 
-              <div class="profile-block">
-                  <fieldset>
-                      <legend>{{_('Amenity To Be Created')}}</legend>
-                      <div class="row flex h-100  align-self-center">
-                          <div class="col-5  align-self-center align-items-right" style="/*border: 1px solid blue;*/">
-                              <div class="form-group">
+              <!-- this is the data entry screen for the new amenity to be created -->
+              <fieldset>
+                  <legend>{{_('Amenity To Be Created')}}</legend>
+                  <div class="container">
+                      <div class="row">
+                              <div style="width: 100%;">
                                   <label for="descr">{{_('Description')}}:</label>
-                                  <input type="text" class="form-control" style="height: 26px;" id="descr" name="descricao">
+                                  <input type="text" style="width: 80%; height: 26px;" id="descr">
                               </div>
-                              <div class="form-group">
+                      </div>
+
+                      <div class="row">
+                              <div>
                                   <input type="radio" id="free_radio" onClick="paidAmenityChanged()" name="valve" value="free" style="margin-right: 1px;" checked>
                                   <label for="valve">{{_('This is a complimentary amenity')}}</label>
-                                  <div style="margin-left: 12px;"></div>
+                              </div>
+                              <div>
+                                  <span style="margin-left: 10px;"></span>
+                              </div>
+                              <div>
                                   <input type="radio" id="paid_radio" onClick="paidAmenityChanged()" name="valve" value="paid" style="margin-right: 1px;">
                                   <label for="valve">{{_("This is a for-a-fee amenity")}}</label>
-                                  <div id="send_email_div_id" style="display: none;">
-                                      <input type="checkbox" id="send_email_checkbox" name="valve" value="paid" style="margin-left: 10px;">
-                                      <label for="valve">{{_("Send email to Admin on reservation")}}</label>
-                                  </div>
                               </div>
-                          </div>
-
-                          <div class="col-3 h-100 align-self-center" style="/*border: 1px solid blue;*/">
-                              <div class="row  float-right" style="margin-right: 3px;">
+                      </div>
+                      <div class="row">
+                              <div id="send_email_div_id" style="display: none;">
+                                  <input type="checkbox" style="margin-right: 1px;" id="send_email_checkbox" name="valve" value="paid">
+                                  <label for="send_email_checkbox">{{_("Send email to Admin on reservation")}}</label>
+                                  <div style="margin-left: 15px;"></div>
+                              </div>
+                              <div class="align-self-center" style="/*border: 1px solid blue;*/">
                                   <div class="h-100 align-self-center">
                                       <input type="checkbox" style="margin-right: 1px;" id="use-default-img" onClick="useDefaultImgClicked('button-div', 'img-div', 'dropdown-div')" name="use-default-img">
                                       <label for="use-default-img">{{_("Use a default picture")}}</label>
                                   </div>
                               </div>
-                          </div>
-
-                          <div class="col-4 h-100 align-self-center" id="img_group_1" style="display: block;">
-                              <div class="row">
-                                  <div id="button-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
-                                      <!-- <label for="amenity_img_file">Choose your picture</label> -->
-                                      <!-- style="display:none;"  -->
-                                      <!-- see here for more: -->
-                                      <span class="btn btn-primary btn-file">
-                                          {{_("Choose an image")}} <input id="amenity_img_file" type="file" onChange="pictureSelectAction('amenity-img-file', 'amenity-img')">
-                                      </span>
-                                  </div>
-                                  <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
-                                      <img id="amenity_img_1" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
-                                  </div>
-                              </div>
-                          </div>
-
-                          <div class="col-4 h-100 align-self-center" id="img_group_2"  style="display: none;">
-                              <div class="row">
-                                  <div id="dropdown-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
-                                      <label for="default_img_id">{{_("select one")}}:</label>
-                                      <select class="unit-dropdown" style="width: 120px; height: 24px;" id="default_img_id" name="default_img_id" onChange="defaultImageHandler();">
-                                          <option value="none" selected disabled hidden>{{_("select one")}}</option>
-                                          <option value="/common/img/amenity_soccer_court.jpg">{{_("soccer court")}}</option>
-                                          <option value="/common/img/amenity_tennis_court.png">{{_("tennis court")}}</option>
-                                          <option value="/common/img/amenity_barbecue_grill.jpg">{{_("barbecue grill")}}</option>
-                                          <option value="/common/img/amenity_conference_room.jpg">{{_("conference room")}}</option>
-                                          <option value="/common/img/amenity_ball_room.jpg">{{_("ball room")}}</option>
-                                          <option value="/common/img/amenity_dance_room.jpg">{{_("dance room")}}</option>
-                                      </select>
-                                  </div>
-                                  <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
-                                      <img id="amenity_img_2" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
-                                  </div>
-                              </div>
-                          </div>
                       </div>
-                  </fieldset>
-
-                  <div class="spacer"></div>
-
-                  <div class="center">
-                      <button class="button larger-button" id="save_amenity_btn" onClick="saveAmenity();"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Save This Amenity')}}</button>
+                      <div class="row">
+                              <div class="align-self-center" id="img_group_1" style="display: block;">
+                                      <div id="button-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
+                                          <!-- <label for="amenity_img_file">Choose your picture</label> -->
+                                          <!-- style="display:none;"  -->
+                                          <!-- see here for more: -->
+                                          <span class="btn btn-primary btn-file">
+                                              {{_("Choose an image")}} <input id="amenity_img_file" type="file" onChange="pictureSelectAction('amenity-img-file', 'amenity-img')">
+                                          </span>
+                                      </div>
+                                      <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                          <img id="amenity_img_1" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
+                                      </div>
+                              </div>
+                      </div>
+                      <div class="row">
+                              <div class="align-self-center" id="img_group_2"  style="display: none;">
+                                      <div id="dropdown-div" class="align-self-center" style="text-align: right; /*border: 1px solid blue;*/">
+                                          <label for="default_img_id">{{_("select one")}}:</label>
+                                          <select class="unit-dropdown" style="width: 120px; height: 24px;" id="default_img_id" name="default_img_id" onChange="defaultImageHandler();">
+                                              <option value="none" selected disabled hidden>{{_("select one")}}</option>
+                                              <option value="/common/img/amenity_soccer_court.jpg">{{_("soccer court")}}</option>
+                                              <option value="/common/img/amenity_tennis_court.png">{{_("tennis court")}}</option>
+                                              <option value="/common/img/amenity_barbecue_grill.jpg">{{_("barbecue grill")}}</option>
+                                              <option value="/common/img/amenity_conference_room.jpg">{{_("conference room")}}</option>
+                                              <option value="/common/img/amenity_ball_room.jpg">{{_("ball room")}}</option>
+                                              <option value="/common/img/amenity_dance_room.jpg">{{_("dance room")}}</option>
+                                          </select>
+                                      </div>
+                                      <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                          <img id="amenity_img_2" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
+                                      </div>
+                              </div>
+                      </div>
                   </div>
+              </fieldset>
 
-                  <div class="spacer"></div>
-              </div> <!-- closes closes profile-block -->
-          </div> <!-- app-container -->
-      {% endif %}   <!-- this ends the case where the user is an ADM -->
+              <div class="spacer"></div>
+
+              <div class="center">
+                  <button class="button larger-button" id="save_amenity_btn" onClick="saveAmenity();"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Save This Amenity')}}</button>
+              </div>
+
+              <div class="spacer"></div>
+          </div> <!-- closes profile-block -->
+      {% endif %}   <!-- this ends the case where the user is an ADM. This closes the expand/collapse window. -->
 
       <div class="spacer"></div>
       <div class="spacer"></div>
-
 
       <!-- when there is no amenities registered yet, we want to display a message -->
       {% if not amenities %}
@@ -179,70 +180,73 @@
       {% else %}
           {% set ns = namespace(counter=0) %}
           {% for key, amenity in amenities %}
-          <div class="app-container">
-              <div class="profile-block">
-
-                  <div class="row" style="/*border: 1px solid blue;*/">
-                      <div class="col-3 text-right align-self-center">
-                          <img class="small-pic" style="margin-bottom: 5px;" src="reservations/{{key}}/amenity.jpg">
-                      </div>
-                      <div class="col-3 align-self-center" style="font-size: 14px; margin-bottom: 8px;">
-                          {{amenity['descr']}}
-                      </div>
-
-                      <div class="col-3 align-self-center">
-                          <button class="button larger-button center" style="height:26px;" type="button" data-toggle="collapse" data-target="#view_section_{{key}}" aria-expanded="false" aria-controls="collapseExample">
-                            {{_("View Existing Reservations")}}
-                          </button>
-                      </div>
+          <div class="profile-block-inside">
+              <div class="row justify-content-center" style="/*border: 1px solid blue;*/">
+                  <div class="text-right align-self-center">
+                      <img class="small-pic-reserv" style="margin-bottom: 5px;" src="reservations/{{key}}/amenity.jpg">
                   </div>
-
-                  <div class="row mt-3"  style="/*border: 1px solid blue;*/">
-                      <div class="col-12 app-container collapse" id="view_section_{{key}}">
-                          {% if key|int() in reservations %}
-                              <div class="row flex mb-5">
-                                      <div class="col-7 d-flex justify-content-end" style="/*border: 1px solid blue;*/"> <!-- justify-content-end requires d-flex -->
-                                          <div class="justify-content-end">
-                                            <table id="table_schedule_id" class="schedule-table">
-                                              {% for rsv in reservations[key|int()] %}
-                                              <tr>
-                                                  <td>
-                                                  {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-                                                      <button class="btn btn-danger small-btn" style="height: 20px;" id="del_rsv_button_{{ns.counter}}" onclick="deleteReservation('{{rsv['user_id']}}', '{{rsv['rsv_id']}}', '{{key|int()}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('delete')}}</button>
-                                                  {% elif info_data['is_authenticated'] == true and current_user.userid == rsv['user_id'] %}
-                                                      <button class="btn btn-danger small-btn" style="height: 20px;" id="del_rsv_button{{ns.counter}}" onclick="deleteReservation('{{rsv['user_id']}}', '{{rsv['rsv_id']}}', '{{key|int()}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('delete')}}</button>
-                                                  {% endif  %}
-                                                  </td>
-                                                  <td style="padding-right: 8px;">{{rsv['user_id']}}</td>
-                                                  <td style="padding-right: 8px;">{{rsv['name']}}</td>
-                                                  <td id="td_date_id_{{ns.counter}}" class="schedule-td">{{rsv['date']['d']}}-{{rsv['date']['m']}}-{{rsv['date']['y']}}</td>
-                                                  <td id="td_time_id_{{ns.counter}}" class="schedule-td">{{rsv['time_from']['h']}}:{{rsv['time_from']['m']}} - {{rsv['time_to']['h']}}:{{rsv['time_to']['m']}}</td>
-                                              </tr>
-                                              {% set ns.counter = ns.counter + 1 %}
-                                              {% endfor %}
-                                            </table>
-                                          </div>
-                                      </div>
-                                      <div class="col-3 align-self-center" style="/*border: 1px solid blue;*/">
-                                          <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}}, {{amenity['send_email']}});" data-target="#makeReservationModal" title="Make a reservation of this amenity">{{_("Make a Reservation")}}</button>
-                                      </div>
-                              </div> <!-- closes row -->
-                          {% else %}
-                              <div class="row flex mb-5">
-                                  <div class="col d-flex justify-content-middle">
-                                      <div class="col-7 d-flex justify-content-end" style="/*border: 1px solid blue;*/"> <!-- justify-content-end requires d-flex -->
-                                          {{_("No reservation yet")}}
-                                      </div>
-                                      <div class="col-3 align-self-center">
-                                          <button class="btn btn-success large-btn" style="width: 180px; height:26px;" data-toggle="modal" onclick="storeReservationData({{key}}, {{amenity['send_email']}});" data-target="#makeReservationModal" title='{{_("Make a reservation of this amenity")}}'>{{_("Make a Reservation")}}</button>
-                                      </div>
-                                  </div>
-                              </div> <!-- closes row -->
-                          {% endif %}
-                      </div>
+                  <span style="margin: 5px;"></span>
+                  <div class="align-self-center small-var-font" style="/*font-size: 14px; margin-bottom: 8px;*/">
+                      {{amenity['descr']}}
+                  </div>
+                  <span style="margin: 5px;"></span>
+                  <div class="align-self-center button-var-fixed-width">
+                      <button class="button-special button-var-font" style="height:26px;" type="button" data-toggle="collapse" data-target="#view_section_{{key}}" aria-expanded="false" aria-controls="collapseExample">
+                        {{_("View Existing Reservations")}}
+                      </button>
                   </div>
               </div>
-          </div>  <!-- closes app-container -->
+
+              <div class="spacer"></div>
+
+              <div class="container collapse" style="" id="view_section_{{key}}">
+                  {% if key|int() in reservations %}
+                      <div class="row justify-content-center">
+                          <div style="/*border: 1px solid blue;*/">
+                            <table id="table_schedule_id" class="table table-sm table-responsive-sm table-responsive-md table-var-font">
+                              {% for rsv in reservations[key|int()] %}
+                              <tr>
+                                  <td>
+                                  {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                      <button class="btn btn-danger small-btn" style="height: 20px;" id="del_rsv_button_{{ns.counter}}" onclick="deleteReservation('{{rsv['user_id']}}', '{{rsv['rsv_id']}}', '{{key|int()}}')">{{_('delete')}}</button>
+                                  {% elif info_data['is_authenticated'] == true and current_user.userid == rsv['user_id'] %}
+                                      <button class="btn btn-danger small-btn" style="height: 20px;" id="del_rsv_button{{ns.counter}}" onclick="deleteReservation('{{rsv['user_id']}}', '{{rsv['rsv_id']}}', '{{key|int()}}')">{{_('delete')}}</button>
+                                  {% endif  %}
+                                  </td>
+                                  <td style="padding-right: 8px;">{{rsv['user_id']}}</td>
+                                  <td style="padding-right: 8px;">{{rsv['name']}}</td>
+                                  <td id="td_date_id_{{ns.counter}}">{{rsv['date']['d']}}-{{rsv['date']['m']}}-{{rsv['date']['y']}}</td>
+                                  <td id="td_time_id_{{ns.counter}}">{{rsv['time_from']['h']}}:{{rsv['time_from']['m']}} - {{rsv['time_to']['h']}}:{{rsv['time_to']['m']}}</td>
+                              </tr>
+                              {% set ns.counter = ns.counter + 1 %}
+                              {% endfor %}
+                            </table>
+                          </div>
+                          <div class="align-self-center" style="margin-left: 10px; /*border: 1px solid blue;*/">
+                              <button class="btn btn-success large-btn" style="height:26px;" data-toggle="modal" onclick="storeReservationData({{key}}, {{amenity['send_email']}});" data-target="#makeReservationModal" title="Make a reservation of this amenity">{{_("Make a Reservation")}}</button>
+                          </div>
+                      </div> <!-- closes row -->
+                  {% else %}
+                      <div class="row justify-content-center">
+                          <div class="d-flex justify-content-middle">
+                              <div class="d-flex justify-content-end" style="/*border: 1px solid blue;*/"> <!-- justify-content-end requires d-flex -->
+                                  {{_("No reservation yet")}}
+                              </div>
+                              <div class="align-self-center" style="margin-left: 10px;">
+                                  <button class="btn btn-success large-btn" style="height:26px;" data-toggle="modal" onclick="storeReservationData({{key}}, {{amenity['send_email']}});" data-target="#makeReservationModal" title='{{_("Make a reservation of this amenity")}}'>{{_("Make a Reservation")}}</button>
+                              </div>
+                          </div>
+                      </div> <!-- closes row -->
+                      <div class="row">
+                          <div class="spacer"></div>
+                      </div>
+                  {% endif %}
+              </div>
+          </div>
+
+          <div class="row">
+              <div class="spacer"></div>
+          </div>
           {% endfor %}
       {% endif %}
 

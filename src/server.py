@@ -670,6 +670,9 @@ def get_reservations(tenant):
     # if check_code != SECURITY_SUCCESS_CODE:
     #     lock.release()
     #     return page
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
 
     info_data = get_info_data(tenant)
     amenities_dict = {}
@@ -871,6 +874,11 @@ def delete_amenity(tenant):
 def make_reservation(tenant):
     lock.acquire()
     print(f"here in make_reservation()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     json_obj = request.get_json()
     prefix = "reservation"
     tenant_json = json_obj[prefix]['tenant']
@@ -982,6 +990,11 @@ for date {date['m']}-{date['d']}-{date['y']}, time between {time_from['h']}:{tim
 def delete_reservation(tenant):
     lock.acquire()
     print(f"here in delete_reservation()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     json_obj = request.get_json()
     prefix = "reservation"
     tenant_json = json_obj[prefix]['tenant']
@@ -1333,15 +1346,12 @@ def replace_text(text, field_names, field_values):
 @app.route('/<tenant>/about')
 def about(tenant):
     lock.acquire()
-    ret_tenant = get_tenant()
-    if ret_tenant == TENANT_NOT_FOUND:
+
+    if not is_tenant_found(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
+
     info_data = get_info_data(tenant)
-    # employers = get_files(UNPROTECTED_FOLDER + '/logos', 'emp-')
-    # schools = get_files(UNPROTECTED_FOLDER + '/logos', 'school-')
-    # hospitals = get_files(UNPROTECTED_FOLDER + '/logos', 'hosp-')
-    # shopping = get_files(UNPROTECTED_FOLDER + '/logos', 'shop-')
     lock.release()
     return render_template("about.html", v_number=config['version']['number'], v_date=config['version']['date'],
                            user_types=staticvars.user_types, info_data=info_data)
@@ -1367,10 +1377,11 @@ def profile(tenant):
 def get_system_settings(tenant):
     lock.acquire()
     print(f"here in get_system_settings()")
-    ret_tenant = get_tenant()
-    if ret_tenant == TENANT_NOT_FOUND:
+
+    if not is_tenant_found(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
+
     info_data = get_info_data(tenant)
     home_text = ''
     for line in info_data['home_message']['lines']:
@@ -1398,6 +1409,11 @@ def get_system_settings(tenant):
 def update_settings(tenant):
     lock.acquire()
     print(f"here in upload_settings()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     json_req = request.get_json()
     info = get_json_from_file_no_tenant(f"{INFO_FILE}")
     info['config'][tenant]['condo_name'] = json_req['request']['condo_name']
@@ -1434,10 +1450,9 @@ def update_settings(tenant):
 @app.route('/<tenant>/announcs')
 def get_announcs(tenant):
     lock.acquire()
-
     print(f"here in announcs()")
-    ret_tenant = get_tenant()
-    if ret_tenant == TENANT_NOT_FOUND:
+
+    if not is_tenant_found(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
@@ -1469,8 +1484,8 @@ def sort_announcs_descend(obj):
 @app.route('/<tenant>/save_announc', methods=["POST"])
 def save_announc(tenant):
     lock.acquire()
-    ret_tenant = get_tenant()
-    if ret_tenant == TENANT_NOT_FOUND:
+
+    if not is_tenant_found(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
@@ -1531,6 +1546,11 @@ def save_announc_common(tenant, user_id, text, file_name, attach_file):
 def delete_announc(tenant):
     lock.acquire()
     print(f"here in delete_announc()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     json_obj = request.get_json()
     prefix = "announc"
     tenant_json = json_obj[prefix]['tenant']
@@ -1583,6 +1603,11 @@ def delete_announc(tenant):
 def email_announc(tenant):
     lock.acquire()
     print(f"here in email_announc()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     json_obj = request.get_json()
     prefix = "announc"
     tenant_json = json_obj[prefix]['tenant']
@@ -1640,10 +1665,10 @@ def email_announc(tenant):
 @app.route('/<tenant>/getannouncs')
 def get_announc_list(tenant):
     lock.acquire()
-    ret_tenant = get_tenant()
-    if ret_tenant == TENANT_NOT_FOUND:
+    if not is_tenant_found(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
+
     announc_list = []
     string_content = get_json_from_file(tenant, ANNOUNCS_FILE)
     alist = string_content.split('\n') # create a list divided by the new-line char
@@ -1705,6 +1730,11 @@ def get_docs(tenant):
 def delete_fin_doc_group(tenant):
     lock.acquire()
     print(f"here in delete_fin_doc_group()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     json_req = request.get_json()
     year = json_req['request']['year']
     partial_path = f"{PROTECTED_FOLDER}/docs/financial/{year}"
@@ -1756,6 +1786,11 @@ def get_residents():
 def get_residents_json(tenant):
     lock.acquire()
     print(f"in get_residents_json(): tenant {tenant}")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     resident_list = []
 
     for user in users_repository.get_users(tenant):
@@ -1824,6 +1859,10 @@ def pics(tenant):
 def logout(tenant):
     print(f"logout(): session: {session}")
 
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     if not current_user.is_authenticated:
         return redirect(f"/{tenant}/home")
 
@@ -1843,6 +1882,11 @@ def logout(tenant):
 def delete_file(tenant):
     lock.acquire()
     print(f"here in delete_file()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     file_obj = request.get_json()
     req_tenant = file_obj['request']['tenant']
     file_path = file_obj['request']['filepath']
@@ -2174,6 +2218,11 @@ def change_password(tenant):
 @login_required
 def upload_link(tenant):
     lock.acquire()
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     json_req = request.get_json()
     links = get_json_from_file(tenant, LINKS_FILE)
     if links is None:
@@ -2239,6 +2288,11 @@ def change_userid():
 def get_one_listing(tenant, unit, listing_id):
     lock.acquire()
     print(f"get_one_listing()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     listings = get_json_from_file(tenant, LISTINGS_FILE)
     info_data = get_info_data(tenant)
     alisting = None
@@ -2258,6 +2312,11 @@ def get_one_listing(tenant, unit, listing_id):
 @app.route('/<tenant>/upload_listing', methods=['POST'])
 def upload_listing(tenant):
     lock.acquire()
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     upload_files = request.files.getlist("file_array")
     #upload_file_sizes = request.files.getlist("file_size_array")
     #print(f"unit: {request.form['unit']}, title: {request.form['title']}, contact: {request.form['contact']}, price: {request.form['price']}")
@@ -2344,6 +2403,11 @@ def upload_listing(tenant):
 def get_listings(tenant):
     lock.acquire()
     print(f"get_listings()")
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     if not aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
         lock.release()
         return render_template("listings.html", units=get_unit_list(), listings=None,
@@ -2400,6 +2464,10 @@ def delete_listing(tenant):
 def get_event_pics(tenant, title):
     lock.acquire()
     print(f"in get_event_pics(): tenant: {tenant}")
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
     events = get_json_from_file(tenant, EVENT_PICS_FILE)
     info_data = get_info_data(tenant)
@@ -2668,6 +2736,11 @@ def upload(tenant):
 @app.route('/<tenant>/generatepdf', methods=['GET'])
 def gen_pdf(tenant):
     lock.acquire()
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     def sort_residents(resident):
         return resident.get_unit()
 
@@ -2711,6 +2784,11 @@ def gen_pdf(tenant):
 @app.route('/<tenant>/checkpdf', methods=['GET'])
 def download_pdf(tenant):
     lock.acquire()
+
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
     if not aws.is_file_found(f"{tenant}/{CENSUS_FORMS_PDF_FULL_PATH}"):
         return_obj = json.dumps({'response': {'status': 'file_not_found'}})
     else:
@@ -2805,11 +2883,9 @@ def forgot_password(tenant):
     lock.acquire()
     print(f"here in forgot_password(): {tenant}")
 
-    # page, check_code = check_security(tenant)
-    # if check_code != SECURITY_SUCCESS_CODE:
-    #     print("security isnt success")
-    #     lock.release()
-    #     return page
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
 
     info_data = get_info_data(tenant)
     if request.method == 'GET':

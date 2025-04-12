@@ -1,4 +1,9 @@
 {% extends "layout.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+{% endblock %}
+
 {% block body %}
 
 <div class="main">
@@ -31,28 +36,22 @@
           <h2>{{_("Upload or Update System Files")}}</h2>
       </div>
 
-      <div class="upload-container">
-        <div class="upload-block">
+      <div class="upload-block">
           <p>{{_("Pictures")}}</p>
-          <div class="upload-block-row">
-              <div class="upload-browse">
-                <img id="home_pic_id" style="width: 120px; height: 80px; border-radius: 6px; margin-top:6px; margin-bottom: 6px; margin-right: 26px;" src="/{{info_data['domain']}}/branding/home.jpg">
-                <input id="homepic" type="file" onChange="handlePictureChange('homepic', 'home_pic_id')"/>
-                <button id="upload-button" onclick="uploadFileProgress('homepic', 'homepic', 'progressBar-homepic')"> {{_("Upload the Home Picture")}}</button>
-                <progress id="progressBar-homepic" value="0" max="100"/>
-              </div>
+          <div class="upload-browse">
+              <img id="home_pic_id" style="width: 120px; height: 80px; border-radius: 6px; margin-top:6px; margin-bottom: 6px; margin-right: 26px;" src="/{{info_data['domain']}}/branding/home.jpg">
+              <input id="homepic" type="file" onChange="handlePictureChange('homepic', 'home_pic_id')"/>
+              <button id="upload-button-home" onclick="uploadFileProgress('homepic', 'homepic', 'progressBar-homepic')"> {{_("Upload the Home Picture")}}</button>
+              <progress id="progressBar-homepic" value="0" max="100"></progress>
           </div>
-          <div class="upload-block-row">
-              <div class="upload-browse">
-                <img id="logo_pic_id" style="width: 120px; height: 80px; border-radius: 6px; margin-top:6px; margin-bottom: 6px; margin-right: 26px;" src="/{{info_data['domain']}}/branding/logo.jpg">
-                <input id="logopic" type="file" onChange="handlePictureChange('logopic', 'logo_pic_id')"/>
-                <button id="upload-button" onclick="uploadFileProgress('logopic', 'logopic', 'progressBar-logopic')"> {{_("Upload the Logo Picture")}}</button>
-                <progress id="progressBar-logopic" value="0" max="100"/>
-              </div>
+          <div class="upload-browse">
+              <img id="logo_pic_id" style="width: 120px; height: 80px; border-radius: 6px; margin-top:6px; margin-bottom: 6px; margin-right: 26px;" src="/{{info_data['domain']}}/branding/logo.jpg">
+              <input id="logopic" type="file" onChange="handlePictureChange('logopic', 'logo_pic_id')"/>
+              <button id="upload-button-logo" onclick="uploadFileProgress('logopic', 'logopic', 'progressBar-logopic')"> {{_("Upload the Logo Picture")}}</button>
+              <progress id="progressBar-logopic" value="0" max="100"></progress>
           </div>
-        </div>
-      </div>  <!-- close upload-container -->
-
+          <p class="spacer"></p>
+      </div>
 
       <p class="spacer"></p>
 
@@ -60,112 +59,121 @@
           <h2>{{_("Update General Settings")}}</h2>
       </div>
 
-      <div class="upload-container">
-          <div class="upload-block">
-              <p>{{_("General settings")}}</p>
-              <div class="general-settings">
-                    <div class="input-group mb-2">
-                        <span class="input-group-addon col-lg-3 form-label">{{_("Condominium Name")}}:</span>
-                        <input type="text" class="form-control col-lg-4" id="condo-name" placeholder='{{_("Ex. Signature Heights Condominium")}}'>
-                    </div>
+      <div class="upload-block">
+          <fieldset class="general-settings">
+              <legend>{{_("General settings")}}</legend>
+              <div class="container">
+                <div class="row mb-2">
+                    <span>{{_("Condominium Name")}}:</span>
+                    <input type="text" class="form-control" style="margin-right: 16px;" id="condo-name" placeholder='{{_("Ex. Signature Heights Condominium")}}'>
+                </div>
 
-                    <div class="input-group mb-2">
-                        <span class="input-group-addon col-lg-3 form-label">{{_("Tagline")}}:</span>
-                        <input type="text" class="form-control col-lg-4" id="condo-tagline" placeholder='{{_("Example: Peace of mind lives here")}}'>
-                    </div>
+                <div class="row mb-2">
+                    <span>{{_("Tagline")}}:</span>
+                    <input type="text" class="form-control" style="margin-right: 16px;" id="condo-tagline" placeholder='{{_("Example: Peace of mind lives here")}}'>
+                </div>
 
-                    <div class="input-group mb-2">
-                        <span class="input-group-addon col-lg-3 form-label">{{_("Address")}}:</span>
-                        <input type="text" class="form-control col-lg-5" id="condo-address" placeholder='{{_("Address of the condominium")}}'>
-                    </div>
+                <div class="row mb-2">
+                    <span>{{_("Address")}}:</span>
+                    <input type="text" class="form-control" style="margin-right: 16px;" id="condo-address" placeholder='{{_("Address of the condominium")}}'>
+                </div>
 
-                    <div class="input-group mb-2">
-                        <span class="input-group-addon col-lg-3 form-label">{{_("ZIP")}}:</span>
-                        <input type="text" class="form-control col-lg-5" id="condo-zip" placeholder='{{_("ZIP with 5 or 9 digits")}}'>
-                    </div>
+                <div class="row mb-2">
+                    <span>{{_("ZIP")}}:</span>
+                    <input type="text" class="form-control" style="margin-right: 16px;" id="condo-zip" placeholder='{{_("ZIP with 5 or 9 digits")}}'>
+                </div>
 
-                    <div class="input-group mb-2">
-                        <span class="input-group-addon col-lg-3 form-label">{{_("City")}}:</span>
-                        <input type="text" class="form-control col-lg-4" id="condo-city" placeholder='{{_("City of the condominium")}}'>
+                <div class="row mb-2">
+                    <span>{{_("City")}}:</span>
+                    <input type="text" class="form-control" style="margin-right: 16px;" id="condo-city" placeholder='{{_("City of the condominium")}}'>
 <!--                        <span style="line-height: 40px; padding-left: 3px;" title='{{_("For example, enter Syracuse, NY")}}'><i class="fa fa-question-circle-o"></i></span> -->
+                </div>
+
+                <div class="row mb-2">
+                    <span>{{_("State")}}:</span>
+                    <input type="text" class="form-control" style="margin-right: 16px;" id="condo-state" placeholder='{{_("State of the condominium")}}'>
+                </div>
+              </div>
+          </fieldset>
+
+          <div class="spacer"></div>
+
+          <fieldset class="general-settings">
+                <legend>{{_("Home Page Content")}}</legend>
+                <div class="container">
+                    <div class="row mb-2">
+                        <span>{{_("Title")}}:</span>
+                        <input type="text" class="form-control" style="margin-right: 16px;" id="home-page-title" placeholder='{{_("Title")}}'>
                     </div>
-
-                    <div class="input-group mb-2">
-                        <span class="input-group-addon col-lg-3 form-label">{{_("State")}}:</span>
-                        <input type="text" class="form-control col-lg-1" id="condo-state" placeholder='{{_("State of the condominium")}}'>
+                    <div class="row mb-2">
+                        <span>{{_("Text")}}:</span>
+                        <textarea class="form-control"  style="margin-right: 16px;" rows="6" id="home-page-text" placeholder='{{_("Multiline text")}}'></textarea>
                     </div>
+                </div>
+          </fieldset>
 
-                    <fieldset>
-                        <legend>{{_("Home Page Content")}}</legend>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("Title")}}:</span>
-                            <input type="text" class="form-control col-lg-5" id="home-page-title" placeholder='{{_("Title")}}'>
-                        </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("Text")}}:</span>
-                            <textarea class="form-control col-lg-8 w-75" rows="6" id="home-page-text" placeholder='{{_("Multiline text")}}'></textarea>
-                        </div>
-                    </fieldset>
+          <div class="spacer"></div>
 
-                    <div class="spacer"></div>
-
-                    <fieldset>
-                        <legend>{{_("About Page Content")}}</legend>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("Title")}}:</span>
-                            <input type="text" class="form-control col-lg-5" id="about-page-title" placeholder='{{_("Title")}}'>
-                        </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("Text")}}:</span>
-                            <textarea class="form-control col-lg-8 w-75" rows="6" id="about-page-text" placeholder='{{_("Multiline text")}}'></textarea>
-                        </div>
-                    </fieldset>
-
-                    <div class="spacer"></div>
-
-                    <fieldset>
-                        <legend>{{_("Fine Text")}}</legend>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("PIX Key")}}:</span>
-                            <input type="text" class="form-control col-lg-5" id="pix_key" placeholder='{{_("PIX Key")}}'>
-                        </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("Email Title")}}:</span>
-                            <input type="text" class="form-control col-lg-5" id="fine_email_title" placeholder='{{_("Title of the fine notification email")}}'>
-                        </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("Email Text")}}:</span>
-                            <textarea class="form-control col-lg-8 w-75" rows="6" id="fine_template" placeholder='{{_("Body of the fine notification email")}}'></textarea>
-                        </div>
-                    </fieldset>
-
-                    <div class="spacer"></div>
-                    <div class="spacer"></div>
-
-                    <fieldset>
-                        <legend>{{_("Payment Request Text")}}</legend>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("PIX Key")}}:</span>
-                            <input type="text" class="form-control col-lg-5" id="pay_pix_key" placeholder='{{_("PIX Key")}}'>
-                        </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("Email Title")}}:</span>
-                            <input type="text" class="form-control col-lg-5" id="pay_email_title" placeholder='{{_("Title of the payment request email")}}'>
-                        </div>
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon col-lg-3 form-label">{{_("Email Text")}}:</span>
-                            <textarea class="form-control col-lg-8 w-75" rows="6" id="pay_template" placeholder='{{_("Body of the payment request email")}}'></textarea>
-                        </div>
-                    </fieldset>
-
-                    <div class="spacer"></div>
-
-                    <div class="center">
-                        <button class="btn btn-primary" onClick="updateSystemSettings()">{{_("Update Settings")}}</button>
+          <fieldset class="general-settings">
+                <legend>{{_("About Page Content")}}</legend>
+                <div class="container">
+                    <div class="row mb-2">
+                        <span>{{_("Title")}}:</span>
+                        <input type="text" class="form-control" style="margin-right: 16px;" id="about-page-title" placeholder='{{_("Title")}}'>
                     </div>
-              </div> <!-- closes registration-form -->
-          </div> <!-- closes "upload-block" -->
-      </div>  <!-- close upload-container -->
+                    <div class="row mb-2">
+                        <span>{{_("Text")}}:</span>
+                        <textarea class="form-control" style="margin-right: 16px;" rows="6" id="about-page-text" placeholder='{{_("Multiline text")}}'></textarea>
+                    </div>
+                </div>
+          </fieldset>
+
+          <div class="spacer"></div>
+
+          <fieldset class="general-settings">
+              <legend>{{_("Fine Text")}}</legend>
+              <div class="container">
+                  <div class="row mb-2">
+                      <span>{{_("PIX Key")}}:</span>
+                      <input type="text" class="form-control" style="margin-right: 16px;" id="pix_key" placeholder='{{_("PIX Key")}}'>
+                  </div>
+                  <div class="row mb-2">
+                      <span>{{_("Email Title")}}:</span>
+                      <input type="text" class="form-control" style="margin-right: 16px;" id="fine_email_title" placeholder='{{_("Title of the fine notification email")}}'>
+                  </div>
+                  <div class="row mb-2">
+                      <span>{{_("Email Text")}}:</span>
+                      <textarea class="form-control" style="margin-right: 16px;" rows="6" id="fine_template" placeholder='{{_("Body of the fine notification email")}}'></textarea>
+                  </div>
+              </div>
+          </fieldset>
+
+          <div class="spacer"></div>
+
+          <fieldset class="general-settings">
+              <legend>{{_("Payment Request Text")}}</legend>
+              <div class="container">
+                  <div class="row mb-2">
+                      <span>{{_("PIX Key")}}:</span>
+                      <input type="text" class="form-control" style="margin-right: 16px;" id="pay_pix_key" placeholder='{{_("PIX Key")}}'>
+                  </div>
+                  <div class="row mb-2">
+                      <span>{{_("Email Title")}}:</span>
+                      <input type="text" class="form-control" style="margin-right: 16px;" id="pay_email_title" placeholder='{{_("Title of the payment request email")}}'>
+                  </div>
+                  <div class="row mb-2">
+                      <span>{{_("Email Text")}}:</span>
+                      <textarea class="form-control" style="margin-right: 16px;" rows="6" id="pay_template" placeholder='{{_("Body of the payment request email")}}'></textarea>
+                  </div>
+              </div>
+          </fieldset>
+
+          <div class="spacer"></div>
+
+          <div class="center">
+              <button class="btn btn-primary" onClick="updateSystemSettings()">{{_("Update Settings")}}</button>
+          </div>
+      </div> <!-- closes "upload-block" -->
 
       <div style="height: 40px;"></div>
 
@@ -174,7 +182,6 @@
       </div>
 
       <div class="upload-container">
-
           <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#bulk_email_section" aria-expanded="false" aria-controls="collapseExample">
             {{_("Click Here to Open/Close the Bulk Email Section")}}
           </button>
@@ -230,7 +237,6 @@
           </div> <!-- close app-container -->
 
           <div style="height: 40px;"></div>
-
       </div> <!-- close upload-container -->
   </div> <!-- closes content -->
 </div> <!-- closes main -->
