@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block insidehead %}
+{% endblock %}
+
+
+{% block body %}
+
+<div class="main">
+
+    <nav id="sidebar">  
+        <div class="sidebar-logo-area">
+            <img class="logo-div" src="/{{info_data['domain']}}/branding/logo.jpg">
+            <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+        </div>
+
+        <ul class="list-unstyled components">
+            <li class="active"><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
+
+            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
+                <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
+                <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+                <li><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
+            {% elif info_data['is_authenticated'] == true %}
+                <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('My Profile')}}</a></li>
+                <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+            {% endif %}
+
+            <li><a class="nav-link" href="announcs"><i class="fa fa-fw fa-bullhorn"></i> {{_('Announcements')}}</a></li>
+            <li><a class="nav-link" href="docs"><i class="fa fa-fw fa-book"></i> {{_('Documents')}}</a></li>
+
+            {% if info_data['is_authenticated'] == true and current_user.get_type() != 3 %}
+                <li><a class="nav-link" href="upload" aria-selected="false"><i class="fa fa-fw fa-cog"></i> {{_('Maintenance')}}</a></li>
+            {% endif %}
+
+            <li><a class="nav-link" href="pics"><i class="fa fa-fw fa-picture-o"></i> {{_('Pictures')}}</a></li>
+            <li><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
+            <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
+
+            {% include "info.html" %}
+        </ul>
+    </nav>
+
+    <div class="content">
+        {% include "mobile-menu.html" %}
+
+        <div class="section-title" data-aos="zoom-out">
+            <h2>{{ _('Home') }}</h2>
+        </div>
+        
+        <div class="container-md my-5">
+            <div style="text-align: center; font-size: 40px; color: hsl(201, 54%, 46%);">
+                <div>
+                    {{info_data['condo_name']}}
+                </div>
+                <div style="font-size: 14px;">
+                    {{info_data['tagline']}}
+                </div>
+            </div>
+
+            <div class="center">
+                {% if 'default_home_pic' in info_data %}
+                   {% if info_data['default_home_pic'] == true %}
+                     <div>{{ _("This picture as well as the logo picture must be changed") }} <a href="upload">{{_('here')}}</a></div>
+                   {% endif %}
+                {% endif %}
+            </div>
+
+            <div class="center carousel shadow bg-white rounded">
+                <div class="home-body">
+                    <img style="width: 80%; border-radius: 6px;" src="/{{info_data['domain']}}/branding/home.jpg">
+                    <div class="spacer"></div>
+                    <p>{{info_data['home_message']['title']}}</p>
+                    {% for line in info_data['home_message']['lines'] %}
+                      <br>
+                      {{line}}
+                    {% endfor %}
+                </div>
+            </div>        
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/carousel.js') }}"></script>
+{% endblock %}
+

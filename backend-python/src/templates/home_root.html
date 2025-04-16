@@ -1,0 +1,351 @@
+{% extends "layout_root.html" %}
+
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home_root.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16694882041"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-16694882041');
+    </script>
+{% endblock %}
+
+
+{% block body %}
+<div class="main">
+
+    <nav id="sidebar">  
+        <div class="sidebar-logo-area">
+            <img class="logo-div" src="img/bluelogo.png">
+            <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+        </div>
+
+        <ul class="list-unstyled components">
+            {% if info_data['language'] == 'en' %}
+                <li class="active"><a class="nav-link" href="register_en"><i class="fa fa-fw fa-home"></i> Home</a></li>
+                <li><a class="nav-link" href="about_en"><i class="fa fa-fw fa-info"></i> About</a></li>
+            {% elif info_data['language'] == 'pt' %}
+                <li class="active"><a class="nav-link" href="register_pt"><i class="fa fa-fw fa-home"></i> Home</a></li>
+                <li><a class="nav-link" href="about_pt"><i class="fa fa-fw fa-info"></i> Sobre</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="content">
+        {% include "mobile_root.html" %}
+
+        <div class="section-title" data-aos="zoom-out">
+            <h2>Home</h2>
+        </div>
+
+        <div class="container my-5" style="font-family: sans-serif; font-size: 13px;">
+
+                <div class="buttons-section">
+                    <h4>{{_("Welcome to the CondoSpace App")}}</h4>
+
+                    <div class="spacer"></div>
+
+                    <div class="center">
+                        <button class="big-button" style="/*max-width: 800px;*/" data-toggle="collapse" data-target="#benefits_section" aria-expanded="false" aria-controls="collapseExample">
+                          $ {{_("Some of the Benefits of Using CondoSpace?")}} $
+                          <!-- <i class="fa fa-dollar"></i>&nbsp;&nbsp;  -->
+                        </button>
+                    </div>
+
+                    <div id="benefits_section" class="app-container collapse">
+                        <div class="registration-box" style="">
+                            <b>{{_("Some of the benefits")}}:</b>
+                            <ol>
+                                <li>{{_("Sense of belonging and community")}}</li>
+                                <li>{{_("Resident Census Card")}}</li>
+                                <li>{{_("Ability to issue Fines and Request Payments ($)")}}</li>
+                                <li>{{_("Make reservations of common areas ($)")}}</li>
+                                <li>{{_("Communication between Association and Residents")}}</li>
+                                <li>{{_("Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.")}}</li>
+                                <li>{{_("Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be http://condospace.app/hilltop")}}</li>
+                                <li>{{_("Ability to list apartments for sale with pictures (especially useful for FSBOs) ($)")}}</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="spacer"></div>
+                <div class="spacer"></div>
+
+                <div class="" style="font-size: 12px;">
+                    <form id="regis-form">
+
+                        <div>
+                            <span class="form-label" for="name">{{_("Admin Name")}}:</span>
+                        </div>
+                        <div class="" style="width: 100%;">
+                            <input type="text" style="width: 100%; height: 30px;" class="" id="name" placeholder='{{_("Your full name")}}'>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div>
+                            <span class="form-label" for="email">{{_("Admin Email")}}:</span>
+                        </div>
+                        <div>
+                            <input type="text" style="width: 90%; height: 30px;" id="email" placeholder="Email">
+                            <span style="line-height: 40px; padding-left: 3px;" title='{{_("Email must exist because that is where we will send you the Login credentials.")}}'><i style="font-size: 20px; color: orange;" class="fa fa-question-circle-o"></i></span>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div>
+                            <span class="form-label" for="phone">{{_("Admin Phone")}}:</span>
+                        </div>
+                        <div class="" style="width: 100%;">
+                            <input type="text" style="width: 100%; height: 30px;" class="" id="phone" placeholder='{{_("Ex. 508 891-3472")}}'>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div class="flexible-row">
+                            <div>
+                                <span class="form-label">{{_("Preferred Language")}}:</span>
+                            </div>
+                            <div>
+                                <select id="pref-language" name="pref-language" style="font-size: 18px; height: 28px;">
+                                {% if info_data['language'] == 'en' %}
+                                    <option value="en" selected>English</option>
+                                    <option value="pt">Português</option>
+                                {% elif info_data['language'] == 'pt' %}
+                                    <option value="en">English</option>
+                                    <option value="pt" selected>Português</option>
+                                {% endif %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div>
+                            <span class="form-label">{{_("Condominium Name")}}:</span>
+                        </div>
+                        <div class="" style="width: 100%;">
+                            <input type="text" style="width: 100%; height: 30px;" class="" id="condo-name" placeholder='{{_("Ex. Signature Heights Condominium")}}'>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div class="">
+                            <span class="form-label">{{_("Tagline")}}:</span>
+                        </div>
+                        <div class="" style="width: 100%;">
+                            <input type="text" class="" style="width: 100%; height: 30px;" id="condo-tagline" placeholder='{{_("Example: Peace of mind lives here")}}'>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div class="">
+                            <span class="form-label">{{_("Condominium Id")}}:</span>
+                        </div>
+                        <div class="flexible-row">
+                            <div>
+                                <input type="text" style="width: 320px; height: 30px;" id="condo-id" onBlur="condoIdOnBlur()" placeholder='{{_("Cannot have spaces in it")}}'>
+                            </div>
+                            <div style="margin-left: 10px; /*border: 1px solid blue;*/">
+                                <span style="height: 30px; transition-delay: 0s;" title="{{_('For example, if your condominium name is Bela Vista Condominium, this would be belavista')}}"><i style="font-size: 20px; color: orange;" class="fa fa-question-circle-o"></i></span>
+                            </div>
+                            <div style="margin-left: 10px; /*border: 1px solid blue;*/">
+                                <span style="height: 30px;"><i id="condo_id_group" style="font-size: 20px; display: none;" class="fa fa-check"></i></span>
+                            </div>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div class="">
+                            <span class="form-label">{{_("Condominium Address")}}:</span>
+                        </div>
+                        <div class="" style="width: 100%;">
+                            <input type="text" class="" style="width: 100%; height: 30px;" id="condo-address" placeholder='{{_("Address of the condominium")}}'>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div class="">
+                            <span class="form-label">{{_("ZIP")}}:</span>
+                        </div>
+                        <div class="" style="width: 100%;">
+                            <input type="text" style="width: 100%; height: 30px;" class="" id="condo-zip" placeholder='{{_("ZIP")}}'>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div class="">
+<!--                                <span style="line-height: 40px; padding-left: 3px;" title='{{_("For example, enter Syracuse, NY")}}'><i class="fa fa-question-circle-o"></i></span> -->
+                            <span class="form-label">{{_("City")}}:</span>
+                        </div>
+                        <div class="" style="width: 100%;">
+                            <input type="text" class="" style="width: 280px; height: 30px;" id="condo-city" placeholder='{{_("City")}}'>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="spacer"></div>
+
+                        <div class="flexible-row">
+                            <div style="height: 28px; /*border: 1px solid blue;*/">
+                                <span class="form-label">{{_("State")}}:</span>
+                            </div>
+                            <div style="margin-left: 6px;">
+                                <select id="condo-state" style="font-size: 14px; height: 28px;">
+                                {% if info_data['language'] == 'en' %}
+                                    <option value="AL">AL</option>
+                                    <option value="AK">AK</option>
+                                    <option value="AZ">AZ</option>
+                                    <option value="AR">AR</option>
+                                    <option value="CA">CA</option>
+                                    <option value="CO">CO</option>
+                                    <option value="CT">CT</option>
+                                    <option value="DC">DC</option>
+                                    <option value="DE">DE</option>
+                                    <option value="FL">FL</option>
+                                    <option value="GA">GA</option>
+                                    <option value="HI">HI</option>
+                                    <option value="ID">ID</option>
+                                    <option value="IL">IL</option>
+                                    <option value="IN">IN</option>
+                                    <option value="IA">IA</option>
+                                    <option value="KS">KS</option>
+                                    <option value="KY">KY</option>
+                                    <option value="LA">LA</option>
+                                    <option value="ME">ME</option>
+                                    <option value="MD">MD</option>
+                                    <option value="MA">MA</option>
+                                    <option value="MI">MI</option>
+                                    <option value="MN">MN</option>
+                                    <option value="MS">MS</option>
+                                    <option value="MO">MO</option>
+                                    <option value="MT">MT</option>
+                                    <option value="NE">NE</option>
+                                    <option value="NV">NV</option>
+                                    <option value="NH" selected>NH</option>
+                                    <option value="NJ">NJ</option>
+                                    <option value="NM">NM</option>
+                                    <option value="NY">NY</option>
+                                    <option value="NC">NC</option>
+                                    <option value="ND">ND</option>
+                                    <option value="OH">OH</option>
+                                    <option value="OK">OK</option>
+                                    <option value="OR">OR</option>
+                                    <option value="PA">PA</option>
+                                    <option value="RI">RI</option>
+                                    <option value="SC">SC</option>
+                                    <option value="SD">SD</option>
+                                    <option value="TN">TN</option>
+                                    <option value="TX">TX</option>
+                                    <option value="UT">UT</option>
+                                    <option value="VT">VT</option>
+                                    <option value="VA">VA</option>
+                                    <option value="WA">WA</option>
+                                    <option value="WV">WV</option>
+                                    <option value="WI">WI</option>
+                                    <option value="WY">WY</option>
+                                {% elif info_data['language'] == 'pt' %}
+                                    <option value="AC">AC</option>
+                                    <option value="AL">AL</option>
+                                    <option value="AP">AP</option>
+                                    <option value="AM">AM</option>
+                                    <option value="BA">BA</option>
+                                    <option value="CE">CE</option>
+                                    <option value="DF">DF</option>
+                                    <option value="ES">ES</option>
+                                    <option value="GO">GO</option>
+                                    <option value="MA">MA</option>
+                                    <option value="MT">MT</option>
+                                    <option value="MS">MS</option>
+                                    <option value="MG">MG</option>
+                                    <option value="PA">PA</option>
+                                    <option value="PB">PB</option>
+                                    <option value="PR">PR</option>
+                                    <option value="PE">PE</option>
+                                    <option value="PI">PI</option>
+                                    <option value="RJ">RJ</option>
+                                    <option value="RN">RN</option>
+                                    <option value="RS">RS</option>
+                                    <option value="RO">RO</option>
+                                    <option value="RR">RR</option>
+                                    <option value="SC">SC</option>
+                                    <option value="SP" selected>SP</option>
+                                    <option value="SE">SE</option>
+                                    <option value="TO">TO</option>
+                                {% endif %}
+                                </select>
+                             </div>
+                        </div>
+                        <div class="spacer"></div>
+<!--
+                        <div class="flex-d align-items-middle">
+                            <span class="form-label" style="width: auto;">{{_("Home Page Condo Picture")}}:</span>
+                            <input type="checkbox" style="margin-left: 7px;" id="use-default-img" onClick="useDefaultImgClicked()" name="use-default-img">
+                            <label for="use-default-img"  style="margin-left: 2px; font-size: 15px;">{{_("Use a default picture")}}</label>
+                            <input type="file" style="margin-left: 20px;" class="" id="condo-img-file" onChange="pictureSelectAction('condo-img-file', 'condo-img')">
+                            <img id="condo-img" src="" width="120" height="80" style="border-radius: 4px; left-margin: 10px; display: none;">
+                        </div>
+-->
+                        <div>
+                            <span class="form-label" style="width: auto;">{{_("Home Page Condo Picture")}}:</span>
+                        </div>
+                        <div class="flexible-row">
+                            <div>
+                                <input type="checkbox" id="use-default-img" onClick="useDefaultImgClicked()" name="use-default-img">
+                                <label for="use-default-img"  style="margin-left: 2px; font-size: 15px;">{{_("Use a default picture")}}</label>
+                            </div>
+                        </div>
+                        <div>
+                            <input type="file" class="" id="condo-img-file" onChange="pictureSelectAction('condo-img-file', 'condo-img')">
+                        </div>
+                        <div style="width: 100%; margin-top: 5px; margin-bottom: 5px;">
+                            <img id="condo-img" src="" width="120" height="80" style="margin: auto; border-radius: 4px; /*left-margin: 10px;*/ display: none;">
+                        </div>
+                    </form>
+                </div>
+
+                <div class="spacer"></div>
+
+                <div class="center">
+                    <button type="button" class="btn btn-primary" onClick="sendCondoRegistrationForm()">{{_("Register My Condo")}}</button>
+                </div>
+
+                <div style="margin: 40px;"></div>
+
+                <div class="social-media">
+                    <h5>{{_("Follow Us on Social Media")}}</h5>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/blueriversys"><i class="fa fa-instagram" title="Instagram"></i></a>
+                        <a href="#"><i class="fa fa-facebook" title="Facebook"></i></a>
+                        <a href="#"><i class="fa fa-google" title="Google"></i></a>
+                        <a href="#"><i class="fa fa-twitter" title="Twitter"></i></a>
+                    </div>
+                </div>
+
+        </div>
+
+    </div>
+</div>
+
+<input type="hidden" id="loggedin-lang" value={{info_data['language']}}>
+
+{% endblock %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/home_root.js') }}"></script>
+{% endblock %}
+

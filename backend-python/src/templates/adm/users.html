@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="sidenav">  
+    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <a class="nav-link active" href="home"><i class="fa fa-fw fa-home"></i> Home</a>
+        <a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> About</a>
+        <a class="nav-link" href="announcs"><i class="fa fa-fw fa-bullhorn"></i> Announcements</a>
+        <a class="nav-link" href="docs"><i class="fa fa-fw fa-book"></i> Documents</a>
+        <a class="nav-link" href="blog"><i class="fa fa-fw fa-pencil-square-o"></i> Blog</a>
+        <a class="nav-link" href="pics"><i class="fa fa-fw fa-picture-o"></i> Pictures</a>
+        <a class="nav-link" href="logout" aria-selected="false"><i class="fa fa-fw fa-sign-out"></i> Logout</a>
+    </div>
+</div>
+
+<div class="main">
+
+    <div class="section-title" data-aos="zoom-out">
+        <div class="section-title" data-aos="zoom-out">
+        <h2>Users</h2>
+        </div>
+    
+        <!--
+             and current_user.get_type() == 0
+        -->
+        {% if (info_data['is_authenticated'] == true and current_user.type == '0') %}
+            {% for user in users: %}
+            <div class="users">
+                <span class="color-darkgrey">{{user.username}}</span>
+                , <span class="color-darkgrey">{{user.password}}</span> 
+                , <span class="color-darkgrey">{{user.get_email()}}</span> 
+                , <span class="color-darkgrey">{{user.get_type()}}</span> 
+            </div>
+            {% endfor %}
+        {% endif %}
+
+    
+        {% if (info_data['is_authenticated'] == true) %}
+        <div class="bottom">
+           user name: <span class="color-darkgrey">{{current_user.get_username()}}</span>
+           , active: <span class="color-darkgrey">{{current_user.is_active()}}</span> 
+           , type: <span class="color-darkgrey">{{current_user.get_type()}}</span> 
+        </div>
+        {% endif %}
+  
+    </div>
+
+</div> <!-- close main -->
+
+{% endblock %}

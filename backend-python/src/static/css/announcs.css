@@ -1,0 +1,48 @@
+legend {
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 14px;
+    font-style: bold;
+    width: auto;
+}
+
+.btn-file {
+  position: relative;
+  overflow: hidden;
+  front-size: 14px;
+  height: 28px;
+  line-height: 14px;
+  align-items: center;
+}
+
+.btn-file input[type=file] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 100px;
+  text-align: right;
+  filter: alpha(opacity=0);
+  opacity: 0;
+  outline: none;
+  background: white;
+  cursor: inherit;
+  display: block;
+}
+
+.button-var-width {
+    height: 30px;
+    width: 40%;
+}
+
+
+/* behavior for screens 576px and below*/
+@media (max-width: 576px) {
+    .button-var-width {
+        height: 20px;
+        width: 90%;
+    }
+}
+
+

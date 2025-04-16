@@ -1,0 +1,89 @@
+{% extends "layout_root.html" %}
+
+
+{% block insidehead %}
+{% endblock %}
+
+
+{% block body %}
+
+<div class="main">
+
+  <nav id="sidebar">  
+    <div class="sidebar-logo-area">
+        <img class="logo-div" src="img/bluelogo.png">
+        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+    </div>
+    <ul class="list-unstyled components">
+        {% if info_data['language'] == 'en' %}
+            <li><a class="nav-link" href="register_en"><i class="fa fa-fw fa-home"></i> Home</a></li>
+            <li class="active"><a class="nav-link" href="about_en"><i class="fa fa-fw fa-info"></i> About</a></li>
+        {% elif info_data['language'] == 'pt' %}
+            <li><a class="nav-link" href="register_pt"><i class="fa fa-fw fa-home"></i> Home</a></li>
+            <li class="active"><a class="nav-link" href="about_pt"><i class="fa fa-fw fa-info"></i> Sobre</a></li>
+        {% endif %}
+    </ul>
+  </nav>
+
+  <div class="content">
+    {% include "mobile-menu.html" %}
+
+    <div class="section-title" data-aos="zoom-out">
+      <h2>{{_("About")}}</h2>
+    </div>
+
+    <div class="about-style">
+          <div class="about-body">
+            <div class="shadow p-3 mb-5 bg-white rounded">
+                    <div class="center">
+                        <img style="width= 95%; max-width: 300px;" src="img/BlueRiverLogo.gif">
+                    </div>
+                    <div class="spacer"></div>
+                    <div class="spacer"></div>
+                    <div class="spacer"></div>
+                    {{_("We are an innovative software company which specializes in practical software for small and medium size businesses.")}}
+                    <div class="spacer"></div>
+                    {{_("Contact us using the email below so we can show you all the benefits of having your condominium website hosted in our servers.")}}
+
+                    <div class="spacer"></div>
+
+                    {{_("Because our software is a Web Based Application, it gives the Association the benefit of having both a web presence and the storage/management of documents and administration of Condominium tasks, all in a very user-friendly and effective manner.")}}
+
+                    <div class="spacer"></div>
+                    <div class="spacer"></div>
+
+                    <b>{{_("Here's how it works")}}:</b>
+                    <div class="spacer"></div>
+                    <ol>
+                        <li>{{_("The best way is to register your condominium with us right now by going to the home page.")}}</li>
+                        <li>{{_("That way you can have full access to all features to see if it works for you.")}}</li>
+                        <li>{{_("Alternatively, you can go to the 'demo' website <a href='https://condospace.app/ametista' target='blank'>https://condospace.app/ametista</a>, with limited experience because, that way, you will only see what everyone in the public sees.")}}</li>
+                    </ol>
+
+                    <div class="spacer"></div>
+                    <b>{{_("Some of the benefits")}}:</b>
+                    <ol>
+                        <li>{{_("Sense of belonging and community")}}</li>
+                        <li>{{_("Resident Census Card")}}</li>
+                        <li>{{_("Ability to issue Fines and Request Payments ($)")}}</li>
+                        <li>{{_("Make reservations of common areas ($)")}}</li>
+                        <li>{{_("Communication between Association and Residents")}}</li>
+                        <li>{{_("Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.")}}</li>
+                        <li>{{_("Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be http://condospace.app/hilltop")}}</li>
+                        <li>{{_("Ability to list apartments for sale with pictures (especially useful for FSBOs) ($)")}}</li>
+                    </ol>
+                    <div class="spacer"></div>
+                    {{_("Why wait? It's much more affordable than you think. Register your condo today and start using the app.")}}
+
+                    <div class="spacer"></div>
+                    <div class="center">
+                        <img style="width= 95%; max-width: 360px;" src="img/contact.png">
+                    </div>
+            </div>
+          </div> <!-- closes about-body box -->
+    </div> <!-- closes about-style box -->
+    
+  </div> 
+
+</div> <!-- close main -->
+{% endblock %}

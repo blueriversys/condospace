@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/listings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+{% endblock %}
+
+
+{% block body %}
+
+
+<div class="main">
+
+  <nav id="sidebar">  
+    <div class="sidebar-logo-area">
+        <img class="logo-div" src="branding/logo.jpg">
+        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+    </div>
+    <ul class="list-unstyled components">
+        <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
+
+        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
+            <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
+            <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+            <li><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
+        {% elif info_data['is_authenticated'] == true %}
+            <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('My Profile')}}</a></li>
+            <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+        {% endif %}
+
+        <li><a class="nav-link" href="announcs"><i class="fa fa-fw fa-bullhorn"></i> {{_('Announcements')}}</a></li>
+        <li><a class="nav-link" href="docs"><i class="fa fa-fw fa-book"></i> {{_('Documents')}}</a></li>
+
+        {% if info_data['is_authenticated'] == true and current_user.get_type() != 3 %}
+            <li><a class="nav-link" href="upload" aria-selected="false"><i class="fa fa-fw fa-cog"></i> {{_('Maintenance')}}</a></li>
+        {% endif %}
+
+        <li><a class="nav-link" href="pics"><i class="fa fa-fw fa-picture-o"></i> {{_('Pictures')}}</a></li>
+        <li class="active"><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
+        <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
+        {% include "info.html" %}
+    </ul>
+  </nav>
+
+  <div class="content">
+
+      {% include "mobile-menu.html" %}
+
+      <div class="section-title" data-aos="zoom-out">
+          <h2>{{_('Current Listings')}}</h2>
+      </div>
+
+      <div class="spacer"></div>
+
+      {% if info_data['is_authenticated'] == true %}
+          <button class="btn btn-primary center" type="button" data-toggle="collapse" data-target="#add_new_listing_section" aria-expanded="false" aria-controls="collapseExample">
+            {{_("Add a New Listing (open/close)")}}
+          </button>
+
+          <div class="app-container collapse" id="add_new_listing_section">
+              <div class="spacer"></div>
+
+              <div class="profile-block">
+                  <div>
+                      <fieldset>
+                          <legend>{{_('Listing Info')}}</legend>
+                          <div class="row" style="margin-left: 12px;">
+                              <div>
+                                  <label for="unit">{{_('Unit')}}:</label>
+                                  <select style="width: 100px;" id="unit" name="unit" onClick="handleUnitSelected();">
+                                      <option value="none" selected disabled hidden>{{_("select one")}}</option>
+                                      {% for unit in units %}
+                                          {% if not unit['userid'].startswith('admin') %}
+                                              <option value="{{unit['userid']}}">{{unit['userid']}}</option>
+                                          {% endif %}
+                                      {% endfor %}
+                                  </select>
+                              </div>
+                              <label class="separator-spacer"></label>
+                              <div>
+                                  <label for="title">{{_('Description')}}:</label>
+                                  <input id="title" class="title-input" type="text" name="title">
+                              </div>
+                              <label class="separator-spacer"></label>
+                              <div>
+                                  <label for="email">{{_('Email')}}:</label>
+                                  <input id="email" class="email-input" type="email" name="email" required>
+                              </div>
+                              <label class="separator-spacer"></label>
+                              <div>
+                                  <label for="phone">{{_('Phone')}}:</label>
+                                  <input id="phone" class="phone-input" type="text" name="phone">
+                              </div>
+                              <label class="separator-spacer"></label>
+                              <div>
+                                  <label for="price">{{_('Price')}}:</label>
+                                  <input class="price-input" type="text" onkeypress="return isNumberKey(this, event)" id="price" name="price" title='{{_("Enter an integer value, no decimal point")}}'>
+                              </div>
+                          </div>
+                      </fieldset>
+                  </div>
+
+                  <div class="spacer"></div>
+
+                  <div>
+                      <fieldset>
+                          <legend>{{_('Pictures')}}</legend>
+                          <div style="margin-left: 6px;">
+                              <div>
+                                  <label for="files_cntrl" class="button larger-button"><i class="fa fa-folder-o"></i>&nbsp;&nbsp;{{_('Choose the Folder Where Your Pictures Are')}}</label>
+                                  <input id="files_cntrl" type="file" style="display: none" title="Click to Select a Folder" webkitdirectory directory multiple="false"/>
+                              </div>
+                              <div>
+                                  <fieldset style="margin-left: 1px; min-height: 80px;">
+                                      <legend>{{_('Picture Files')}}</legend>
+                                      <div class="selected-files" id="selectedFiles"></div>
+                                  </fieldset>
+                              </div>
+                          </div>
+                      </fieldset>
+                      <div class="spacer"></div>
+                      <div class="spacer"></div>
+                      <div class="center">
+                          <button class="button larger-button disabled" id="upload_button" type="submit" onclick="uploadPictureFiles('listing', 'files_cntrl', 'progress_bar')" disabled>
+                          <i class="fa fa-upload"></i>&nbsp;&nbsp;{{_('Upload pictures & Create this new listing')}}</button>
+                          <progress id="progress_bar" value="0" max="100"/>
+                      </div>
+                      <div class="spacer"></div>
+                  </div>
+              </div> <!-- /container -->
+          </div> <!-- app-container -->
+      {% endif %}
+
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+
+      {% if listings is not none %}
+          <div style="font-size: 16px;">
+              <div>
+                  <ul style="font-size: 16px;">
+                  {% for listing in listings %}
+                              <li>
+                                  <a href="listing/{{listing['user_id']}}/{{listing['listing_id']}}"><img class="small-pic" src="listings/{{listing['user_id']}}/{{listing['listing_id']}}/pics/{{listing['cover_file']}}"></a>
+                                  {{listing['listing_id']}},
+                                  <a href="listing/{{listing['user_id']}}/{{listing['listing_id']}}">{{listing['title']}}</a>, {{listing['date']}}, {{listing['phone']}}, {{listing['price']}}
+                                  {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                      <button class="btn btn-danger btn-sm d-inline-flex align-items-center" id="del-listing-button" onclick="deletePictureFiles('listing', '{{listing['user_id']}}', '{{listing['listing_id']}}')"><i class="fa fa-remove"></i>&nbsp;&nbsp;{{_('Delete This Listing')}}</button>
+                                  {% endif  %}
+                              </li>
+                  {% endfor %}
+                  </ul>
+              </div>
+          </div> <!-- /container -->
+      {% else %}
+          <div class="no-item-msg">{{_('No listings yet.')}}</div>
+      {% endif  %}
+
+  </div> <!-- closes content -->
+
+</div> <!-- close main -->
+
+{% include "hidden_fields.html" %}
+{% endblock %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/listings.js') }}"></script>
+{% endblock %}
+

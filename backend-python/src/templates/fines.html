@@ -1,0 +1,304 @@
+{% extends "layout.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fines.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+{% endblock %}
+
+
+{% block body %}
+ <div class="main">
+
+  <nav id="sidebar">
+    <div class="sidebar-logo-area">
+        <img class="logo-div" src="branding/logo.jpg">
+        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+    </div>
+    <ul class="list-unstyled components">
+      <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
+      <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
+      <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
+      <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+      <li class="active"><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
+      <li><a class="nav-link" href="announcs"><i class="fa fa-fw fa-bullhorn"></i> {{_('Announcements')}}</a></li>
+      <li><a class="nav-link" href="docs"><i class="fa fa-fw fa-book"></i> {{_('Documents')}}</a></li>
+      <li><a class="nav-link" href="upload" aria-selected="false"><i class="fa fa-fw fa-cog"></i> {{_('Maintenance')}}</a></li>
+      <li><a class="nav-link" href="pics"><i class="fa fa-fw fa-picture-o"></i> {{_('Pictures')}}</a></li>
+      <li><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
+      <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
+
+      {% include "info.html" %}
+  </ul>
+  </nav>
+
+  <div class="content">
+    {% include "mobile-menu.html" %}
+
+    <div class="section-title" data-aos="zoom-out">
+      <h2>{{_('List of fines and payments to receive')}}</h2>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="center button-var-width">
+        <button class="button-special button-var-font" data-toggle="collapse" data-target="#new_fine_section" aria-expanded="false" aria-controls="collapseExample">
+          <i class="fa fa-user"></i>&nbsp;&nbsp;{{_('Issue a New Fine or Payment Request (open/close)')}}
+        </button>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+
+
+    <div class="modal fade" id="paymentDateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">{{_("Enter Payment Date")}}</h5>
+            <button id="modal-close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <label for="paid_date">{{_("Enter Payment Date")}}:</label>
+              <input id='paid_date' type='date'>
+          </div>
+          <div class="modal-footer">
+              <button id='paid_btn' type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button id='cancel_btn' type="button" class="btn btn-primary" onClick='setFinePaymentDate()'>{{_("Mark This as Paid")}}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- data entry screen to create a new fine or payment request -->
+    <div class="app-container collapse" id="new_fine_section">
+        <div class="profile-block">
+
+            <div class="center" style="font-size: 20px;">
+                <label>{{_('I want to')}}:</label>
+                <span style="margin-left: 20px;"></span>
+
+                <input type="radio" id="fine_radio" name="pay_type" value="fine" onClick="chargeTypeChanged()" style="margin-right: 1px;" checked>
+                <label>{{_('Issue a Fine')}}</label>
+
+                <span style="margin-left: 10px;"></span>
+
+                <input type="radio" id="pay_radio" name="pay_type" value="pay" onClick="chargeTypeChanged()" style="margin-right: 1px;">
+                <label>{{_("Request a Payment")}}</label>
+            </div>
+
+            <fieldset id="fieldset_id">
+              <legend id="legend_id">{{_('Issue a Fine')}}</legend>
+
+              <div class="container">
+                  <div class="row">
+                      <div>
+                          <label for="user_id">{{_("User")}}:</label>
+                          <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="user_id" name="user_id" onChange="retrieveUser();">
+                            <option value="none" selected disabled hidden>{{_("select one")}}</option>
+                            {% for unit in units %}
+                                <option value="{{unit['userid']}}">{{unit['userid']}}</option>
+                            {% endfor %}
+                          </select>
+                      </div>
+                  </div>
+
+                  <div class="row">
+                      <div>
+                          <label for="name">{{_('Name')}}:</label>
+                          <input class="name-input" type="text" id="name" name="name">
+                      </div>
+                      <div>
+                          <label for="email">Email:</label>
+                          <input class="email-input" type="email" id="email" name="email" onBlur="emailOnBlur()" >
+                      </div>
+                      <div>
+                          <label for="phone">{{_('Phone')}}:</label>
+                          <input class="phone-input" id="phone" name="phone" readonly>
+                      </div>
+                      <div>
+                          <label for="amount">{{_('Amount')}}:</label>
+                          <input class="amount-input" type="number" onBlur="amountOnBlur()" min="1" step="1" id="amount" name="amount">
+                      </div>
+                      <div>
+                          <label for="descr">{{_('Description')}}:</label>
+                          <input class="descr-input" style="width: 260px;" type="text" id="descr" name="descr">
+                      </div>
+                      <div>
+                          <label for="due_date">{{_('Due Date')}}:</label>
+                          <input class="due-date-input" type="date" id="due_date" name="due_date" required>
+                      </div>
+                  </div>
+              </div>
+            </fieldset>
+
+<!--            <div class="spacer"></div>-->
+<!--            <div class="spacer"></div>-->
+<!--            <fieldset>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-text">{{_('Name')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text">-->
+<!--                </div>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-text">{{_('Email')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text">-->
+<!--                </div>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-text">{{_('Phone')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text">-->
+<!--                </div>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-integer">{{_('Amount')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text">-->
+<!--                </div>-->
+<!--                <div class="input-group">-->
+<!--                    <div class="input-group-prepend">-->
+<!--                        <label for="myInput" class="input-group-text">{{_('Description')}}</label>-->
+<!--                    </div>-->
+<!--                    <input class="form-control" type="text" id="myInput">-->
+<!--                </div>-->
+<!--            </fieldset>-->
+
+            <div class="spacer"></div>
+            <div class="center">{{_('The text of the email sent to the user may be configured')}} <a href="upload">{{_('here')}}</a></div>
+            <div class="spacer"></div>
+
+            <div class="center">
+              <button class="button larger-button" id="save_payment_btn" onClick="saveFine();"><i class="fa fa-database"></i>
+                  <span id="save_btn_text">{{_('Add This Fine and Notify User')}}</span>
+              </button>
+            </div>
+
+            <div class="spacer"></div>
+        </div>
+        <div class="spacer"></div>
+    </div>  <!-- closes new_fine_section  -->
+
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+
+    <!-- Table of fines and charges already in the system -->
+    <div class="app-container">
+        <div class="profile-block">
+
+          <fieldset>
+              <legend>{{_('Fines')}}</legend>
+              <div style="width: 98%; margin: auto;">
+                  <table class="table table-sm table-responsive-sm table-responsive-md table-var-font" id="fines_table_id">
+                    <tr>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 6%;">{{_('User')}}</th>
+                      <th style="width: 12%;">{{_("Name")}}</th>
+                      <th style="width: 12%;">{{_("Email")}}</th>
+                      <th style="width: 12%;">{{_("Description")}}</th>
+                      <th style="width: 8%;">{{_("Amount")}}</th>
+                      <th style="width: 10%;">{{_("Issued")}}</th>
+                      <th style="width: 10%;">{{_("Due Date")}}</th>
+                      <th style="width: 10%;">{{_("Status")}}</th>
+                    </tr>
+                    {% for item in fines %}
+                      {% if item['charge_type'] == 'fine' %}
+                          <tr>
+                            <td><button class="btn btn-danger btn-micro" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
+                            <td><button class="btn btn-primary btn-micro" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
+                            <td><button class="btn btn-primary btn-micro" onClick="sendFineReminder({{loop.index}}, 'fine');" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
+                            <td>{{item['user_id']}}</td>
+                            <td>{{item['name']}}</td>
+                            <td>{{item['email']}}</td>
+                            <td>{{item['descr']}}</td>
+                            <td>{{item['amount']}}</td>
+                            <td>{{item['created_on']}}</td>
+                            <td>{{item['due_date']['d']}}-{{item['due_date']['m']}}-{{item['due_date']['y']}}</td>
+                            <td>{{_(item['status'])}}</td>
+                          </tr>
+                      {% endif %}
+                    {% endfor %}
+                  </table>
+              </div>
+          </fieldset>  <!-- end of table of fines -->
+
+          <div class="spacer"></div>
+          <div class="spacer"></div>
+
+          <fieldset>
+              <legend>{{_('Charges')}}</legend>
+              <div style="width: 98%; margin: auto;">
+                  <table class="table table-sm table-responsive-sm table-responsive-md table-var-font" id="payments_table_id">
+                    <tr>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 2%;"></th>
+                      <th style="width: 6%;">{{_('User')}}</th>
+                      <th style="width: 12%;">{{_("Name")}}</th>
+                      <th style="width: 12%;">{{_("Email")}}</th>
+                      <th style="width: 12%;">{{_("Description")}}</th>
+                      <th style="width: 8%;">{{_("Amount")}}</th>
+                      <th style="width: 10%;">{{_("Issued")}}</th>
+                      <th style="width: 10%;">{{_("Due Date")}}</th>
+                      <th style="width: 10%;">{{_("Status")}}</th>
+                    </tr>
+                    {% for item in fines %}
+                      {% if item['charge_type'] == 'pay' %}
+                      <tr>
+                        <td><button id="delete" class="btn btn-danger btn-micro" style="height: 20px;" onclick="deleteFine({{loop.index}});">{{_('delete')}}</button></td>
+                        <td><button class="btn btn-primary btn-micro" data-toggle="modal" onclick="storeFineData({{loop.index}});" data-target="#paymentDateModal" title='{{_("mark this as paid")}}'>{{_('mark')}}</button></td>
+                        <td><button id="remind" class="btn btn-primary btn-micro" onClick="sendFineReminder({{loop.index}}, 'pay');" title='{{_("send reminder to user")}}'>{{_("remind")}}</button></td>
+                        <td>{{item['user_id']}}</td>
+                        <td>{{item['name']}}</td>
+                        <td>{{item['email']}}</td>
+                        <td>{{item['descr']}}</td>
+                        <td>{{item['amount']}}</td>
+                        <td>{{item['created_on']}}</td>
+                        <td>{{item['due_date']['d']}}-{{item['due_date']['m']}}-{{item['due_date']['y']}}</td>
+                        <td>{{_(item['status'])}}</td>
+                      </tr>
+                    {% endif %}
+                    {% endfor %}
+                  </table>
+              </div>
+          </fieldset>  <!-- end of table of charges -->
+          <div class="spacer"></div>
+          <div class="spacer"></div>
+        </div> <!-- close profile-block -->
+    </div> <!-- close app-container -->
+  </div> <!-- closes content -->
+
+
+{% for unit in units %}
+    <input type="hidden" id="{{unit['userid']}}_name" value="{{unit['res_name']}}">
+    <input type="hidden" id="{{unit['userid']}}_email" value="{{unit['contact']}}">
+    <input type="hidden" id="{{unit['userid']}}_phone" value="{{unit['phone']}}">
+{% endfor %}
+
+{% for item in fines %}
+    <input type="hidden" id="{{loop.index}}_user_id" value="{{item['user_id']}}">
+    <input type="hidden" id="{{loop.index}}_fine_id" value="{{item['fine_id']}}">
+    <input type="hidden" id="{{loop.index}}_name" value="{{item['name']}}">
+    <input type="hidden" id="{{loop.index}}_email" value="{{item['email']}}">
+    <input type="hidden" id="{{loop.index}}_amount" value="{{item['amount']}}">
+    <input type="hidden" id="{{loop.index}}_descr" value="{{item['descr']}}">
+    <input type="hidden" id="{{loop.index}}_due_date_y" value="{{item['due_date']['y']}}">
+    <input type="hidden" id="{{loop.index}}_due_date_m" value="{{item['due_date']['m']}}">
+    <input type="hidden" id="{{loop.index}}_due_date_d" value="{{item['due_date']['d']}}">
+{% endfor %}
+
+{% endblock %}
+
+ </div> <!-- closes main -->
+
+{% include "hidden_fields.html" %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/fines.js') }}"></script>
+{% endblock %}

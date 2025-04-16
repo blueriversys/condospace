@@ -1,0 +1,187 @@
+{% extends "layout.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/announcs.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="main">
+
+  <nav id="sidebar">  
+    <div class="sidebar-logo-area">
+        <img class="logo-div" src="branding/logo.jpg">
+        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+    </div>
+    <ul class="list-unstyled components">
+        <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
+
+        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
+            <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
+            <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+            <li><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
+        {% elif info_data['is_authenticated'] == true %}
+            <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('My Profile')}}</a></li>
+            <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+        {% endif %}
+
+        <li class="active"><a class="nav-link" href="announcs"><i class="fa fa-fw fa-bullhorn"></i> {{_('Announcements')}}</a></li>
+
+        <li><a class="nav-link" href="docs"><i class="fa fa-fw fa-book"></i> {{_('Documents')}}</a></li>
+
+        {% if info_data['is_authenticated'] == true and current_user.get_type() != 3 %}
+            <li><a class="nav-link" href="upload" aria-selected="false"><i class="fa fa-fw fa-cog"></i> {{_('Maintenance')}}</a></li>
+        {% endif %}
+
+        <li><a class="nav-link" href="pics"><i class="fa fa-fw fa-picture-o"></i> {{_('Pictures')}}</a></li>
+        <li><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
+        <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
+
+        {% include "info.html" %}
+    </ul>
+  </nav>
+ 
+  <div class="content">
+      {% include "mobile-menu.html" %}
+
+      <div class="section-title" data-aos="zoom-out">
+          <h2>{{_('Announcements')}}</h2>
+      </div>
+
+      <p class="spacer"></p>
+
+      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+          <div class="spacer"></div>
+
+          <div class="center button-var-width">
+              <button class="button larger-button col-lg-10" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_announcement" aria-expanded="false" aria-controls="collapseExample">
+                {{_("Create a New Announcement (open/close)")}}
+              </button>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="app-container collapse" id="add_new_announcement">
+              <div class="spacer"></div>
+
+              <div class="profile-block">
+                  <fieldset>
+                      <legend>{{_('New Announcement')}}</legend>
+                      <div class="container">
+                          <div class="row flex">
+                              <div style="width: 100%; /*width: 400px; border: 1px solid blue;*/">
+                                  <label for="announc_text">{{_('Text')}}:</label>
+                                  <textarea class="form-control" rows="6" id="announc_text"></textarea>
+                              </div>
+                          </div>
+
+                          <div class="spacer"></div>
+
+                          <div class="row">
+                              <div id="button-div" class="align-self-center" style="/*border: 1px solid blue;*/">
+                                  <span class="btn btn-primary btn-file">
+                                      {{_("Attach a File (optional)")}} <input id="announc_file" type="file" onChange="pictureSelectAction('announc_file', 'announc_img')">
+                                  </span>
+                              </div>
+                          </div>
+
+<!--                              <div class="container h-100 align-self-center" id="img_group_1" style="display: block;"> -->
+
+                          <div class="spacer"></div>
+
+                          <div class="row flex">
+                              <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                  <img id="announc_img" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
+                              </div>
+                              <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                  <span id="announc_file_name" style="margin-left: 5px;"></span>
+                              </div>
+                          </div>
+                      </div>
+                  </fieldset>
+
+                  <div class="spacer"></div>
+
+                  <div class="center">
+                      <button class="button larger-button" id="save_amenity_btn" onClick="saveAnnounc();"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Save This Announcement')}}</button>
+                  </div>
+
+                  <div class="spacer"></div>
+              </div> <!-- closes closes profile-block -->
+          </div> <!-- app-container -->
+      {% endif %}
+
+      <div class="spacer"></div>
+      <div class="spacer"></div>
+
+
+    <div class="app-container">
+        {% if announcs %}
+            {% for announc in announcs %}
+                    <div class="row flex align-self-center">
+                        <div class="col d-flex align-self-center shadow p-3 mb-5 ml-2 mr-2 rounded" style="background: #def6fb; /*border: solid 1px lightgray;*/">
+                            <div class="align-self-center" style="width: 80px; height: 80px; margin-right: 20px; border-radius: 4px; /*border: solid 1px #555;*/">
+                                {% if announc['file_ext'] == 'pdf' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_pdf_red.png') }}"  width="80" height="80"></a>
+                                {% elif announc['file_ext'] == 'jpg' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_jpg_green.png') }}" width="80" height="80"></a>
+                                {% elif announc['file_ext'] == 'png' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_png_blue.png') }}" width="80" height="80"></a>
+                                {% elif announc['file_ext'] == 'txt' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_orange.png') }}" width="80" height="80"></a>
+                                {% elif announc['file_ext'] == 'doc' %}
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_doc_blue.png') }}" width="80" height="80"></a>
+                                {% else %}
+                                   <img src="{{ url_for('static', filename='img/file_format_sm_bullhorn.png') }}" width="80" height="80">
+                                {% endif %}
+                            </div>
+                            <div class="flex align-self-center">
+                                <div class="row">
+                                    <div class="ms-4 align-self-center" style="font-size: 14px; font-weight: bold; color: #716262;">
+                                        {{ announc['timestamp'] }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="ms-4 align-self-center" style="font-size: 16px; color: #716262;">
+                                        {{ announc['text'] }}
+                                    </div>
+                                </div>
+                                
+                                {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                <div class="row">
+                                    <div>
+                                        <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="deleteAnnounc('{{announc['key']}}');">{{_('delete')}}</button>
+                                        <button class="btn btn-success btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="sendEmailToResidents('{{announc['key']}}');">{{_('send email to residents')}}</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+            {% endfor %}
+        {% else %}
+            <div>{{_('No announcements yet.')}}</div>
+        {% endif %}
+    </div>
+
+
+    <p class="spacer"></p>
+    <p class="spacer"></p>
+
+  </div>
+
+     
+</div> <!-- close main -->
+
+{% include "hidden_fields.html" %}
+
+{% endblock %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/announcs.js') }}"></script>
+{% endblock %}
+

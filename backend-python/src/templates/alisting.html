@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/lightbox.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/listings.css') }}">
+{% endblock %}
+
+
+
+{% block body %}
+
+<div class="main">
+
+  <nav id="sidebar">  
+    <div class="sidebar-logo-area">
+        <img class="logo-div" src="../../branding/logo.jpg">
+        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+    </div>
+    <ul class="list-unstyled components">
+        <li><a class="nav-link" href="../../home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
+
+        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            <li><a class="nav-link" href="../../setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
+            <li><a class="nav-link" href="../../profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
+            <li><a class="nav-link" href="../../reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+            <li><a class="nav-link" href="../../fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
+        {% elif info_data['is_authenticated'] == true %}
+            <li><a class="nav-link" href="../../profile"><i class="fa fa-fw fa-pencil"></i> {{_('My Profile')}}</a></li>
+            <li><a class="nav-link" href="../../reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+        {% endif %}
+
+        <li><a class="nav-link" href="../../announcs"><i class="fa fa-fw fa-bullhorn"></i> {{_('Announcements')}}</a></li>
+        <li><a class="nav-link" href="../../docs"><i class="fa fa-fw fa-book"></i> {{_('Documents')}}</a></li>
+
+        {% if info_data['is_authenticated'] == true and current_user.get_type() != 3 %}
+            <li><a class="nav-link" href="../../upload" aria-selected="false"><i class="fa fa-fw fa-cog"></i> {{_('Maintenance')}}</a></li>
+        {% endif %}
+
+        <li><a class="nav-link" href="../../pics"><i class="fa fa-fw fa-picture-o"></i> {{_('Pictures')}}</a></li>
+        <li class="active"><a class="nav-link" href="../../listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
+        <li><a class="nav-link" href="../../about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
+
+        {% if info_data['is_authenticated'] == true %}
+            <li><a class="nav-link" href="../../logout" aria-selected="false"><i class="fa fa-fw fa-sign-out"></i> {{_('Logout')}}</a></li>
+            <li class="menu-userid">[{{current_user.userid}}]</li>
+        {% else %}
+            <li><a class="nav-link" href="../../login" aria-selected="false"><i class="fa fa-fw fa-sign-in"></i> {{_('Login')}}</a></li>
+        {% endif %}
+
+        {% include "info_short.html" %}
+
+    </ul>
+  </nav>
+
+  <div class="content">
+
+      {% include "mobile-menu.html" %}
+
+      <div class="section-title" data-aos="zoom-out">
+          <h2>{{_('Listings')}}</h2>
+      </div>
+
+      <div class="spacer"></div>
+
+      {% if listing is none %}
+          <div>No such listing found</div>
+      {% else %}
+          <div style="border: 1px solid blue; border-radius: 8px; background: #d2e0f2; font-size: 15px; color: #386295; padding: 3px; line-height: 20px;">
+              <div style="font-size: 18px; font-weight: bold;">{{listing['title']}}</div>
+              <div>
+                  <span>{{_('Posted on ')}}: {{listing['date']}}</span>
+                  <span style="margin-left: 15px;">{{_('email')}}: {{listing['email']}}</span>
+                  <span style="margin-left: 15px;">{{_('phone')}}: {{listing['phone']}}</span>
+              </div>
+              <div>{{_('Price')}}: {{listing['price']}}</div>
+          </div>
+
+          <div class="spacer"></div>
+
+          <div class="container">
+              <div class="row">
+                  {% for pic in pics: %}
+                      {% if pic != 'cover.jpg' and pic != 'cover.png' %}
+                      <div class="col-lg-3 col-md-4 p-3 mb-4 bg-white center shadow rounded d-flex align-items-stretch">
+                          <div class="member-img">
+                              <a class="example-image-link" href="../../listings/{{unit}}/{{listing['listing_id']}}/pics/{{pic}}" data-lightbox="example-set" data-title="<-- click/tap image's left half to go backward; right half to go forward -->">
+                                  <img class="img-fluid" src="../../listings/{{unit}}/{{listing['listing_id']}}/pics/{{pic}}" alt=""/>
+                              </a>
+                          </div>
+                      </div>
+                      {% endif %}
+                      <div style="margin: 1px;"></div>
+                  {% endfor %}
+              </div>
+          </div> <!-- /container -->
+      {% endif %}
+
+  </div> <!-- closes content -->
+
+</div> <!-- close main -->
+
+{% include "hidden_fields.html" %}
+
+{% endblock %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/lightbox-plus-jquery.min.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/alisting.js') }}"></script>
+{% endblock %}
+
+

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+      <meta property="og:title" content="{{info_data['condo_name']}}">
+      <meta property="og:url" content="https://condospace.app/{{info_data['domain']}}">
+
+      {% if info_data['language'] == 'en' %}
+        <meta property="og:description" content="Best apartment complex in {{info_data['condo_location']}}">
+      {% elif info_data['language'] == 'pt' %}
+        <meta property="og:description" content="O melhor complexo de aptos. em {{info_data['condo_location']}}">
+      {% endif %}
+
+      <meta property="og:image" itemprop="image" content="https://condospace.app/{{info_data['domain']}}/branding/home.jpg">
+
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <link rel="icon" type="image/png" href="{{ url_for('static', filename='common/img/favicon.png') }}">
+
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+      <!-- required for link decoration -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+      <!-- required for additional decoration. MUST BE PLACED AFTER bootstrap.min.css -->
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/additional.css') }}">
+
+      <title>{{info_data['condo_name']}}</title>
+
+      <!-- fonts -->
+      <!--<link href="https://fonts.google.com/specimen/Fondamento" rel="stylesheet"> -->
+      <!--<link href="https://fonts.googleapis.com/css2?family=Fondamento&display=swap" rel="stylesheet"> -->
+
+      <!--
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      -->
+
+      <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<!--
+      TO BE DELETED LATER, AFTER SOME TESTING
+      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.3.4/bootbox.min.js"></script>
+-->
+
+      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.3.4/bootbox.min.js"></script>
+
+      <!-- common.js needs to be loaded after jquery -->
+      <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+
+      <script src="{{ url_for('static', filename='js/translations.js') }}"></script>
+
+      {% block insidehead %}{% endblock %}
+    </head>
+
+    <body onload="onLoadAction()">
+        <!-- this means: insert here the section of -->
+        {% block body %}{% endblock %}
+
+        {% block afterbody %}{% endblock %}
+    </body>
+</html>
