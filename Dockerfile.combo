@@ -1,0 +1,59 @@
+
+# Set base image (host OS)
+FROM python:3.10-alpine AS production
+
+# Set the working directory in the container
+WORKDIR /app
+
+# set the virtual environment
+RUN python -m venv venv
+
+# Enable venv
+ENV PATH="/venv/bin:$PATH"
+
+# By default, listen on port 5000
+EXPOSE 5000/tcp
+
+# I dont think I need this
+RUN mkdir -p ./frontend-react
+
+#COPY --from=build-step /app/frontend-react/build ./frontend-react/build
+COPY frontend-react/build ./frontend-react/build
+RUN ls -l ./frontend-react/build
+#RUN sleep infinity
+
+# not working at the moment. Need to run it manually
+#RUN pip freeze > ./backend-python/requirements.txt
+
+# copy requirements.txt to the /app folder
+COPY backend-python/requirements.txt ./backend-python/requirements.txt
+
+# Install any dependencies using /app/requirements.txt
+RUN pip install -r ./backend-python/requirements.txt
+
+# Copy the content of the local src directory to the working directory
+COPY backend-python/src/aws.py ./backend-python
+COPY backend-python/src/functions.py ./backend-python
+COPY backend-python/src/pdf.py ./backend-python
+COPY backend-python/src/run_both.py ./backend-python
+COPY backend-python/src/server.py ./backend-python
+COPY backend-python/src/server_adm.py ./backend-python
+COPY backend-python/src/server_react.py ./backend-python
+COPY backend-python/src/staticvars.py ./backend-python
+COPY backend-python/src/users.py ./backend-python
+COPY backend-python/src/users_adm.py ./backend-python
+
+# copy folders into the working directory
+COPY backend-python/src/static         ./backend-python/static/
+COPY backend-python/src/templates      ./backend-python/templates/
+COPY backend-python/src/translations   ./backend-python/translations/
+
+# create the "config" folder under the "app" folder
+RUN mkdir -p ./backend-python/config
+
+COPY backend-python/config/config-prod.dat ./backend-python/config/config.json
+
+# Specify the command to run on container start
+# --error-logfile FILE (if flag not used, it spits to stderr by default)
+# --log-level LEVEL (LEVEL can be 'debug', 'info', 'warning', 'error' or 'critical')
+CMD ["gunicorn", "--workers=1", "--threads=4", "--keep-alive=65", "--bind=0.0.0.0:5000", "--chdir=backend-python", "run_both:app"]
