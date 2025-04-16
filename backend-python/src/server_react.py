@@ -4,13 +4,13 @@ from flask import Flask, send_from_directory, render_template
 # the relative path, which takes the location of this server as the starting point
 # The "dist" folder is created by the "npm run build" command, issued from the root folder of the front end: "frontend-react"
 # The .html files in the "dist" folder are not used at all; .html are taken from the "templates" folder
-app = Flask(__name__, static_folder='../../frontend-react/dist', template_folder='../../frontend-react/templates')
+app = Flask(__name__, static_folder='../../frontend-react/dist', template_folder='../../frontend-react/src/templates')
 
-@app.route('/js/<path:rel_path>')
-def common_static_images(rel_path):
-    print(f"in common_static_images(): rel_path: {rel_path}")
-    return send_from_directory('static', f"{rel_path}")
-
+# @app.route('/js/<path:rel_path>')
+# def common_static_images(rel_path):
+#     print(f"in common_static_images(): rel_path: {rel_path}")
+#     return send_from_directory('static', f"{rel_path}")
+#
 @app.route('/')
 def index():
     print("here in server_react/index()")
