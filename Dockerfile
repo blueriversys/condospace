@@ -29,6 +29,7 @@ COPY src/pdf.py .
 COPY src/run_both.py .
 COPY src/server.py .
 COPY src/server_adm.py .
+COPY src/server_regis.py .
 COPY src/staticvars.py .
 COPY src/users.py .
 COPY src/users_adm.py .

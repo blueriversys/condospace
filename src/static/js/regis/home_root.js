@@ -3,36 +3,36 @@ function onLoadAction() {
     window.loggedin_lang_global = document.getElementById('loggedin-lang').value;
 }
 
-function sendContactEmail() {
-    // create form data to send via XHR request
-    name = document.getElementById('name').value.trim();
-    email = document.getElementById('email').value.trim();
-    phone = document.getElementById('phone').value.trim();
-    message = document.getElementById('message').value.trim();
-
-    if (name.length == 0 || email.length == 0 | message.length == 0) {
-        showMsgBox( gettext("Fields name, email and message cannot be blank") );
-        return;
-    }
-
-    var formData = new FormData();
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("phone", phone);
-    formData.append("message", message);
-
-    //create XHR object to send request
-    var request = new XMLHttpRequest();
-
-    // initializes a newly-created request
-    request.open('POST', 'send_contact_mail', true);
-
-    // send request to the server
-    request.send(formData);
-
-    alert("Message has been sent");
-    location.reload();
-}
+//function sendContactEmail() {
+//    // create form data to send via XHR request
+//    name = document.getElementById('name').value.trim();
+//    email = document.getElementById('email').value.trim();
+//    phone = document.getElementById('phone').value.trim();
+//    message = document.getElementById('message').value.trim();
+//
+//    if (name.length == 0 || email.length == 0 | message.length == 0) {
+//        showMsgBox( gettext("Fields name, email and message cannot be blank") );
+//        return;
+//    }
+//
+//    var formData = new FormData();
+//    formData.append("name", name);
+//    formData.append("email", email);
+//    formData.append("phone", phone);
+//    formData.append("message", message);
+//
+//    //create XHR object to send request
+//    var request = new XMLHttpRequest();
+//
+//    // initializes a newly-created request
+//    request.open('POST', 'send_contact_mail', true);
+//
+//    // send request to the server
+//    request.send(formData);
+//
+//    alert("Message has been sent");
+//    location.reload();
+//}
 
 /*
 function sendCondoRegistration() {
@@ -273,7 +273,7 @@ function sendCondoRegistrationForm() {
                         if (registration_result === 'error') {
                             return;
                         }
-                        url = condo_id + "/" + "login";
+                        url = "../" + condo_id + "/" + "login";
                         window.location.replace(url);
                     }
                 }

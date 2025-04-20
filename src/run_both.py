@@ -4,16 +4,20 @@ from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from werkzeug.serving import run_simple
 
 # import app1
-from server import create_app as app_1_create_app
-app1 = app_1_create_app()
+from server import create_app as create_app1
+main_app = create_app1()
 
 # import app2
-from server_adm import create_app as app_2_create_app
-app2 = app_2_create_app()
+from server_adm import create_app as create_app2
+adm_app = create_app2()
+
+# import app2
+from server_regis import create_app as create_app3
+regis_app = create_app3()
 
 # merge
 app = DispatcherMiddleware(
-    app1, { '/admin': app2 }
+    main_app, { '/admin': adm_app, '/regis': regis_app }
 )
 
 # run_simple() is only invoked when run_both.py is run from the command-line, like this:

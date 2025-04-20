@@ -30,8 +30,8 @@
                 <li class="active"><a class="nav-link" href="register_en"><i class="fa fa-fw fa-home"></i> Home</a></li>
                 <li><a class="nav-link" href="about_en"><i class="fa fa-fw fa-info"></i> About</a></li>
             {% elif info_data['language'] == 'pt' %}
-                <li class="active"><a class="nav-link" href="register_pt"><i class="fa fa-fw fa-home"></i> Home</a></li>
-                <li><a class="nav-link" href="about_pt"><i class="fa fa-fw fa-info"></i> Sobre</a></li>
+                <li class="active"><a class="nav-link" href="registrar_portugues"><i class="fa fa-fw fa-home"></i> Home</a></li>
+                <li><a class="nav-link" href="sobre_portugues"><i class="fa fa-fw fa-info"></i> Sobre</a></li>
             {% endif %}
         </ul>
     </nav>
@@ -346,6 +346,6 @@
 {% endblock %}
 
 {% block afterbody %}
-   <script src="{{ url_for('static', filename='js/home_root.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/regis/home_root.js') }}"></script>
 {% endblock %}
 
