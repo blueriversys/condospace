@@ -196,6 +196,12 @@ msgstr "Entrar Data de Pagamento"
 
 
 #: templates/home-root.html
+msgid "Street Number"
+msgstr "Número"
+
+msgid "Number"
+msgstr "Número"
+
 msgid "Welcome to the CondoSpace App"
 msgstr "Bem-vindo ao CondoSpace App"
 

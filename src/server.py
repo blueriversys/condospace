@@ -1514,6 +1514,7 @@ def update_settings(tenant):
     info['config'][tenant]['condo_city'] = json_req['request']['condo_city']
     info['config'][tenant]['condo_state'] = json_req['request']['condo_state']
     info['config'][tenant]['address'] = json_req['request']['condo_address']
+    info['config'][tenant]['address_number'] = json_req['request']['condo_address_number']
     info['config'][tenant]['zip'] = json_req['request']['condo_zip']
     info['config'][tenant]['home_message']['title'] = json_req['request']['home_page_title']
     info['config'][tenant]['about_message']['title'] = json_req['request']['about_page_title']

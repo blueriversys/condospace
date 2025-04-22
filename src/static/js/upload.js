@@ -55,6 +55,7 @@ function fillSystemSettings() {
           document.getElementById('condo-name').value = json['condo_name'];
           document.getElementById('condo-tagline').value = json['tagline'];
           document.getElementById('condo-address').value = json['address'];
+          document.getElementById('condo-address-number').value = json['address_number'];
           document.getElementById('condo-zip').value = json['zip'];
           document.getElementById('condo-city').value = json['condo_city'];
           document.getElementById('condo-state').value = json['condo_state'];
@@ -81,6 +82,7 @@ function updateSystemSettings() {
     condo_name = document.getElementById('condo-name').value.trim();
     condo_tagline = document.getElementById('condo-tagline').value.trim();
     condo_address = document.getElementById('condo-address').value.trim();
+    condo_address_number = document.getElementById('condo-address-number').value.trim();
     condo_zip = document.getElementById('condo-zip').value.trim();
     condo_city = document.getElementById('condo-city').value.trim();
     condo_state = document.getElementById('condo-state').value.trim();
@@ -136,6 +138,7 @@ function updateSystemSettings() {
     requestObj.condo_name = condo_name;
     requestObj.condo_tagline = condo_tagline;
     requestObj.condo_address = condo_address;
+    requestObj.condo_address_number = condo_address_number;
     requestObj.condo_zip = condo_zip;
     requestObj.condo_city = condo_city;
     requestObj.condo_state = condo_state;

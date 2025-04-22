@@ -199,6 +199,7 @@ function sendCondoRegistrationForm() {
     condo_name = document.getElementById('condo-name').value.trim();
     condo_tagline = document.getElementById('condo-tagline').value.trim();
     condo_address = document.getElementById('condo-address').value.trim();
+    condo_address_number = document.getElementById('condo-address-number').value.trim();
     condo_zip = document.getElementById('condo-zip').value.trim();
     condo_city = document.getElementById('condo-city').value.trim();
     condo_state = document.getElementById('condo-state').value.trim();
@@ -257,9 +258,16 @@ function sendCondoRegistrationForm() {
     formData.append("condo_name", condo_name);
     formData.append("condo_tagline", condo_tagline);
     formData.append("condo_address", condo_address);
+    formData.append("condo_address_number", condo_address_number);
     formData.append("condo_zip", condo_zip);
     formData.append("condo_city", condo_city);
     formData.append("condo_state", condo_state);
+    formData.append("invoke_origin", 'web_gui');
+
+    if (pref_language == 'pt')
+        formData.append('condo_country', 'BR');
+    else
+        formData.append('condo_country', 'US');
 
     registration_result = 'error';
     text = gettext('One moment, as we register your condominium on our database...');

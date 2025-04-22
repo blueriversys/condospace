@@ -5,7 +5,6 @@
 #                                                                                        #
 #----------------------------------------------------------------------------------------#
 import staticvars
-import requests
 import calendar
 import json
 
@@ -158,7 +157,7 @@ def check_condo_id():
 
     if is_tenant_found(condo_id):
         return_obj = {'status': 'error', 'message': f"{condo_id} already exists in our system"}
-        ret_json = json.dumps({'response': return_obj})
+        ret_json = json.dumps(return_obj)
         lock.release()
         return ret_json
 
@@ -182,31 +181,51 @@ def register_condo():
     condo_name = request.form['condo_name']
     condo_tagline = request.form['condo_tagline']
     condo_address = request.form['condo_address']
+    condo_address_number = request.form['condo_address_number']
     condo_zip = request.form['condo_zip']
     condo_city = request.form['condo_city']
     condo_state = request.form['condo_state']
+    print("step 1a")
+    condo_country = request.form['condo_country']
     use_default_img = True if request.form['use_default_img'] == 'yes' else False
+    invoke_origin = request.form['invoke_origin']
 
-    userid = user_full_name.strip().lower()
-    if userid.find(' ') != -1:
-        ind = userid.find(' ')
-        userid = f"{userid[:ind]}_adm"
+    if invoke_origin == 'web_api':
+        api_key = request.form['api_key']
+        if api_key != config['api_key']:
+            return_obj = {'status': 'error', 'message': f"invalid API_KEY"}
+            ret_json = json.dumps(return_obj)
+            lock.release()
+            return ret_json
+        print(f"api_key validation passed")
+
+    if invoke_origin == 'web_api':
+        userid = request.form['user']
     else:
-        userid = f"{userid}_adm"
+        userid = user_full_name.strip().lower()
+        if userid.find(' ') != -1:
+            ind = userid.find(' ')
+            userid = f"{userid[:ind]}_adm"
+        else:
+            userid = f"{userid}_adm"
 
     if is_tenant_found(condo_id):
         return_obj = {'status': 'error', 'message': f"{condo_id} already exists in our system"}
-        ret_json = json.dumps({'response': return_obj})
+        ret_json = json.dumps(return_obj)
         print("condo already exists...returning")
         lock.release()
         return ret_json
 
     print(f"tenant {condo_id} not found. We are creating it now....")
 
-    lat, long = get_lat_long(f"{condo_city}, {condo_state}")
-    if lat is None or long is None:
-        lat = -22.9561
-        long = -46.5473
+    if invoke_origin == 'web_gui':
+        lat, long = get_lat_long(f"{condo_address}, {condo_address_number}, {condo_city}, {condo_state}")
+        if lat is None or long is None:
+            lat = -22.9561
+            long = -46.5473
+    else:
+        lat = request.form['lat']
+        long = request.form['long']
 
     epoch_timestamp = calendar.timegm(datetime.now().timetuple())
     print(f"timestamp: [{epoch_timestamp}]")
@@ -293,10 +312,12 @@ Board of Directors of {condo_name}.
         'default_home_pic': use_default_img,
         "language": pref_language,
         "address": condo_address,
+        "address_number": condo_address_number,
         "zip": condo_zip,
         "census_forms_pdf_date": "06-Sep-2024",
         "condo_city": condo_city,
         "condo_state": condo_state,
+        "condo_country": condo_country,
         "condo_name": condo_name,
         "domain": condo_id,
         "tagline": condo_tagline,
@@ -459,11 +480,12 @@ Board of Directors of {condo_name}.
         body += f"Your Admin Password: {admin_pass}\n"
         subject = 'CondoSpace Registration Form'
 
-    send_email_redmail(user_email, subject, body)
-    send_email_redmail("joesilva01862@gmail.com", subject, body)
+    if invoke_origin == 'web_gui':
+        send_email_redmail(user_email, subject, body)
+        send_email_redmail(config['CONTACT_TARGET_EMAIL'], subject, body)
+        print(f"just sent email to {user_email}, epoch timestamp: {epoch_timestamp}")
 
-    print(f"just sent email to {user_email}, epoch timestamp: {epoch_timestamp}")
-    return_obj = {'status': 'success', 'condo_id': condo_id}
+    return_obj = {'status': 'success', 'condo_id': condo_id, 'user_id': userid, 'password': admin_pass}
     lock.release()
     return return_obj
 
