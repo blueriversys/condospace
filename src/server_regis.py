@@ -99,12 +99,15 @@ def static_image_files(filename):
 #     Registration related routines
 #-----------------------------------------------------------------------------------------------------
 @app.route('/')
-def home_self():
-    return redirect("registrar_portugues")
+def home_root():
+    return redirect("regis/registrar_portugues")
 
+@app.route('/root')
+def home():
+    return redirect("regis/registrar_portugues")
 
 @app.route('/registrar_portugues')
-def home_self_pt():
+def home_pt():
     lock.acquire()
     info_data = {
         "condo_name": "CondoSpace App",
@@ -115,7 +118,7 @@ def home_self_pt():
 
 
 @app.route('/register_en')
-def home_self_en():
+def home_en():
     lock.acquire()
     info_data = {
         "condo_name": "CondoSpace App",

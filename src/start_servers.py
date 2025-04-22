@@ -8,7 +8,7 @@ from server import create_app as create_app1
 main_app = create_app1()
 
 # import app2
-from server_adm import create_app as create_app2
+from server_admin import create_app as create_app2
 adm_app = create_app2()
 
 # import app2

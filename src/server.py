@@ -76,9 +76,6 @@ app = Flask(
             template_folder='templates'
            )
 
-app.config['SECRET_KEY'] = 'secret@whitegate#key'
-app.url_map.strict_slashes = False
-
 login_manager = LoginManager(app)
 login_manager.login_view = 'login_tenant'
 login_manager.refresh_view = 'login_tenant'
@@ -143,6 +140,9 @@ with open(CONFIG_FILE, 'r') as f:
     print(f"Domain name: {config['domain']}")
     print(f"Version #: {config['version']['number']},  version date: {config['version']['date']}")
 
+app.config['SECRET_KEY'] = config['flask_secret_key']
+app.url_map.strict_slashes = False
+
 WHITEGATE_EMAIL = config['WHITEGATE_EMAIL']
 WHITEGATE_NAME = config['WHITEGATE_NAME']
 GMAIL_WHITEGATE_EMAIL = config['GMAIL_WHITEGATE_EMAIL']
@@ -182,6 +182,74 @@ lock = Lock()
 
 cgitb.enable()
 
+
+condo_not_found_text = """
+<html>
+<body>
+<div class="main">
+
+  <div class="content">
+
+    <div class="section-title" data-aos="zoom-out">
+      <h1 class="center">Condominium Not Found</h1>
+    </div>
+
+    <div class="about-style">
+          <div class="about-body">
+            <div class="shadow p-3 mb-5 bg-white rounded">
+                    <!--
+                    <div class="center">
+                        <img style="width= 95%; max-width: 300px;" src="{{ url_for('static', filename='common/img/BlueRiverLogo.gif') }}">
+                    </div>
+                    -->
+                    <div>
+                        Condominium <b>"{tenant}"</b> not found in our system. Please verify the exact spelling and enter it in the browser's address field.
+                        It seems like you are not yet a customer. Please visit our Registration page to try the application out for 30 days: <a href="https://condospace.app/regis/register_en">https://condospace.app/regis/register_en</a> or
+                        <a href="https://condospace.app/regis/registrar_portugues">https://condospace.app/regis/registrar_portugues</a>
+                    </div>
+                    <p>
+                    <b>Here's how it works:</b>
+                    <div class="spacer"></div>
+                    <ol>
+                        <li>You can access the "demo" website right now <a href="https://condospace.app/monetalphaville" target="blank">https://condospace.app/monetalphaville</a>, no login required. Accessing it that way shows you what everyone
+                      in the public sees.</li>
+                        <li>But if you contact us, we'll provide you a couple of login credentials so you can experience what an "admin" user would be
+                      able to do, and what a "regular" resident would be able to do.</li>
+                        <li>Another way is to try the service for a month to see if it works for you.</li>
+                    </ol>
+
+                    <p>
+
+                    <b>Some of the benefits:</b>
+                    <ol>
+                        <li>Sense of belonging and community</li>
+                        <li>Resident Census Card</li>
+                        <li>Communication between Association and Residents</li>
+                        <li>Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.</li>
+                        <li>Web presence: suppose your condominium is called Hill Top Condominium, you can choose the first portion of
+                            your domain; so a complete address could be http://condospace.app/hilltop</li>
+                        <li>Ability to list apartments for sale with pictures (especially useful for FSBOs)</li>
+                    </ol>
+                    <div class="spacer"></div>
+                    Why wait? It's much more affordable than you think. Contact us and we'll get you started.
+
+                    <div class="spacer"></div>
+                    <!--
+                    <div class="center">
+                        <img style="width= 95%; max-width: 360px;" src="{{ url_for('static', filename='common/img/contact.png') }}">
+                    </div>
+                    -->
+            </div>
+          </div> <!-- closes about-body box -->
+    </div> <!-- closes about-style box -->
+
+  </div> 
+
+</div> <!-- close main -->
+</body>
+</html>
+"""
+
 def is_valid_graphic_file(file_name):
     f_name, f_ext = os.path.splitext(file_name)
     f_ext = f_ext.lower()
@@ -194,10 +262,17 @@ def is_tenant_found(tenant):
         return False
     info_json = get_json_from_file_no_tenant(f"{INFO_FILE}")
     if tenant in info_json['config']:
+        if not is_tenant_folder_found(tenant):
+            return False
         global tenant_global
         tenant_global = tenant
         return True
     return False
+
+def is_tenant_folder_found(tenant):
+    if not aws.is_file_found(f"{tenant}/{RESIDENTS_FILE}"):
+        return False
+    return True
 
 def get_doc_files_cache(tenant, path, pattern):
     key = f"{tenant}-{path}"
@@ -415,6 +490,12 @@ def get_unit_list(include_adm=True):
     unit_list.sort(key=sort_by_userid)
     return unit_list
 
+def build_condo_not_found(tenant):
+    # return render_template("condo_not_found.html")
+    condo_not_found_html = condo_not_found_text.replace('{tenant}', tenant)
+    lock.release()
+    return condo_not_found_html
+
 
 '''
  Read the residents
@@ -587,20 +668,32 @@ def common_static_images(rel_path):
 #     lock.release()
 #     return render_template("home.html", user_types=staticvars.user_types, info_data=info_data)
 
+@app.route('/')
+def home_root():
+    print("here in server.home_root()")
+    return redirect("/regis/registrar_portugues")
+
+@app.route('/health')
+def home_health():
+    print("here in server.home_health()")
+    return "OK"
+
 @app.route('/<tenant>')
 def home_tenant(tenant):
-    lock.acquire()
-    page = redirect(f"{tenant}/home")
-    lock.release()
-    return page
+    print(f"here in server.home_tenant(). tenant {tenant}")
+    if tenant == 'admin':
+        return redirect(f"/admin/root")
+    elif tenant == 'regis':
+        return redirect(f"/regis/root")
+
+    return redirect(f"{tenant}/home")
 
 @app.route('/<tenant>/home')
 def home(tenant):
     lock.acquire()
-    print(f"in home():  tenant: {tenant}")
+    print(f"in server.home():  tenant: {tenant}")
     if not is_tenant_found(tenant):
-        lock.release()
-        return render_template("condo_not_found.html", tenant=tenant)
+        return build_condo_not_found(tenant)
     info_data = get_info_data(tenant)
 #    session[INFO_DATA_STRING] = None
     lock.release()

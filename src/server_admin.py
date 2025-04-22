@@ -13,6 +13,7 @@ from datetime import timedelta, datetime
 from server import get_string_from_epoch
 from server import get_epoch_from_string
 from server import get_string_from_epoch_format
+from server import is_tenant_found
 
 CONFIG_FOLDER = 'config'
 SERVER_FOLDER = 'serverfiles'
@@ -40,7 +41,7 @@ app = Flask(
             __name__,
             static_url_path='',
             static_folder='static',
-            template_folder='templates'
+            template_folder='templates/admin'
            )
 
 app.config['SECRET_KEY'] = config['flask_secret_key']
@@ -106,25 +107,29 @@ def static_image_files(filename):
 #     Login/Logout related routines
 #-----------------------------------------------------------------------------------------------------
 @app.route('/')
+def home_root():
+    print("here in server_admin.home_root()")
+    return redirect("/admin/customers")
+
+@app.route('/root')
 def home():
-    lock.acquire()
-    page = redirect("login")
-    lock.release()
-    return page
+    print("here in server_admin.home()")
+    return redirect("/admin/customers")
 
 @app.route('/login', methods=['GET' , 'POST'])
 def login():
     lock.acquire()
+    print("here in server_admin.login()")
     if request.method == 'GET':
         if current_user.is_authenticated:
             # print(f"login_tenant(): there is a user already logged in: {current_user.id}")
-            next_page = request.args.get('next') if request.args.get('next') is not None else '/admin/customers'
+            next_page = request.args.get('next') if request.args.get('next') is not None else 'customers'
             lock.release()
             return redirect(next_page)
         else:
             info_data = get_info_data('adm')
             lock.release()
-            return render_template('adm/login.html', info_data=info_data)
+            return render_template('login.html', info_data=info_data)
 
     # from here on down, it's a POST request
     if current_user.is_authenticated:
@@ -148,7 +153,7 @@ def login():
         #return abort(401)
         flash("Invalid userid or password")
         lock.release()
-        return render_template("adm/login.html", info_data=get_info_data('adm'))
+        return render_template("login.html", info_data=get_info_data('adm'))
 
 
 @app.route('/logout')
@@ -162,7 +167,7 @@ def logout():
     current_user.authenticated = False
     userid = current_user.userid  # we need to save the userid BEFORE invoking logout_user()
     logout_user()
-    return render_template("adm/logout.html", loggedout_user=userid, info_data=get_info_data('adm'))
+    return render_template("logout.html", loggedout_user=userid, info_data=get_info_data('adm'))
 
 
 #-----------------------------------------------------------------------------------------------------
@@ -172,7 +177,7 @@ def logout():
 @login_required
 def get_customers():
     lock.acquire()
-    print(f"here in get_customers()")
+    print(f"here in server_admin.get_customers()")
     customers = get_json_from_file(f"{INFO_FILE}")
     customers_arr = []
     info_data = get_info_data("adm")
@@ -185,6 +190,10 @@ def get_customers():
             if not aws.is_file_found(tenant):
                 continue
             user_id = customer['admin_userid']
+            if not is_tenant_found(tenant):
+                print(f"Tenant {tenant} not found, skipping load_users()")
+                continue
+            print(f"will now load_users() for tenant {tenant}")
             users_repository.load_users(tenant)
             #print(f"step 2. tenant: {tenant}   user_id: {user_id}")
             # todo: MELHORAR ESTA FUNCAO, TRAVANDO QUANDO O USER_ID NAO EXISTE
@@ -205,12 +214,13 @@ def get_customers():
 
     info_data['is_authenticated'] = True
     lock.release()
-    return render_template("adm/customers.html", customers=customers_arr, info_data=info_data)
+    return render_template("customers.html", customers=customers_arr, info_data=info_data)
 
 @app.route('/save_customer', methods=["POST"])
 @login_required
 def save_customer():
     lock.acquire()
+    print(f"here in server_admin.save_customer()")
     prefix = 'customer'
     json_obj = request.get_json()
     tenant = json_obj[prefix]['tenant']
@@ -250,7 +260,7 @@ def save_customer():
 @login_required
 def retrieve_customer():
     lock.acquire()
-    print(f"here in retrieve_customer()")
+    print(f"here in server_admin.retrieve_customer()")
     prefix = 'customer'
     json_obj = request.get_json()
     tenant = json_obj[prefix]['tenant']
@@ -373,7 +383,7 @@ def load_user(internal_id):
 
 
 def create_app():
-    app_name = 'server_adm.py'
+    app_name = 'server_admin.py'
     print(f"app name: {app_name}")
     return app
 
