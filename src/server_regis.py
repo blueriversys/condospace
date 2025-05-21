@@ -7,6 +7,7 @@
 import staticvars
 import calendar
 import json
+import pytz
 
 from flask import Flask, request, session, abort, redirect, Response, url_for, render_template, send_from_directory, flash, session
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
@@ -27,6 +28,7 @@ from server import send_email_redmail
 from server import save_json_to_file
 from server import save_json_to_file_no_tenant
 from server import get_info_data
+from server import get_epoch_from_now
 from server import RESIDENTS_FILE
 from server import LINKS_FILE
 from server import INFO_FILE
@@ -108,12 +110,23 @@ def home():
 @app.route('/registrar_portugues')
 def home_pt():
     lock.acquire()
+    print("here in regis.home_pt()")
     info_data = {
         "condo_name": "CondoSpace App",
         "language": "pt"
     }
     lock.release()
     return render_template("home_root.html", user_types=staticvars.user_types, info_data=info_data)
+
+@app.route('/sobre_portugues')
+def about_self_pt():
+    lock.acquire()
+    info_data = {
+        "condo_name": "CondoSpace App",
+        "language": "pt"
+    }
+    lock.release()
+    return render_template("about_root.html", info_data=info_data)
 
 
 @app.route('/register_en')
@@ -125,17 +138,6 @@ def home_en():
     }
     lock.release()
     return render_template("home_root.html", user_types=staticvars.user_types, info_data=info_data)
-
-
-@app.route('/sobre_portugues')
-def about_self_pt():
-    lock.acquire()
-    info_data = {
-        "condo_name": "CondoSpace App",
-        "language": "pt"
-    }
-    lock.release()
-    return render_template("about_root.html", info_data=info_data)
 
 
 @app.route('/about_en')
@@ -185,7 +187,6 @@ def register_condo():
     condo_zip = request.form['condo_zip']
     condo_city = request.form['condo_city']
     condo_state = request.form['condo_state']
-    print("step 1a")
     condo_country = request.form['condo_country']
     use_default_img = True if request.form['use_default_img'] == 'yes' else False
     invoke_origin = request.form['invoke_origin']
@@ -227,10 +228,12 @@ def register_condo():
         lat = request.form['lat']
         long = request.form['long']
 
-    epoch_timestamp = calendar.timegm(datetime.now().timetuple())
-    print(f"timestamp: [{epoch_timestamp}]")
+    #epoch_timestamp = calendar.timegm(datetime.now().timetuple())
+    #timezone = pytz.timezone("America/New_York")
+    #now_with_timezone = datetime.now(timezone)
+    epoch_timestamp = get_epoch_from_now()
     epoch_date_time = datetime.fromtimestamp(epoch_timestamp)
-    print("Converted Datetime:", epoch_date_time)
+    print(f"epoch_timestamp: [{epoch_timestamp}]  Converted Datetime back: {epoch_date_time}")
 
     if pref_language == 'pt':
         pix_key = "12345678"
@@ -343,7 +346,9 @@ Board of Directors of {condo_name}.
         'fine_template': fine_template,
         'pay_pix_key': pay_pix_key,
         'pay_title': pay_title,
-        'pay_template': pay_template
+        'pay_template': pay_template,
+        'origin': 'api' if invoke_origin == 'web_api' else 'cust',
+        'last_login_date': epoch_timestamp
     }
 
     initial_resident = {

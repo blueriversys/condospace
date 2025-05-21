@@ -58,6 +58,7 @@ from redmail import gmail
 from flask_babel import Babel, gettext, lazy_gettext, _
 from flask_babel import format_decimal
 import requests
+import pytz
 
 ''' for simulation of long running tasks '''
 from threading import Thread, Lock
@@ -320,7 +321,6 @@ def save_json_to_file(tenant, file_path, content):
 
 def get_json_from_file_no_tenant(file_path):
     if file_path in json_file_cache_no_tenant:
-        print(f"file_no_tenant: returning mem content")
         return json.loads(json_file_cache_no_tenant[file_path])
 
     if not aws.is_file_found(file_path):
@@ -2963,6 +2963,9 @@ def login_tenant(tenant):
         session["tenant"] = tenant
         session['userid'] = userid
         # print(f"login_tenant(): we just logged in {session['userid']} of tenant {session['tenant']}, session obj: {session}")
+        customers = get_json_from_file_no_tenant(f"{INFO_FILE}")
+        customers['config'][tenant]['last_login_date'] = get_epoch_from_now()
+        save_json_to_file_no_tenant(INFO_FILE, customers)
         lock.release()
         return redirect(next_page)
     else:
@@ -3045,7 +3048,11 @@ def get_timestamp():
     return datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
 
 def get_epoch_from_now():
-    return calendar.timegm(datetime.now().timetuple())
+    timezone = pytz.timezone("America/New_York")
+    now_with_timezone = datetime.now(timezone)
+    epoch_timestamp = int(now_with_timezone.timestamp())
+#    return calendar.timegm(datetime.now().timetuple())
+    return epoch_timestamp
 
 def get_epoch_from_string(date_string):
     date_format = "%Y-%m-%d"
@@ -3061,7 +3068,8 @@ def get_string_from_epoch(epoch_timestamp, lang='en'):
         date_format = '%m-%d-%Y'
     else:
         date_format = '%m-%d-%Y'
-    return datetime.fromtimestamp(int(epoch_timestamp)).strftime(date_format)
+#    return datetime.fromtimestamp(int(epoch_timestamp)).strftime(date_format)
+    return get_string_from_epoch_format(epoch_timestamp, date_format)
 
 def get_string_from_epoch_format(epoch_timestamp, date_format):
     return datetime.fromtimestamp(int(epoch_timestamp)).strftime(date_format)

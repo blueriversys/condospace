@@ -24,3 +24,4 @@ six==1.16.0
 urllib3==1.26.0
 Werkzeug==2.3.8
 stripe==11.6.0
+pytz==2025.2

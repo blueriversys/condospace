@@ -25,6 +25,7 @@ INFO_FILE = "info.json"
 CONFIG_FILE =   f"{CONFIG_FOLDER}/config.json"
 
 BUCKET_PREFIX = "customers"
+CUSTOMERS_PER_PAGE = 20
 
 # for PROD, change the file serverfiles/config-prod.dat
 with open(CONFIG_FILE, 'r') as f:
@@ -178,13 +179,15 @@ def logout():
 def get_customers():
     lock.acquire()
     print(f"here in server_admin.get_customers()")
-    customers = get_json_from_file(f"{INFO_FILE}")
     customers_arr = []
     info_data = get_info_data("adm")
+    customers = get_json_from_file(f"{INFO_FILE}")
+    added_count = 0
 
     for key, customer in customers['config'].items():
         if key == 'adm':
             continue
+
         if 'admin_userid' in customer:
             tenant = key
             if not aws.is_file_found(tenant):
@@ -209,12 +212,89 @@ def get_customers():
 
         #print(f"license_pay_date: {customer['license_pay_date']}")
         customer['registration_date'] = get_string_from_epoch(customer['registration_date'])
+        customer['last_login_date'] = get_string_from_epoch(customer['last_login_date'])
         customer['license_pay_date'] = get_string_from_epoch(customer['license_pay_date']) if customer['license_pay_date'] else None
         customers_arr.append(customer)
+        added_count += 1
+        if added_count == CUSTOMERS_PER_PAGE:
+            break
 
     info_data['is_authenticated'] = True
     lock.release()
-    return render_template("customers.html", customers=customers_arr, info_data=info_data)
+    return render_template("customers.html", page=1, customers=customers_arr, info_data=info_data)
+
+
+@app.route('/customers/<string:reg_date>/<int:page>', methods=["POST"])
+@login_required
+def get_customers_page(reg_date, page):
+    lock.acquire()
+    print(f"here in server_admin.get_customers(), reg_date {reg_date}  page {page}")
+    customers_arr = []
+    info_data = get_info_data("adm")
+    customers = get_json_from_file(f"{INFO_FILE}")
+    # a page comprises 30 customers
+    # page 1 = from 0  to 30
+    # page 2 = from 31 to 60 (skip 30)
+    # page 3 = from 61 to 90 (skip 60)
+    # skip_count = page * 30 - 30
+
+    skip_count = page * CUSTOMERS_PER_PAGE - CUSTOMERS_PER_PAGE
+    print(f"skip_count: {skip_count}")
+    count = 0
+    added_count = 0
+
+    for key, customer in customers['config'].items():
+        if key == 'adm':
+            continue
+
+        if reg_date != "00000000":
+            cust_reg_date = get_string_from_epoch_format(customer['registration_date'], '%Y%m%d')
+            if cust_reg_date != reg_date:
+                continue
+
+        if count < skip_count:
+            count += 1
+            continue
+
+        if 'admin_userid' in customer:
+            tenant = key
+            if not aws.is_file_found(tenant):
+                continue
+            user_id = customer['admin_userid']
+            if not is_tenant_found(tenant):
+                print(f"Tenant {tenant} not found, skipping load_users()")
+                continue
+            users_repository.load_users(tenant)
+            # todo: MELHORAR ESTA FUNCAO, TRAVANDO QUANDO O USER_ID NAO EXISTE
+            user = users_repository.get_user_by_userid(tenant, user_id)
+            customer['admin_pass'] = user.password
+            customer['admin_email'] = user.email
+            customer['admin_phone'] = user.phone
+        else:
+            customer['admin_userid'] = ''
+            customer['admin_pass'] = ''
+            customer['admin_email'] = ''
+            customer['admin_phone'] = ''
+
+        # for DEBUG purposes
+        print(f"epoch timestamp: {customer['registration_date']}")
+        print(f"from epoch_format: {get_string_from_epoch_format(customer['registration_date'], '%Y%m%d')}")
+        print(f"from epoch       : {get_string_from_epoch(customer['registration_date'])}")
+
+        #print(f"license_pay_date: {customer['license_pay_date']}")
+        customer['registration_date'] = get_string_from_epoch(customer['registration_date'])
+        customer['last_login_date'] = get_string_from_epoch(customer['last_login_date'])
+        customer['license_pay_date'] = get_string_from_epoch(customer['license_pay_date']) if customer['license_pay_date'] else None
+        customers_arr.append(customer)
+        added_count += 1
+        if added_count == CUSTOMERS_PER_PAGE:
+            break
+
+    print(f"size of array to return: {len(customers_arr)}")
+    info_data['is_authenticated'] = True
+    return_obj = json.dumps({'response': {'status': 'success', 'customers': customers_arr}})
+    lock.release()
+    return return_obj
 
 @app.route('/save_customer', methods=["POST"])
 @login_required
