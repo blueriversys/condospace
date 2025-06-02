@@ -1,0 +1,92 @@
+{% extends "includes/layout_mtadmin.html" %}
+
+
+{% block insidehead %}
+{% endblock %}
+
+
+{% block body %}
+
+<div class="main">
+
+  <nav id="sidebar">  
+    <div class="sidebar-logo-area">
+        <img class="logo-div" src="img/bluelogo.png">
+        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+    </div>
+    <ul class="list-unstyled components">
+        {% if info_data['language'] == 'en' %}
+            <li><a class="nav-link" href="register_en"><i class="fa fa-fw fa-home"></i> Home</a></li>
+            <li class="active"><a class="nav-link" href="about_en"><i class="fa fa-fw fa-info"></i> About</a></li>
+        {% elif info_data['language'] == 'pt' %}
+            <li><a class="nav-link" href="registrar_portugues"><i class="fa fa-fw fa-home"></i> Home</a></li>
+            <li class="active"><a class="nav-link" href="sobre_portugues"><i class="fa fa-fw fa-info"></i> Sobre</a></li>
+        {% endif %}
+    </ul>
+  </nav>
+
+  <div class="content">
+    {% include "includes/mobile_menu_mtadmin.html" %}
+
+    <div class="section-title" data-aos="zoom-out">
+      <h2>{{_("About")}}</h2>
+    </div>
+
+    <div class="about-style">
+          <div class="about-body">
+            <div class="shadow p-3 mb-5 bg-white rounded">
+                    <div class="center">
+                        <img style="width= 95%; max-width: 300px;" src="img/BlueRiverLogo.gif">
+                    </div>
+                    <div class="spacer"></div>
+                    <div class="spacer"></div>
+                    <div class="spacer"></div>
+                    {{_("We are an innovative software company which specializes in practical software for small and medium size businesses.")}}
+                    <div class="spacer"></div>
+                    {{_("Contact us using the email below so we can show you all the benefits of having your condominium website hosted in our servers.")}}
+
+                    <div class="spacer"></div>
+
+                    {{_("Because our software is a Web Based Application, it gives the Association the benefit of having both a web presence and the storage/management of documents and administration of Condominium tasks, all in a very user-friendly and effective manner.")}}
+
+                    <div class="spacer"></div>
+                    <div class="spacer"></div>
+
+                    <b>{{_("Here's how it works")}}:</b>
+                    <div class="spacer"></div>
+                    <ol>
+                        <li>{{_("The best way is to register your condominium with us right now by going to the home page.")}}</li>
+                        <li>{{_("That way you can have full access to all features to see if it works for you.")}}</li>
+                        <li>{{_("Alternatively, you can go to the 'demo' website")}} <a href='https://condospace.app/monetalphaville' target='blank'>https://condospace.app/monetalphaville</a>, {{_("with limited experience because, that way, you will only see what everyone in the public sees.")}}</li>
+                    </ol>
+
+                    <div class="spacer"></div>
+
+                    <b>{{_("Some of the benefits")}}:</b>
+                    <ol>
+                        <li>{{_("Sense of belonging and community")}}</li>
+                        <li>{{_("Resident Census Card")}}</li>
+                        <li>{{_("Better communication between Association and Residents")}}</li>
+                        <li>{{_("Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.")}}</li>
+                        <li>{{_("Web presence: suppose your condominium is called Condominium Monet de Alphaville, you can choose a part of your domain; so a complete address could be")}} http://condospace.app/monetalphaville</li>
+                        <li>{{_("Ability to list apartments for sale with pictures (especially useful for FSBOs)")}}</li>
+                        <li>{{_("Ability to issue fines and payment requests")}}</li>
+                        <li>{{_("Ability to make reservations")}}</li>
+                        <li>{{_("And much more!")}}</li>
+                    </ol>
+                    <div class="spacer"></div>
+                    {{_("Why wait? It's very affordable for your company because much of our revenue comes from the condominium itself.")}}
+
+                    <div class="spacer"></div>
+
+                    <div class="center">
+                        <img style="width= 95%; max-width: 360px;" src="img/contact.png">
+                    </div>
+            </div>
+          </div> <!-- closes about-body box -->
+    </div> <!-- closes about-style box -->
+    
+  </div> 
+
+</div> <!-- close main -->
+{% endblock %}

@@ -35,6 +35,7 @@ from server import INFO_FILE
 from server import CONFIG_FILE
 from server import BUCKET_PREFIX
 from server import COVER_PREF_WIDTH, COVER_PREF_HEIGHT
+from server_mtadmin import update_company_data
 
 
 # for PROD, change the file serverfiles/config-prod.dat
@@ -111,9 +112,11 @@ def home():
 def home_pt():
     lock.acquire()
     print("here in regis.home_pt()")
+    company_id = request.args.get('company_id', default='', type=str)
     info_data = {
         "condo_name": "CondoSpace App",
-        "language": "pt"
+        "language": "pt",
+        "company_id": company_id
     }
     lock.release()
     return render_template("home_root.html", user_types=staticvars.user_types, info_data=info_data)
@@ -172,9 +175,7 @@ def check_condo_id():
 def register_condo():
     lock.acquire()
     print("in register_condo()")
-    # json_rec = request.get_json()['request']
-    # userid = json_rec['userid']
-    # password = json_rec['userpass']
+    company_id = request.form['company_id']
     user_full_name = request.form['name']
     user_email = request.form['email']
     user_phone = request.form['phone']
@@ -206,9 +207,9 @@ def register_condo():
         userid = user_full_name.strip().lower()
         if userid.find(' ') != -1:
             ind = userid.find(' ')
-            userid = f"{userid[:ind]}_adm"
+            userid = f"{userid[:ind]}_{condo_id}"
         else:
-            userid = f"{userid}_adm"
+            userid = f"{userid}_{condo_id}"
 
     if is_tenant_found(condo_id):
         return_obj = {'status': 'error', 'message': f"{condo_id} already exists in our system"}
@@ -484,6 +485,16 @@ Board of Directors of {condo_name}.
         body += f"Your Admin Id: {userid}\n"
         body += f"Your Admin Password: {admin_pass}\n"
         subject = 'CondoSpace Registration Form'
+
+    if company_id:
+        print(f"company_id {company_id}")
+        success = update_company_data(company_id, condo_id)
+        if not success:
+            print(f"Error trying to update the company in the INFO_FILE")
+        else:
+            pass
+    else:
+        print(f"No company is involved in this registration")
 
     if invoke_origin == 'web_gui':
         send_email_redmail(user_email, subject, body)

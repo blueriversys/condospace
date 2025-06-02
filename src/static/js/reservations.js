@@ -363,7 +363,24 @@ function makeReservation() {
     }
 
     /* retrieve fields from browser's memory */
-    user_id = window.loggedin_userid_global;
+    const isMultiCondo = document.getElementById("loggedin-multi-condo").value;
+    var admin_id = null;
+    var user_id = null;
+    if (isMultiCondo == 'True') {
+        admin_id = window.loggedin_userid_global;
+        const selIndex = document.getElementById("res_user_id").selectedIndex;
+        if (selIndex == 0) {
+            alert("A user id must be selected");
+            return;
+        }
+        const selOption = document.getElementById("res_user_id").options[selIndex];
+        user_id = selOption.value;
+    }
+    else {
+        admin_id = null;
+        user_id = window.loggedin_userid_global;
+    }
+
     amenity_id = window.amenity_id;
 
     isValidTime = checkConflict(amenity_id, date_y, date_m, date_d, hour_from, min_from, hour_to, min_to);
@@ -401,6 +418,7 @@ function makeReservation() {
 
     var requestObj = new Object();
     requestObj.tenant = loggedin_tenant_global;
+    requestObj.admin_id = admin_id;
     requestObj.user_id = user_id;
     requestObj.amenity_id = amenity_id;
     requestObj.date = {"y": date_y, "m": date_m,  "d": date_d};

@@ -33,7 +33,7 @@ curl -XGET -F "text=Welcome"  -H 'Accept-Language: pt-PT,pt;q=0.9,en-US;q=0.8,en
 
 import staticvars
 #from supporting_programs.image_test import img_bytes
-from users import User, UsersRepository
+from users import User, UsersRepository, UsersRepositoryMultiAdmin
 from pdf import PDF
 from datetime import timedelta, datetime
 import time
@@ -59,7 +59,6 @@ from flask_babel import Babel, gettext, lazy_gettext, _
 from flask_babel import format_decimal
 import requests
 import pytz
-
 ''' for simulation of long running tasks '''
 from threading import Thread, Lock
 from time import sleep
@@ -96,7 +95,7 @@ UNPROTECTED_FOLDER = f"{UPLOADED_FOLDER}/unprotected"
 CONFIG_FILE =   f"{CONFIG_FOLDER}/config.json"
 
 # all files in the "serverfiles" folder
-INFO_FILE =     "info.json"
+INFO_FILE = "info.json"
 FINES_FILE =  "fines.json"
 RESERVATIONS_FILE =  f"{UNPROTECTED_FOLDER}/reservations/reservations.json"
 LINKS_FILE =    f"{SERVER_FOLDER}/links.json"
@@ -110,6 +109,7 @@ CENSUS_FORMS_PDF_FULL_PATH = f"{PROTECTED_FOLDER}/docs/other/{CENSUS_FORM_PDF_FI
 LISTINGS_FILE = f"{UNPROTECTED_FOLDER}/listings/listings.json"
 EVENT_PICS_FILE = f"{UNPROTECTED_FOLDER}/eventpics/eventpics.json"
 BUCKET_PREFIX = "customers"
+COMPANIES_PREFIX = "companies"
 TENANT_NOT_FOUND = "tenant_not_found"
 email_percent = 1
 
@@ -153,10 +153,14 @@ GMAIL_BLUERIVER_EMAIL_APP_PASSWORD = config['GMAIL_BLUERIVER_EMAIL_APP_PASSWORD'
 BLUERIVER_CONTACT_EMAIL = config['BLUERIVER_CONTACT_EMAIL']
 BLUERIVER_CONTACT_PASSWORD = config['BLUERIVER_CONTACT_PASSWORD']
 
+# define user repository
 aws = AWS(BUCKET_PREFIX, config['bucket_name'], config['aws_access_key_id'], config['aws_secret_access_key'])
+users_repository = UsersRepository(aws)
 
 # define user repository
-users_repository = UsersRepository(aws)
+aws_mtadmin = AWS(COMPANIES_PREFIX, config['bucket_name'], config['aws_access_key_id'], config['aws_secret_access_key'])
+users_repository_mtadmin = UsersRepositoryMultiAdmin(aws_mtadmin)
+
 
 # global tenant var (used in some routines)
 tenant_global = ""
@@ -250,6 +254,16 @@ condo_not_found_text = """
 </body>
 </html>
 """
+
+def get_super_admin_user(company_id, user_id):
+    local_repository = UsersRepositoryMultiAdmin(aws)
+    local_repository.load_users(company_id)
+    return local_repository.get_user_by_userid(user_id)
+
+def is_user_super_admin(company_id, user_id):
+    # local_repository = UsersRepositoryMultiAdmin(aws)
+    # local_repository.load_tenants(user_id)
+    return get_super_admin_user(company_id, user_id) is not None
 
 def is_valid_graphic_file(file_name):
     f_name, f_ext = os.path.splitext(file_name)
@@ -371,9 +385,12 @@ def get_info_data(tenant):
             return None
         if current_user.is_anonymous:
             is_authenticated = False
+            multi_condo = False
         else:
             is_authenticated = True if current_user.tenant == tenant else False
+            multi_condo = session['multi-condo']
         info_data['is_authenticated'] = is_authenticated
+        info_data['multi-condo'] = multi_condo
         # session[INFO_DATA_STRING] = info_data
         info_data['loggedin-userdata'] = get_current_user_data()
         return info_data
@@ -381,7 +398,6 @@ def get_info_data(tenant):
         print(f"get_info_data(): unable to get info for tenant: {tenant}, file {INFO_FILE}")
         log(tenant, f"Error trying to read file {INFO_FILE}")
         return None
-
 
 def get_current_user_data():
     if current_user.is_anonymous:
@@ -506,8 +522,10 @@ def load_users(tenant):
         return
     print(f"load_users(): tenant {tenant}")
     users_repository.load_users(tenant)
-    print(f"just loaded tenant {tenant} into users_repository")
 
+def load_company_users(company_id):
+    print(f"load_company_users()")
+    users_repository_mtadmin.load_users(company_id)
 
 ''' These are long running related functions '''
 def email_task(email_list, subject, body):
@@ -522,15 +540,49 @@ def email_task(email_list, subject, body):
         email_percent = int( (count / total_count ) * 100 )
         #sleep(2)
 
-    #   FOR TESTING PURPOSES ONLY
-    #    for single_email_to in emailto:
-    #        print(f'sending email to {single_email_to}')
-    #        subj = mailObj['request']['subject']
-    #        subject = subj + ",   " + single_email_to
-    #        single_email_to = GMAIL_WHITEGATE_EMAIL
-    #        send_email_relay_host(single_email_to, subject, body)
-
     email_percent = 100
+
+
+def check_security(tenant):
+    ret_page = ''
+    error_code = SECURITY_SUCCESS_CODE
+    # first, check if the tenant exists
+    if not is_tenant_found(tenant):
+        error_code = TENANT_NOT_FOUND_CODE
+        ret_page = render_template("condo_not_found.html", tenant=tenant)
+
+    # check of the client has another session with a user logged in
+    # if current_user.is_authenticated and current_user.tenant != tenant:
+    #     error_code = USER_NOT_AUTHENTICATED_CODE
+    #     ret_page = redirect(f"/{tenant}/home")
+
+    # check of the client has another session with a user logged in
+    if not current_user.is_authenticated:
+        error_code = USER_NOT_AUTHENTICATED_CODE
+
+    return ret_page, error_code
+
+
+def prepare_info_data(tenant):
+    info_data = get_info_data(tenant)
+
+    if current_user.is_authenticated:
+        if session['multi-condo']:
+            info_data['tenants'] = session['tenants']
+            if tenant in info_data['tenants']:
+                info_data['is_authenticated'] = True
+            else:
+                info_data['is_authenticated'] = False
+        else:
+            info_data['tenant'] = tenant
+            if tenant == session['tenant']:
+                info_data['is_authenticated'] = True
+            else:
+                info_data['is_authenticated'] = False
+    else:
+        info_data['tenants'] = [tenant]
+
+    return info_data
 
 
 '''
@@ -636,7 +688,7 @@ def custom_static_event(tenant, title, filename):
 @app.route('/<tenant>/branding/<filename>')
 def custom_static_branding(tenant, filename):
 #    return send_from_directory(UNPROTECTED_FOLDER + '/pics', filename)
-    #print(f"custom_static_branding(): tenant {tenant}, filename {filename}")
+    print(f"custom_static_branding(): tenant {tenant}, filename {filename}")
     file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/branding/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
@@ -688,36 +740,17 @@ def home_tenant(tenant):
 
     return redirect(f"{tenant}/home")
 
+
 @app.route('/<tenant>/home')
 def home(tenant):
     lock.acquire()
     print(f"in server.home():  tenant: {tenant}")
     if not is_tenant_found(tenant):
         return build_condo_not_found(tenant)
-    info_data = get_info_data(tenant)
-#    session[INFO_DATA_STRING] = None
+
+    info_data = prepare_info_data(tenant)
     lock.release()
     return render_template("home.html", user_types=staticvars.user_types, info_data=info_data)
-
-
-def check_security(tenant):
-    ret_page = ''
-    error_code = SECURITY_SUCCESS_CODE
-    # first, check if the tenant exists
-    if not is_tenant_found(tenant):
-        error_code = TENANT_NOT_FOUND_CODE
-        ret_page = render_template("condo_not_found.html", tenant=tenant)
-
-    # check of the client has another session with a user logged in
-    if current_user.is_authenticated and current_user.tenant != tenant:
-        error_code = USER_NOT_AUTHENTICATED_CODE
-        ret_page = redirect(f"/{tenant}/home")
-
-    # check of the client has another session with a user logged in
-    if not current_user.is_authenticated:
-        error_code = USER_NOT_AUTHENTICATED_CODE
-
-    return ret_page, error_code
 
 
 @app.route('/<tenant>/setup')
@@ -725,29 +758,13 @@ def check_security(tenant):
 def setup(tenant):
     lock.acquire()
 
-    page, check_code = check_security(tenant)
-    if check_code != SECURITY_SUCCESS_CODE:
-        lock.release()
-        return page
+    if not is_tenant_found(tenant):
+        return build_condo_not_found(tenant)
 
-    # we need to disable this for now
-    # if not is_user_logged_in(tenant, current_user):
-    #     print(f"setup(): user not logged in, redirecting to the login page...")
-    #     lock.release()
-    #     return redirect(f"login")
-    #
-    # print(f"setup: user is logged in: {logged_in_users}")
-
-    # now test if the user making the request is logged in
-    # if not is_user_logged_in(current_user):
-    #     print("user not logged in")
-    #     lock.release()
-    #     return redirect(f"login")
-
-    info_data = get_info_data(tenant)
+    info_data = prepare_info_data(tenant)
     units = get_unit_list()
     lock.release()
-    return render_template("setup.html", tenant=tenant, units=units, info_data=info_data)
+    return render_template("setup.html", user_types=staticvars.user_types, tenant=tenant, units=units, info_data=info_data)
 
 
 #------------------------------------------------------------------------------------------
@@ -767,7 +784,7 @@ def get_reservations(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
-    info_data = get_info_data(tenant)
+    info_data = prepare_info_data(tenant)
     amenities_dict = {}
     rsv_dict = {}
 
@@ -787,7 +804,12 @@ def get_reservations(tenant):
                 for user_id, reservation in reservations.items():
                     for rsv_id, rsv_data in reservation['reservations'].items():
                         rsv_data['created_on'] = get_string_from_epoch(rsv_data['created_on'], info_data['language'])
-                        rsv_name = users_repository.get_user_by_userid(tenant, user_id).name
+                        print(f"in reservations: tenant {tenant}   user {user_id}")
+                        if users_repository.is_tenant_loaded(tenant):
+                            rsv_name = users_repository.get_user_by_userid(tenant, user_id).name
+                        else:
+                            load_users(tenant)
+                            rsv_name = users_repository.get_user_by_userid(tenant, user_id).name
                         arr_entry = {"name": rsv_name, "user_id": user_id, "rsv_id": rsv_id, "date": rsv_data['date'],
                                      "time_from": rsv_data['time_from'], "time_to": rsv_data['time_to']}
                         amenity_id = rsv_data['amenity_id']
@@ -981,6 +1003,7 @@ def make_reservation(tenant):
         lock.release()
         return return_obj
 
+    admin_id = json_obj[prefix]['admin_id']
     user_id = json_obj[prefix]['user_id']
     amenity_id = json_obj[prefix]['amenity_id']
     date_y = json_obj[prefix]['date']['y']
@@ -992,7 +1015,7 @@ def make_reservation(tenant):
     time_to_m = json_obj[prefix]['time_to']['m']
     send_email = json_obj[prefix]['send_email']
 
-    print(f"send email: {send_email}")
+    print(f"send email: {send_email}, user_id: {user_id}, admin_id: {admin_id}")
 
     rsv_entry = {
         "created_on": get_epoch_from_now(),
@@ -1038,12 +1061,15 @@ def make_reservation(tenant):
         return return_obj
 
     if send_email == 'true':
-        user_id = amenities[str(amenity_id)]['created_by']
-        user = users_repository.get_user_by_userid(tenant, user_id)
+        created_by = amenities[str(amenity_id)]['created_by']
+        if is_user_super_admin(admin_id, created_by):
+            user = get_super_admin_user(admin_id, created_by)
+        else:
+            user = users_repository.get_user_by_userid(tenant, created_by)
         print(f"user_id: {user.userid},  email to: {user.email}")
         info_data = get_info_data(tenant)
-        send_reservation_email(info_data, user_id, user.email, amenities[str(amenity_id)]['descr'],
-                               rsv_entry['date'], rsv_entry['time_from'], rsv_entry['time_to'])
+        send_reservation_email(info_data, created_by, user.email, amenities[str(amenity_id)]['descr'],
+                              rsv_entry['date'], rsv_entry['time_from'], rsv_entry['time_to'])
     else:
         print(f"NO EMAIL TO BE SENT FOR THIS RESERVATION")
 
@@ -1052,7 +1078,6 @@ def make_reservation(tenant):
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
-
 
 def send_reservation_email(info_data, user_id, email, amenity_descr, date, time_from, time_to):
     if time_from['h'] < 10:
@@ -1138,12 +1163,13 @@ def delete_reservation(tenant):
 @login_required
 def payments(tenant):
     lock.acquire()
-    page, check_code = check_security(tenant)
-    if check_code != SECURITY_SUCCESS_CODE:
-        lock.release()
-        return page
 
-    info_data = get_info_data(tenant)
+    # page, check_code = check_security(tenant)
+    # if check_code != SECURITY_SUCCESS_CODE:
+    #     lock.release()
+    #     return page
+
+    info_data = prepare_info_data(tenant)
     pay_json = get_json_from_file_no_tenant(f"{FINES_FILE}")
     fines_list = []
 
@@ -1444,7 +1470,7 @@ def about(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
-    info_data = get_info_data(tenant)
+    info_data = prepare_info_data(tenant)
     lock.release()
     return render_template("about.html", v_number=config['version']['number'], v_date=config['version']['date'],
                            user_types=staticvars.user_types, info_data=info_data)
@@ -1452,14 +1478,19 @@ def about(tenant):
 @app.route('/<tenant>/profile')
 @login_required
 def profile(tenant):
+    print(f"here in profile()")
     lock.acquire()
 
-    page, check_code = check_security(tenant)
-    if check_code != SECURITY_SUCCESS_CODE:
-        lock.release()
-        return page
+    # page, check_code = check_security(tenant)
+    # if check_code != SECURITY_SUCCESS_CODE:
+    #     print(f"here check_code != SECURITY_SUCCESS_CODE, current_user.tenant = {current_user.tenant}")
+    #     lock.release()
+    #     return page
 
-    info_data = get_info_data(tenant)
+    if not is_tenant_found(tenant):
+        return build_condo_not_found(tenant)
+
+    info_data = prepare_info_data(tenant)
     units = get_unit_list()
     lock.release()
     return render_template("profile.html", units=units, user_types=staticvars.user_types, info_data=info_data)
@@ -1550,12 +1581,13 @@ def get_announcs(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
+    info_data = prepare_info_data(tenant)
+
     if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
         announcs = get_json_from_file(tenant, ANNOUNCS_FILE)['announcs']
     else:
         announcs = {}
 
-    info_data = get_info_data(tenant)
     announcs_list = []
 
     for key, announc in announcs.items():
@@ -1788,14 +1820,11 @@ def get_docs(tenant):
         return page
 
     open_docs = get_doc_files_cache(tenant, f"{UNPROTECTED_FOLDER}/opendocs/files", '')
-    info_data = get_info_data(tenant)
+    info_data = prepare_info_data(tenant)
 
     if error_code == USER_NOT_AUTHENTICATED_CODE:
         lock.release()
-        return render_template("docs-open.html", opendocs=open_docs, info_data=info_data)
-
-    # f"{PROTECTED_FOLDER}/docs/financial/{doc_year}"
-    # f"{PROTECTED_FOLDER}/docs/financial/{year}"
+        return render_template("docs_open.html", opendocs=open_docs, info_data=info_data)
 
     # here user is authenticated, aka logged in
     start_year = datetime.now().year - 4
@@ -1932,12 +1961,12 @@ def pics(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
-    info_data = get_info_data(tenant)
+    info_data = prepare_info_data(tenant)
     pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/pics", '')
 
     if not aws.is_file_found(f"{tenant}/{EVENT_PICS_FILE}"):
         lock.release()
-        return render_template("pics.html", pics=pictures, events=None, user_types=staticvars.user_types, info_data=get_info_data(tenant))
+        return render_template("pics.html", pics=pictures, events=None, user_types=staticvars.user_types, info_data=info_data)
 
     events = get_json_from_file(tenant, EVENT_PICS_FILE)
 
@@ -1960,14 +1989,19 @@ def logout(tenant):
     if not current_user.is_authenticated:
         return redirect(f"/{tenant}/home")
 
-    # from here on down we know that an user is logged in
-    print(f"user to be logged out: {current_user.userid}")
+    # we need to gather some data to be shown in the logout.html view
+    info_data = prepare_info_data(tenant)
+
+    # from here on down we know that a user is logged in
+    print(f"to be logged out.. userid: {current_user.userid}    id: {current_user.id}")
 
     current_user.authenticated = False
     userid = current_user.userid  # we need to save the userid BEFORE invoking logout_user()
     logout_user()
     session['tenant'] = None
-    return render_template("logout.html", loggedout_user=userid, info_data=get_info_data(tenant))
+    info_data['company_id'] = session['company_id']
+    session['company_id'] = None
+    return render_template("logout.html", info_data=info_data)
 
 '''
   These are POST request routes
@@ -2171,7 +2205,8 @@ def save_resident_json(tenant):
             json_obj['resident']['no_vehicles'],
             json_obj['resident']['vehicles'],
             '',
-            json_obj['resident']['notes']
+            json_obj['resident']['notes'],
+            False
         )
     else:
         db_user.name = json_obj['resident']['name']
@@ -2502,13 +2537,14 @@ def get_listings(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
+    info_data = prepare_info_data(tenant)
+
     if not aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
         lock.release()
         return render_template("listings.html", units=get_unit_list(), listings=None,
-                               user_types=staticvars.user_types, info_data=get_info_data(tenant))
+                               user_types=staticvars.user_types, info_data=info_data)
 
     listings = get_json_from_file(tenant, LISTINGS_FILE)
-    info_data = get_info_data(tenant)
     listings_arr = []
 
     for key, value_a in listings['listings'].items():
@@ -2760,12 +2796,16 @@ def upload(tenant):
     lock.acquire()
     print(f"here in upload(): {tenant}")
 
-    page, check_code = check_security(tenant)
-    if check_code != SECURITY_SUCCESS_CODE:
-        lock.release()
-        return page
+    # page, check_code = check_security(tenant)
+    # if check_code != SECURITY_SUCCESS_CODE:
+    #     lock.release()
+    #     return page
 
-    info_data = get_info_data(tenant)
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
+    info_data = prepare_info_data(tenant)
 
     if request.method == 'POST':
         uploaded_file = request.files['file']
@@ -2822,7 +2862,7 @@ def upload(tenant):
         lock.release()
         return render_template("upload.html", user_types=staticvars.user_types, info_data=info_data)
     else:
-        info_data = get_info_data(tenant)
+        #info_data = get_info_data(tenant)
         lock.release()
         return render_template("upload.html", user_types=staticvars.user_types, info_data=info_data)
 
@@ -2914,18 +2954,6 @@ def login_tenant(tenant):
             lock.release()
             return render_template('login.html', info_data=info_data)
 
-    # if request.method == 'GET':
-    #     tenant = get_tenant_from_url()
-    #     next_tenant = get_tenant_from_next()
-    #
-    #     if tenant is None and next_tenant is None:
-    #         lock.release()
-    #         return render_template('login_tenant.html')
-    #     else:
-    #         lock.release()
-    #         return render_template('login.html')
-
-
     # from here on down, it's a POST request
     if current_user.is_authenticated:
         # print(f"login_tenant(): there is a user already logged in: {current_user.id}")
@@ -2934,7 +2962,7 @@ def login_tenant(tenant):
         return redirect(next_page)
 
     # print(f"login_tenant(): current_user {current_user} is not authenticated")
-    userid = request.form['userid']
+    user_id = request.form['userid']
     password = request.form['password']
     load_users(tenant)
 
@@ -2946,7 +2974,7 @@ def login_tenant(tenant):
 
     # print(f"login_tenant(): tenant: {tenant}, userid: {userid}")
     info_data = get_info_data(tenant)
-    registered_user = users_repository.get_user_by_userid(tenant, userid)
+    registered_user = users_repository.get_user_by_userid(tenant, user_id)
 
     if registered_user is None:
         flash("Invalid userid or password")
@@ -2960,8 +2988,9 @@ def login_tenant(tenant):
         registered_user.authenticated = True
         login_user(registered_user)
         # add_to_logged_in_users(tenant, registered_user)
-        session["tenant"] = tenant
-        session['userid'] = userid
+        session['multi-condo'] = False
+        session['user_id'] = user_id
+        session['tenant'] = tenant # fill this var only when session['multi-condo'] is False
         # print(f"login_tenant(): we just logged in {session['userid']} of tenant {session['tenant']}, session obj: {session}")
         customers = get_json_from_file_no_tenant(f"{INFO_FILE}")
         customers['config'][tenant]['last_login_date'] = get_epoch_from_now()
@@ -3028,7 +3057,6 @@ def forgot_password(tenant):
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
-
 
 
 '''
@@ -3133,12 +3161,12 @@ def send_email_google(email_to, subject, body):
 
     # google gmail credentials
     email_user = GMAIL_BLUERIVER_EMAIL
-    password = "anda ppxi wyab wyla"
+    password = config[GMAIL_BLUERIVER_EMAIL_APP_PASSWORD]
 
     # these are used with SSL
     server = smtplib.SMTP('smtp_gmail.com:587')
     server.starttls()
-    server.login(GMAIL_BLUERIVER_EMAIL, 'anda ppxi wyab wyla')
+    server.login(GMAIL_BLUERIVER_EMAIL, config[GMAIL_BLUERIVER_EMAIL_APP_PASSWORD])
     server.ehlo()
     #server.login(user, password)
 
@@ -3170,20 +3198,6 @@ def send_email_local(email_to, subject, body, email_server, port, user, password
     response = server.sendmail(FROM, email_list, msg.as_string())
     print(f"email server response: {response}")
     server.quit()
-
-
-def get_all_emails():
-    all_emails = []
-    for user in users_repository.get_users():
-#        user = users_repository.get_user_by_unit(key)
-        email = user.email.strip()
-        if len(email):
-            all_emails.append(email)
-    msg = f'all emails {all_emails}'
-
-    # TODO: fix this
-    log('demo', msg)
-    return all_emails
 
 
 def sort_criteria(obj):
@@ -3227,29 +3241,35 @@ def before_request():
     # logged_in_users[current_user] = current_user
 
 # callback to reload the user object
-# internal_user_id is the sequential number given to a user when it is added to the system
 @login_manager.user_loader
-def load_user(internal_user_id):
-    # tenant_s = session['tenant'] if 'tenant' in session else None
-    # userid_s = session['userid'] if 'userid' in session else None
-    # tenant = composite_id[:composite_id.find('-')]
-    # print(f"load_user(): url: {request.path}, composite_id {composite_id}, tenant {tenant}, tenant_s {tenant_s}, user_s {userid_s}")
-
-    print(f"internal_user_id: {internal_user_id}")
-    tenant = get_tenant()
-    print(f"tenant: {tenant}")
+def load_user(user_internal_id):
+    ind = user_internal_id.find("@")
+    tenant = user_internal_id[ind+1:]
 
     if tenant == 'root':
         return None
 
-    load_users(tenant)
-    user = users_repository.get_user_by_id(tenant, internal_user_id)
-    if user is None:
-        print("in load_user(): failure in getting the user")
-        log(tenant, "in load_user(): something is wrong with our user\n")
-        ret_user = None
+    print(f"tenant {tenant},   user {user_internal_id}")
+
+    if user_internal_id.startswith("s-"):
+        load_users(tenant)
+        user = users_repository.get_user_by_id(tenant, user_internal_id)
+        if user is None:
+            ret_user = None
+        else:
+            ret_user = user
     else:
-        ret_user = user
+        company_id = user_internal_id[ind+1:]
+        user_id = user_internal_id[2:ind]
+        print(f"in load_user(): {company_id},   user_id {user_id}")
+        load_company_users(company_id)
+        print(f"all tenants: {users_repository_mtadmin.get_tenants(user_id)}")
+        user = users_repository_mtadmin.get_user_by_id(user_internal_id)
+        if user is None:
+            ret_user = None
+        else:
+            ret_user = user
+
     return ret_user
 
 def get_files(tenant, folder, pattern):

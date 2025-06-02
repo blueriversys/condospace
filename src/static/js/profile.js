@@ -15,6 +15,13 @@ function onLoadAction() {
     window.loggedin_name_global = document.getElementById('loggedin-name').value;
     window.loggedin_tenant_global = document.getElementById('loggedin-tenant').value.trim();
     window.loggedin_lang_global = document.getElementById('loggedin-lang').value;
+
+    const isMultiCondo = document.getElementById("loggedin-multi-condo").value;
+    if (isMultiCondo) {
+        console.log(`user type is SUPER_ADMIN`);
+        return;
+    }
+
     retrieveLoggedinResident(window.loggedin_userid_global);
 }
 

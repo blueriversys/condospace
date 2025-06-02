@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "includes/layout.html" %}
 
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/lightbox.min.css') }}">
@@ -12,10 +12,8 @@
 <div class="main">
 
   <nav id="sidebar">  
-    <div class="sidebar-logo-area">
-        <img class="logo-div" src="../branding/logo.jpg">
-        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
-    </div>
+    {% include "includes/side_bar_logo.html" %}
+
     <ul class="list-unstyled components">
         <li><a class="nav-link" href="../home"><i class="fa fa-fw fa-home"></i> {{_("Home")}}</a></li>
 
@@ -39,13 +37,13 @@
         <li class="active"><a class="nav-link" href="../pics"><i class="fa fa-fw fa-picture-o"></i> {{_("Pictures")}}</a></li>
         <li><a class="nav-link" href="../listings"><i class="fa fa-fw fa-list-ul"></i> {{_("Listings")}}</a></li>
         <li><a class="nav-link" href="../about"><i class="fa fa-fw fa-info"></i> {{_("About")}}</a></li>
-        {% include "info.html" %}
+        {% include "includes/info.html" %}
     </ul>
   </nav>
 
   <div class="content">
 
-      {% include "mobile-menu.html" %}
+      {% include "includes/mobile-menu.html" %}
 
       <div class="section-title" data-aos="zoom-out">
           <h2>{{_("Event Pictures")}}</h2>

@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "includes/layout.html" %}
 
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/docs.css') }}">
@@ -9,15 +9,12 @@
 <div class="main">
 
     <nav id="sidebar">  
-        <div class="sidebar-logo-area">
-            <img class="logo-div" src="branding/logo.jpg">
-            <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
-        </div>
+        {% include "includes/side_bar_logo.html" %}
 
         <ul class="list-unstyled components">
           <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
 
-          {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+          {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
               <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
               <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
               <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
@@ -38,13 +35,14 @@
           <li><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
           <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
 
-          {% include "info.html" %}
+          {% include "includes/info.html" %}
         </ul>
+        {% include "includes/tenant_list.html" %}
     </nav>
     
 
     <div class="content">
-        {% include "mobile-menu.html" %}
+        {% include "includes/mobile-menu.html" %}
 
         <div class="section-title" data-aos="zoom-out">
             <h2>{{_('View Documents')}}</h2>
@@ -64,7 +62,7 @@
                         {% for doc in bylaws %}
                             <div class="col-1 doc-col">
                                 <a class="doc-link" href="docs/bylaws/{{doc}}" target="_blank"> {{doc}}</a>
-                                {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                                   <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="deleteFile('docs/bylaws/{{doc}}', '{{doc}}', 'yes');">{{_('delete')}}</button>
                                 {% endif %}
                             </div>
@@ -76,7 +74,7 @@
                 {% endif %}
             </div>
 
-            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                 <div style="margin: auto; width: 400px; text-align: center;" class="mt-2">
                   <button  class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#add_new_bylaws" aria-expanded="false" aria-controls="collapseExample">
                       {{_("Upload a Bylaws (open/close)")}}
@@ -109,7 +107,7 @@
                         {% for doc in otherdocs %}
                             <div class="col-1 doc-col">
                                 <a class="doc-link" href="docs/other/{{doc}}" target="_blank"> {{doc}}</a>
-                                {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                                   <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteFile('docs/other/{{doc}}', '{{doc}}', 'yes');">{{_('delete')}}</button>
                                 {% endif %}
                             </div>
@@ -121,7 +119,7 @@
                 {% endif %}
             </div>
 
-            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                 <div style="margin: auto; width: 400px; text-align: center;" class="mt-2">
                   <button  class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#add_new_other_doc" aria-expanded="false" aria-controls="collapseExample">
                       {{_("Upload a Document (open/close)")}}
@@ -148,7 +146,7 @@
                     {% for doc in opendocs %}
                         <div class="col-1 doc-col">
                             <a class="doc-link" href="opendocs/files/{{doc}}" target="_blank"> {{doc}}</a>
-                            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                               <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteFile('opendocs/files/{{doc}}', '{{doc}}', 'no');">{{_('delete')}}</button>
                             {% endif %}
                         </div>
@@ -160,7 +158,7 @@
                 {% endif %}
             </div>
 
-            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                 <div style="margin: auto; width: 400px; text-align: center;" class="mt-2">
                   <button  class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#add_new_open_view" aria-expanded="false" aria-controls="collapseExample">
                       {{_("Upload a Document (open/close)")}}
@@ -196,7 +194,7 @@
                                 </div>
                             {% endfor %}
                         </div>
-                        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                             <button id="delete" class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteFinDocsGroup({{year}});">{{_('delete entire group')}}</button>
                         {% endif %}
                     {% endif %}
@@ -208,7 +206,7 @@
             {% endfor %}
 
 
-            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                 <div style="margin: auto; width: 400px; text-align: center;" class="mt-2">
                   <button  class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#add_new_fin_state" aria-expanded="false" aria-controls="collapseExample">
                       {{_("Add a Financial Statement (open/close)")}}
@@ -274,7 +272,7 @@
                             <div>
                                 <a class="doc-link" href="{{link['url']}}" target="_blank"> {{descr}}</a>
                             </div>
-                            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                             <div>
                                 <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 5px; height: 20px; text-align: center;" onclick="deleteLink('{{descr}}');">{{_('delete')}}</button>
                             </div>
@@ -288,7 +286,7 @@
                 {% endif %}
             </div>
 
-            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                 <div style="margin: auto; width: 400px; text-align: center;" class="mt-2">
                   <button  class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#add_new_link" aria-expanded="false" aria-controls="collapseExample">
                       {{_("Add a New Link (open/close)")}}
@@ -312,7 +310,7 @@
 
 </div> <!-- closes main -->
 
-{% include "hidden_fields.html" %}
+{% include "includes/hidden_fields.html" %}
 
 {% endblock %}
 

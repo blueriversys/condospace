@@ -15,9 +15,13 @@ adm_app = create_app2()
 from server_regis import create_app as create_app3
 regis_app = create_app3()
 
+# import app2
+from server_mtadmin import create_app as create_app4
+mtadmin_app = create_app4()
+
 # merge
 app = DispatcherMiddleware(
-    main_app, { '/admin': adm_app, '/regis': regis_app }
+    main_app, { '/admin': adm_app, '/regis': regis_app, '/multi-condo': mtadmin_app }
 )
 
 # run_simple() is only invoked when run_both.py is run from the command-line, like this:

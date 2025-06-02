@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "includes/layout.html" %}
 
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/lightbox.min.css') }}">
@@ -9,10 +9,8 @@
 <div class="main">
 
   <nav id="sidebar">  
-    <div class="sidebar-logo-area">
-        <img class="logo-div" src="branding/logo.jpg">
-        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
-    </div>
+    {% include "includes/side_bar_logo.html" %}
+
     <ul class="list-unstyled components">
       <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> Home</a></li>
 
@@ -40,7 +38,7 @@
 
   <div class="content">
 
-    {% include "mobile-menu.html" %}
+    {% include "includes/mobile-menu.html" %}
 
 
     <div class="spacer"></div>

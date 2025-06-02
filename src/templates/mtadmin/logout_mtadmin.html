@@ -1,0 +1,32 @@
+{% extends "includes/layout_mtadmin.html" %}
+{% block body %}
+
+<div class="main">
+
+  <nav id="sidebar">  
+      <div class="sidebar-logo-area">
+          <img class="logo-div" src="/img/bluelogo.png">
+          <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+      </div>
+      <ul class="list-unstyled components">
+          <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
+          <li><a class="nav-link" href="login" aria-selected="false"><i class="fa fa-fw fa-sign-in"></i> {{_('Login')}}</a></li>
+          {% include "includes/info_short.html" %}
+      </ul>
+  </nav>
+
+  <div class="content">
+      {% include "includes/mobile_menu_mtadmin.html" %}
+      <div style="font-size: 16px;"> <b>{{info_data['loggedin-userdata']['user_id']}}</b> {{_('is now logged out')}}.</div>
+
+      <div class="space"></div>
+      <div class="space"></div>
+
+      <div style="font-size: 16px;">
+          {{_('Log back in to')}} <a href="login">https://condospace.app/multi-condo/{{info_data['loggedin-userdata']['company_id']}}/login</a>
+      </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "includes/layout.html" %}
 
 
 {% block insidehead %}
@@ -12,14 +12,12 @@
 <div class="main">
 
   <nav id="sidebar">  
-    <div class="sidebar-logo-area">
-        <img class="logo-div" src="branding/logo.jpg">
-        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
-    </div>
+    {% include "includes/side_bar_logo.html" %}
+
     <ul class="list-unstyled components">
         <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
 
-        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
             <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
             <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
             <li class="active"><a class="nav-link" href="reservas"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
@@ -40,18 +38,19 @@
         <li><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
         <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
 
-        {% include "info.html" %}
+        {% include "includes/info.html" %}
     </ul>
+    {% include "includes/tenant_list.html" %}
   </nav>
 
   <div class="content">
-      {% include "mobile-menu.html" %}
+      {% include "includes/mobile-menu.html" %}
 
       <div class="section-title" data-aos="zoom-out">
           <h2>{{ _('Reservation of Common Areas') }}</h2>
       </div>
 
-      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
           <div class="spacer"></div>
 
           <div class="center button-var-width">
@@ -261,6 +260,19 @@
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
+
+            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['SUPER_ADMIN']|int() %}
+            <div class="modal-body">
+                <label for="res_user_id">{{_("User Id")}}:</label>
+                    <select id="res_user_id" name="res_user_id" style="width: 150px;">
+                      <option value="none" selected disabled hidden>{{_("Select User")}}</option>
+                      {% for unit in units %}
+                          <option value="{{unit['userid']}}">{{unit['userid']}}</option>
+                      {% endfor %}
+                    </select>
+            </div>
+            {% endif %}
+
             <div class="modal-body">
               <label for="res_date">{{_("Desired Date")}}:</label>
               <input id="res_date" type="date">
@@ -287,7 +299,7 @@
 </div> <!-- close main -->
 
 
-{% include "hidden_fields.html" %}
+{% include "includes/hidden_fields.html" %}
 
 {% set ns = namespace(counter=0) %}
 {% for amenity_id, rsv_array in reservations.items() %}

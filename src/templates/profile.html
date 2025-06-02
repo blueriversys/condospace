@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "includes/layout.html" %}
 
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
@@ -11,14 +11,12 @@
 
 <div class="main">
   <nav id="sidebar">
-    <div class="sidebar-logo-area">
-        <img class="logo-div" src="branding/logo.jpg">
-        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
-    </div>
+    {% include "includes/side_bar_logo.html" %}
+
     <ul class="list-unstyled components">
         <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_("Home")}}</a></li>
 
-        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
             <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
             <li class="active"><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
             <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
@@ -39,12 +37,14 @@
         <li><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_("Listings")}}</a></li>
         <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_("About")}}</a></li>
 
-        {% include "info.html" %}
+        {% include "includes/info.html" %}
     </ul>
+
+    {% include "includes/tenant_list.html" %}
   </nav>
 
   <div id="content_id" class="content">
-      {% include "mobile-menu.html" %}
+      {% include "includes/mobile-menu.html" %}
 
       <div class="section-title" data-aos="zoom-out">
         <h2>{{_("View and Update Resident Profile")}}</h2>
@@ -53,7 +53,7 @@
           <div id="profile-block" class="profile-block">
             <div class="spacer"></div>
 
-            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+            {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                 <div class="upload-browse">
                     <label for="user_id" style="font-size: 20px;">{{_("Select User")}}:</label>
                     <select class="unit-dropdown" id="user_id" name="user_id" style="width: 150px;" onChange="retrieveUserByUnit();">
@@ -99,73 +99,87 @@
             <div>
                 <div style="margin-left: 10px; margin-bottom: 15px;">{{_("The sections below marked with * are required to be filled.")}}</div>
                 <fieldset>
-                  <legend>{{_("Main Occupant Contact")}} (*)</legend>
-                  <div class="header">{{_("Must contain the info for one person only, which is the head of household (usually the unit owner if this isn't a rental unit)")}}</div>
-                  <label for="name">{{_("Name")}}:</label>
-                  <input class="name-input" type="text" id="name" name="name">
-                  <label for="email">{{_("Email")}}:</label>
-                  <input class="email-input" type="email" id="email" name="email">
-                  <label for="phone">{{_("Phone")}}:</label>
-                  <input class="phone-input" data-toggle="tooltip" title="Phone format (123) 456-7890" type="phone" id="phone" name="phone">
-                <label for="startdt_month">{{_("Resident Since")}}:</label>
-                <select id="startdt_month" name="months">
-                  <option value="1">Jan</option>
-                  <option value="2">Feb</option>
-                  <option value="3">Mar</option>
-                  <option value="4">Apr</option>
-                  <option value="5">May</option>
-                  <option value="6">Jun</option>
-                  <option value="7">Jul</option>
-                  <option value="8">Aug</option>
-                  <option value="9">Sep</option>
-                  <option value="10">Oct</option>
-                  <option value="11">Nov</option>
-                  <option value="12">Dec</option>
-                </select>
-                <select id="startdt_year" name="years">
-                  <option value="1991">1991</option>
-                  <option value="1992">1992</option>
-                  <option value="1993">1993</option>
-                  <option value="1994">1994</option>
-                  <option value="1995">1995</option>
-                  <option value="1996">1996</option>
-                  <option value="1997">1997</option>
-                  <option value="1998">1998</option>
-                  <option value="1999">1999</option>
-                  <option value="2000">2000</option>
-                  <option value="2001">2001</option>
-                  <option value="2002">2002</option>
-                  <option value="2003">2003</option>
-                  <option value="2004">2004</option>
-                  <option value="2005">2005</option>
-                  <option value="2006">2006</option>
-                  <option value="2007">2007</option>
-                  <option value="2008">2008</option>
-                  <option value="2009">2009</option>
-                  <option value="2010">2010</option>
-                  <option value="2011">2011</option>
-                  <option value="2012">2012</option>
-                  <option value="2013">2013</option>
-                  <option value="2014">2014</option>
-                  <option value="2015">2015</option>
-                  <option value="2016">2016</option>
-                  <option value="2017">2017</option>
-                  <option value="2018">2018</option>
-                  <option value="2019">2019</option>
-                  <option value="2020">2020</option>
-                  <option value="2021">2021</option>
-                  <option value="2022">2022</option>
-                  <option value="2023">2023</option>
-                  <option value="2024">2024</option>
-                  <option value="2025">2025</option>
-                  <option value="2026">2026</option>
-                  <option value="2027">2027</option>
-                  <option value="2028">2028</option>
-                  <option value="2029">2029</option>
-                  <option value="2030">2030</option>
-                </select>
+                    <legend>{{_("Main Occupant Contact")}} (*)</legend>
+                    <div class="header">{{_("Must contain the info for one person only, which is the head of household (usually the unit owner if this isn't a rental unit)")}}</div>
+                    <div class="container">
+                        <div class="row">
+                            <div>
+                                <label for="name">{{_("Name")}}:</label>
+                                <input class="name-input" type="text" id="name" name="name">
+                            </div>
+                            <div>
+                                <label for="email">{{_("Email")}}:</label>
+                                <input class="email-input" type="email" id="email" name="email">
+                            </div>
+                            <div>
+                                <label for="phone">{{_("Phone")}}:</label>
+                                <input class="phone-input" data-toggle="tooltip" title="Phone format (123) 456-7890" type="phone" id="phone" name="phone">
+                            </div>
+                            <div>
+                                <label for="startdt_month">{{_("Resident Since")}}:</label>
+                                <select id="startdt_month" name="months">
+                                  <option value="1">Jan</option>
+                                  <option value="2">Feb</option>
+                                  <option value="3">Mar</option>
+                                  <option value="4">Apr</option>
+                                  <option value="5">May</option>
+                                  <option value="6">Jun</option>
+                                  <option value="7">Jul</option>
+                                  <option value="8">Aug</option>
+                                  <option value="9">Sep</option>
+                                  <option value="10">Oct</option>
+                                  <option value="11">Nov</option>
+                                  <option value="12">Dec</option>
+                                </select>
+                                <select id="startdt_year" name="years">
+                                  <option value="1991">1991</option>
+                                  <option value="1992">1992</option>
+                                  <option value="1993">1993</option>
+                                  <option value="1994">1994</option>
+                                  <option value="1995">1995</option>
+                                  <option value="1996">1996</option>
+                                  <option value="1997">1997</option>
+                                  <option value="1998">1998</option>
+                                  <option value="1999">1999</option>
+                                  <option value="2000">2000</option>
+                                  <option value="2001">2001</option>
+                                  <option value="2002">2002</option>
+                                  <option value="2003">2003</option>
+                                  <option value="2004">2004</option>
+                                  <option value="2005">2005</option>
+                                  <option value="2006">2006</option>
+                                  <option value="2007">2007</option>
+                                  <option value="2008">2008</option>
+                                  <option value="2009">2009</option>
+                                  <option value="2010">2010</option>
+                                  <option value="2011">2011</option>
+                                  <option value="2012">2012</option>
+                                  <option value="2013">2013</option>
+                                  <option value="2014">2014</option>
+                                  <option value="2015">2015</option>
+                                  <option value="2016">2016</option>
+                                  <option value="2017">2017</option>
+                                  <option value="2018">2018</option>
+                                  <option value="2019">2019</option>
+                                  <option value="2020">2020</option>
+                                  <option value="2021">2021</option>
+                                  <option value="2022">2022</option>
+                                  <option value="2023">2023</option>
+                                  <option value="2024">2024</option>
+                                  <option value="2025">2025</option>
+                                  <option value="2026">2026</option>
+                                  <option value="2027">2027</option>
+                                  <option value="2028">2028</option>
+                                  <option value="2029">2029</option>
+                                  <option value="2030">2030</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </fieldset>
+
                 <br>
+
                 <fieldset>
                   <legend>{{_("Other Occupants")}} (*)</legend>
                   <label for="occup1_name">{{_("Name")}}:</label>
@@ -366,7 +380,7 @@
   </div> <!-- closes content -->
 </div> <!-- closes main -->
 
-{% include "hidden_fields.html" %}
+{% include "includes/hidden_fields.html" %}
 {% endblock %}
 
 {% block afterbody %}

@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "includes/layout.html" %}
 {% block body %}
 
 <div class="main">
@@ -16,13 +16,24 @@
         <li><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
         <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
         <li><a class="nav-link" href="login" aria-selected="false"><i class="fa fa-fw fa-sign-in"></i> {{_('Login')}}</a></li>
-        {% include "info_short.html" %}
+        {% include "includes/info_short.html" %}
     </ul>
   </nav>
 
   <div class="content">
-    {% include "mobile-menu.html" %}
-    <p> {{loggedout_user}} is now logged out.</p>
+      {% include "includes/mobile-menu.html" %}
+      <div style="font-size: 16px;"> <b>{{info_data['loggedin-userdata']['userid']}}</b> {{_('is now logged out')}}.</div>
+
+      <div class="space"></div>
+      <div class="space"></div>
+
+      <div style="font-size: 16px;">
+          {% if info_data['multi-condo'] %}
+              {{_('Log back in to')}} <a href="/multi-condo/{{info_data['company_id']}}/login">https://condospace.app/multi-condo/{{info_data['company_id']}}/login</a>
+          {% else %}
+              {{_('Log back in to')}} <a href="login">https://condospace.app/{{info_data['tenant']}}/login</a>
+          {% endif %}
+      </div>
   </div>
 
 </div>

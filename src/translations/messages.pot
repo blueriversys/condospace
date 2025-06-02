@@ -82,6 +82,95 @@ msgid "Reservations"
 msgstr "Reservas"
 
 
+#: templates/mtadmin
+msgid "Another Company Is Already Logged In"
+msgstr "Outra gestora já está logada"
+
+msgid "This user is already logged in to the system."
+msgstr "Este usuário já está logado no sistema."
+
+msgid "If you require logging in with a different user or company, please log out that other user first."
+msgstr "Se você quiser logar um usuário ou gestora diferente, por favor faça logout do outro usuário primeiro."
+
+msgid "not found in our system. Please verify the exact spelling and enter it in the browser's address field."
+msgstr "não encontrado no nosso sistema. Por favor verifique o nome exato e o digite no campo de endereço do navegador."
+
+msgid "Please visit our Registration page to try the application out for 30 days"
+msgstr "Por favor visite a nossa página de Registro para experimentar a aplicação por até 30 dias"
+
+msgid "First, you need to register your company using one of the links above."
+msgstr "Primeiro, você precisa registrar a sua companhia gestora usando um dos links acima."
+
+msgid "When you do that, your company will have a web address such as"
+msgstr "Quando você faz isso, a sua companhia terá um endereço de internet tal como"
+
+msgid "After logging in to your company, you can register one or more condominiums which your company will manage."
+msgstr "Depois que a sua companhia estiver logada, você poderá registrar um ou mais condomínios que a sua companhia vai gerir."
+
+msgid "You are now able to manage your condominiums with full privileges."
+msgstr "A partir daí você poderá gerir os seus condomínios com total privilégio."
+
+msgid "Why wait? It's very affordable for your company because much of our revenue comes from the condominium itself."
+msgstr "Por que esperar? É muito econômico para a sua companhia porque a maior parte da nossa renda vem dos próprios condomínios."
+
+msgid "Company Is Not Logged In"
+msgstr "Companhia Não Está Logada"
+
+msgid "This company that you requested to log out isn't the one logged in."
+msgstr "Esta gestora que você solicitou fazer logout não está logada."
+
+msgid "Company Info"
+msgstr "Info da Gestora"
+
+msgid "Company Id"
+msgstr "Id da Gestora"
+
+msgid "Company Name"
+msgstr "Nome da Gestora"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Phone"
+msgstr "Fone"
+
+msgid "Address"
+msgstr "Endereço"
+
+msgid "Number"
+msgstr "Número"
+
+msgid "Complement"
+msgstr "Complemento"
+
+msgid "ZIP"
+msgstr "CEP"
+
+msgid "City"
+msgstr "Cidade"
+
+msgid "State"
+msgstr "Estado"
+
+msgid "Country"
+msgstr "País"
+
+msgid "Language"
+msgstr "Língua"
+
+msgid "Condominiums"
+msgstr "Condomínios"
+
+msgid "Administrators"
+msgstr "Administradores"
+
+msgid "Coming Soon!"
+msgstr "Em Breve!"
+
+
+
+
+
 #: templates/home-root.html
 msgid "Welcome to the CondoSpace App"
 msgstr "Bem-vindo ao CondoSpace App"

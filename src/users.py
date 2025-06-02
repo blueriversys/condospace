@@ -12,7 +12,7 @@ SEPARATOR_CHAR = "@"
 class User(UserMixin):
     def __init__(self, id, unit, tenant, userid, password, name, email, startdt, phone, type, ownername,
                  owneremail, ownerphone, owneraddress, isrental, emerg_name, emerg_email, emerg_phone, emerg_has_key, occupants, oxygen_equipment,
-                 limited_mobility, routine_visits, has_pet, bike_count, insurance_carrier, valve_type, no_vehicles, vehicles, last_update_date, notes, active=True):
+                 limited_mobility, routine_visits, has_pet, bike_count, insurance_carrier, valve_type, no_vehicles, vehicles, last_update_date, notes, multi_admin, active=True):
         self.id = id
         self.unit = unit
         self.tenant = tenant
@@ -44,7 +44,11 @@ class User(UserMixin):
         self.vehicles = vehicles
         self.last_update_date = last_update_date
         self.notes = notes
+        self.multi_admin = multi_admin
         self.active = active
+
+    def __str__(self):
+        return f"tenant {self.tenant}, userid {self.userid}, name {self.name}, email {self.email}"
 
     def get_json_data(self):
         user = {
@@ -77,6 +81,7 @@ class User(UserMixin):
             'no_vehicles': self.no_vehicles,
             'vehicles': self.vehicles,
             'last_update_date': self.last_update_date,
+            'multi_admin': self.multi_admin,
             'notes': self.notes
         }
         return user
@@ -174,6 +179,9 @@ class User(UserMixin):
     def get_notes(self):
         return self.notes
 
+    def is_mtadmin(self):
+        return self.multi_admin
+
     def is_active(self):
         return self.active
 
@@ -239,13 +247,6 @@ class UsersRepository:
                 last_unit = user.unit
         return last_unit
 
-    # def get_user_by_composite_id(self, composite_id):
-    #     ind = composite_id.find('-')
-    #     tenant_id = composite_id[:ind]
-    #     user_id = composite_id[ind+1:]
-    #     print(f"{tenant_id}  {user_id}")
-    #     return self.get_user_by_userid(tenant_id, user_id)
-
     def get_user_by_unit(self, tenant_id, unit):
         for user in self.get_users(tenant_id):
             if user.unit == unit:
@@ -277,7 +278,7 @@ class UsersRepository:
         self.reset_tenant_user_dict(tenant)
         for resident in residents:
             user = User(
-                f"{tenant}{SEPARATOR_CHAR}{resident['userid']}",
+                f"s-{resident['userid']}@{tenant}",
                 resident['unit'],
                 tenant,
                 resident['userid'],
@@ -307,7 +308,8 @@ class UsersRepository:
                 resident['no_vehicles'],
                 resident['vehicles'],
                 resident['last_update_date'],
-                resident['notes']
+                resident['notes'],
+                False
             )
             self.save_user(tenant, user)
 
@@ -347,7 +349,8 @@ class UsersRepository:
                     'no_vehicles': user.no_vehicles,
                     'vehicles': user.vehicles,
                     'last_update_date': user.last_update_date,
-                    'notes': user.notes
+                    'notes': user.notes,
+                    'multi_admin': user.multi_admin
                 }
                 userslist.append(record)
             residents = {'residents': userslist}
@@ -355,22 +358,86 @@ class UsersRepository:
             self.aws.upload_text_obj(f"{tenant}/serverfiles/residents.json", json_obj)
 
 
-class UsersUtils:
-    def __init__(self):
+# UsersRepositoryMultiAdmin is one which has multiple tenants
+class UsersRepositoryMultiAdmin:
+    def __init__(self, aws):
         self.user_dict = dict()
-        self.identifier = 0
+        self.aws = aws
+        self.language = None
+
+    def get_language(self):
+        return self.language
+
+    def set_language(self, language):
+        self.language = language
+
+    def save_user(self, user, tenants):
+        self.user_dict[user.userid] = { "user": user, "tenants": tenants }
+
+    def is_user_loaded(self, user_id):
+        if user_id in self.user_dict:
+            return True
+        return False
 
     def get_user_by_userid(self, userid):
-        for key in self.get_users():
-            user = self.get_user_by_unit(key)
-            if user.userid == userid:
-                return user
+        if userid in self.user_dict:
+            return self.user_dict[userid]['user']
+        return None
+
+    def get_user_by_id(self, id):
+        for key, user_data in self.user_dict.items():
+            if user_data['user'].id == id:
+                return user_data['user']
         return None
 
     def get_users(self):
         pass
 
-    def get_user_by_unit(self, unit):
-        pass
+    def get_tenants(self, user_id):
+        print(f"in get_tenants(): user_id {user_id}")
+        return self.user_dict[user_id]['tenants']
 
+    def load_users(self, company_id):
+        string_content = self.aws.read_text_obj(f"info.json")
+        json_obj = json.loads(string_content)
+        self.set_language(json_obj['companies'][company_id]['language'])
+        users = json_obj['users_by_company'][company_id]['users']
+        for user_id in users:
+            user_data = json_obj['users'][user_id]
+            print(f"in load_user: {user_id}   company {company_id}")
+            user = User(
+                f"m-{user_id}@{company_id}",
+                None,
+                None,
+                user_id,
+                user_data['password'],
+                user_data['name'],
+                user_data['email'],
+                None,
+                user_data['phone'],
+                4,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                user_data['last_update_date'],
+                None,
+                True,
+            )
+            self.save_user(user, json_obj['companies'][company_id]['tenants'])
 

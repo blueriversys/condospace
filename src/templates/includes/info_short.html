@@ -1,0 +1,6 @@
+
+    {% if info_data %}
+        {% if info_data['license_date'] is none %}
+            <li class="menu-userid">[ {{_('UNLICENSED')}} ]</li>
+        {% endif %}
+    {% endif %}

@@ -244,10 +244,13 @@ function showFadeout1(type, msg) {
 
 function showSpinner() {
     text = gettext( "Your request is being processed" );
+    //text =  "Your request is being processed";
     let dialog = bootbox.dialog({
         message: `<div class="text-center" style="font-color: RoyalBlue;"><i class="fa fa-spinner fa-spin"></i> ${text}...</div>`,
         closeButton: false
     });
+
+    console.log('after gettext()');
 
     dialog.init(function() {
         setTimeout(function() {
@@ -566,6 +569,16 @@ function validateEmailFields() {
         }
     }
     return count;
+}
+
+function loadTenant() {
+    const selIndex = document.getElementById("tenants_list").selectedIndex;
+    if (selIndex == 0) {
+        return;
+    }
+    const selOption = document.getElementById("tenants_list").options[selIndex];
+    const condo_id = selOption.value;
+    window.location = `http://localhost:5000/${condo_id}/home`;
 }
 
 function saveResident(pageName) {
@@ -999,6 +1012,42 @@ function uploadFinancialStatement() {
     uploadFileProgress(rep_name, 'rep-file', 'rep-progress-bar')
 }
 
+function uploadFileNoProgress(file_input, post_url) {
+    // retrieve the file object from the DOM
+    let file = document.getElementById(file_input).files[0];
+    console.log(`file name: ${file_input}   post url: ${post_url}`)
+    // test to make sure the user chose a file
+    if (file == undefined || file == "") {
+        showMsgBox( gettext('Please select a file before clicking the upload button.') );
+        return;
+    }
+
+    // create form data to send via XHR request
+    var formData = new FormData();
+    formData.append("file", file);
+
+    //create XHR object to send request
+    var request = new XMLHttpRequest();
+    request.open('POST', post_url, true);
+
+    request.onload = function () {
+      // Begin accessing JSON data here
+      var json = JSON.parse(this.response);
+
+      if (request.status >= 200 && request.status < 400) {
+          if (json.response.status == 'success') {
+              showFadingMsgSuccess('Record saved to database');
+          }
+          else {
+              showFadingMsg('Error saving record to database');
+          }
+      }
+    }
+
+    // send request to the server
+    request.send(formData);
+}
+
 function uploadFileProgress(convname, fileControl, barControl) {
     // retrieve the file object from the DOM
     let file = document.getElementById(fileControl).files[0];
@@ -1150,4 +1199,18 @@ function deleteFileCommon(filepath, filename, protected) {
     request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     request.send(jsonStr);
 }
+
+function handlePictureChange(file_input, img_tag) {
+    file = document.getElementById(file_input).files[0];
+    var reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function (e) {
+        var image = new Image();
+        image.src = e.target.result;
+        image.onload = function () {
+            document.getElementById(img_tag).src = image.src;
+        };
+    }
+}
+
 

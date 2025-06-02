@@ -1,5 +1,16 @@
+@font-face {
+  font-family: 'RussoOneRegular';  /* Choose a unique name for your font */
+  src: url('../fonts/RussoOne-Regular.ttf') format('truetype'); /*  Adjust the path to your font */
+}
+
 body{
     /*background-color: #dee9ff;*/
+}
+
+.form-control-sm {
+    height: 26px;
+    font-size: 15px;
+    border: solid 1px blue;
 }
 
 .registration-box {
@@ -165,6 +176,19 @@ body{
     flex-direction: row;
     height: 30px;
     align-items: center;
+}
+
+.label-as-button {
+    background: #599dd1;
+    font-size: 11px;
+    color: white;
+    width: 80px; height: 16px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.label-as-button:hover {
+    background: #1881d1;
 }
 
 @media (max-width: 576px) {

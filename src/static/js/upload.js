@@ -501,17 +501,3 @@ function deleteLink(link_descr) {
 }
 */
 
-function handlePictureChange(file_input, img_tag) {
-    file = document.getElementById(file_input).files[0];
-    var reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function (e) {
-        var image = new Image();
-        image.src = e.target.result;
-        image.onload = function () {
-            document.getElementById(img_tag).src = image.src;
-        };
-    }
-}
-
-

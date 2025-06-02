@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "includes/layout.html" %}
 
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
@@ -10,14 +10,11 @@
 <div class="main">
 
   <nav id="sidebar">  
-    <div class="sidebar-logo-area">
-        <img class="logo-div" src="branding/logo.jpg">
-        <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
-    </div>
+    {% include "includes/side_bar_logo.html" %}
     <ul class="list-unstyled components">
         <li><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
 
-        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
             <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
             <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
             <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
@@ -39,12 +36,13 @@
         <li><a class="nav-link" href="listings"><i class="fa fa-fw fa-list-ul"></i> {{_('Listings')}}</a></li>
         <li><a class="nav-link" href="about"><i class="fa fa-fw fa-info"></i> {{_('About')}}</a></li>
 
-        {% include "info.html" %}
+        {% include "includes/info.html" %}
     </ul>
+    {% include "includes/tenant_list.html" %}
   </nav>
  
   <div class="content">
-      {% include "mobile-menu.html" %}
+      {% include "includes/mobile-menu.html" %}
 
       <div class="section-title" data-aos="zoom-out">
           <h2>{{_('Announcements')}}</h2>
@@ -52,7 +50,7 @@
 
       <p class="spacer"></p>
 
-      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
           <div class="spacer"></div>
 
           <div class="center button-var-width">
@@ -86,8 +84,6 @@
                                   </span>
                               </div>
                           </div>
-
-<!--                              <div class="container h-100 align-self-center" id="img_group_1" style="display: block;"> -->
 
                           <div class="spacer"></div>
 
@@ -177,7 +173,7 @@
      
 </div> <!-- close main -->
 
-{% include "hidden_fields.html" %}
+{% include "includes/hidden_fields.html" %}
 
 {% endblock %}
 

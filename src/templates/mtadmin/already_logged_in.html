@@ -1,0 +1,30 @@
+
+<html>
+  <head>
+      <link rel="icon" type="image/png" href="{{ url_for('static', filename='common/img/favicon.png') }}">
+  </head>
+<body>
+<div class="main">
+
+  <div class="content">
+
+    <div class="section-title" data-aos="zoom-out">
+      <h1 class="center">{{_("Another Company Is Already Logged In")}}</h1>
+    </div>
+
+    <div class="about-style">
+          <div class="about-body">
+            <div class="shadow p-3 mb-5 bg-white rounded">
+                <div>
+                    User <b>{{info_data['user_id']}}</b>, company <b>{{info_data['company_id']}}</b>: {{_("This user is already logged in to the system.")}}
+                    {{_("If you require logging in with a different user or company, please log out that other user first.")}}
+                </div>
+            </div>
+          </div> <!-- closes about-body box -->
+    </div> <!-- closes about-style box -->
+
+  </div> 
+
+</div> <!-- close main -->
+</body>
+</html>

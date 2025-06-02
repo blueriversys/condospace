@@ -195,6 +195,126 @@ msgid "Enter Payment Date"
 msgstr "Entrar Data de Pagamento"
 
 
+#: templates/mtadmin
+msgid "Another Company Is Already Logged In"
+msgstr "Outra gestora já está logada"
+
+msgid "This user is already logged in to the system."
+msgstr "Este usuário já está logado no sistema."
+
+msgid "If you require logging in with a different user or company, please log out that other user first."
+msgstr "Se você quiser logar um usuário ou gestora diferente, por favor faça logout do outro usuário primeiro."
+
+msgid "not found in our system. Please verify the exact spelling and enter it in the browser's address field."
+msgstr "não encontrado no nosso sistema. Por favor verifique o nome exato e o digite no campo de endereço do navegador."
+
+msgid "Please visit our Registration page to try the application out for 30 days"
+msgstr "Por favor visite a nossa página de Registro para experimentar a aplicação por até 30 dias"
+
+msgid "First, you need to register your company using one of the links above."
+msgstr "Primeiro, você precisa registrar a sua companhia gestora usando um dos links acima."
+
+msgid "When you do that, your company will have a web address such as"
+msgstr "Quando você faz isso, a sua companhia terá um endereço de internet tal como"
+
+msgid "After logging in to your company, you can register one or more condominiums which your company will manage."
+msgstr "Depois que a sua companhia estiver logada, você poderá registrar um ou mais condomínios que a sua companhia vai gerir."
+
+msgid "You are now able to manage your condominiums with full privileges."
+msgstr "A partir daí você poderá gerir os seus condomínios com total privilégio."
+
+msgid "Why wait? It's very affordable for your company because much of our revenue comes from the condominium itself."
+msgstr "Por que esperar? É muito econômico para a sua companhia porque a maior parte da nossa renda vem dos próprios condomínios."
+
+msgid "Company Is Not Logged In"
+msgstr "Companhia Não Está Logada"
+
+msgid "This company that you requested to log out isn't the one logged in."
+msgstr "Esta gestora que você solicitou fazer logout não está logada."
+
+msgid "Company Info"
+msgstr "Info da Gestora"
+
+msgid "Company Id"
+msgstr "Id da Gestora"
+
+msgid "Company Name"
+msgstr "Nome da Gestora"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Phone"
+msgstr "Fone"
+
+msgid "Address"
+msgstr "Endereço"
+
+msgid "Number"
+msgstr "Número"
+
+msgid "Complement"
+msgstr "Complemento"
+
+msgid "ZIP"
+msgstr "CEP"
+
+msgid "City"
+msgstr "Cidade"
+
+msgid "State"
+msgstr "Estado"
+
+msgid "Country"
+msgstr "País"
+
+msgid "Language"
+msgstr "Língua"
+
+msgid "Condominiums"
+msgstr "Condomínios"
+
+msgid "Administrators"
+msgstr "Administradores"
+
+msgid "Coming Soon!"
+msgstr "Em Breve!"
+
+msgid "Register My Company"
+msgstr "Registrar Esta Gestora"
+
+msgid "Web presence: suppose your condominium is called Condominium Monet de Alphaville, you can choose a part of your domain; so a complete address could be"
+msgstr "Presença na web: suponha que seu condomínio chama-se Condomínio Monet de Alphaville, você pode escolher uma parte do domínio; de forma que o endereço completo seria "
+
+msgid "Ability to issue fines and payment requests"
+msgstr "Habilidade de emitir multas e solicitar pagamentos"
+
+msgid "Ability to make reservations"
+msgstr "Habilidade de fazer reservas"
+
+msgid "And much more!"
+msgstr "E muito mais!"
+
+msgid "Ex. Treetop Condominium Management"
+msgstr "Ex. Treetop Gestão Condominial"
+
+msgid "Address of the company"
+msgstr "Endereço da companhia"
+
+msgid "Address number on the street"
+msgstr "Número do endereço na rua"
+
+msgid "Address complement"
+msgstr "Complemento do endereço"
+
+msgid "Country"
+msgstr "País"
+
+msgid "Register a New Condominium"
+msgstr "Registrar Um Novo Condomínio"
+
+
+
 #: templates/home-root.html
 msgid "Street Number"
 msgstr "Número"
@@ -433,18 +553,11 @@ msgstr ""
 "Desta maneira você terá completo acesso à todos os recursos e poderá ver "
 "se atende as suas necessidades."
 
-msgid ""
-"Alternatively, you can go to the 'demo' website <a "
-"href='https://condospace.app/ametista' "
-"target='blank'>https://condospace.app/ametista</a>, with limited "
-"experience because, that way, you will only see what everyone in the "
-"public sees."
-msgstr ""
-"Outra opção (menos desejável) é ir para a página do site demo <a "
-"href='https://condospace.app/ametista' "
-"target='blank'>https://condospace.app/ametista</a>, com experiência "
-"limitada, porque acessando deste modo você verá apenas o que o grande "
-"público ver."
+msgid "Alternatively, you can go to the 'demo' website"
+msgstr "Aternativamente, você pode visitar o nosso site demonstração"
+
+msgid "with limited experience because, that way, you will only see what everyone in the public sees."
+msgstr "com experiência limitada, porque acessando deste modo você verá apenas o que o grande público vê."
 
 msgid "Ability to issue Fines and Request Payments ($)"
 msgstr "Módulo de Multas e Cobranças ($)"
@@ -464,7 +577,7 @@ msgstr "Senso de Pertencimento e Comunidade"
 msgid "Resident Census Card"
 msgstr "Ficha Individual do Morador"
 
-msgid "Communication between Association and Residents"
+msgid "Better communication between Association and Residents"
 msgstr "Melhor comunicação entre o condomínio e os moradores"
 
 msgid ""
@@ -482,12 +595,8 @@ msgstr ""
 "Alto das Esmeraldas, o seu completo endereço online poderia ser "
 "https://condospace.app/esmeraldas"
 
-msgid ""
-"Ability to list apartments for sale with pictures (especially useful for "
-"FSBOs) ($)"
-msgstr ""
-"Habilidade de listar apartamentos ou outros objetos de grande valor para "
-"venda (muito útil para quem quer vender sem corretor) ($)"
+msgid "Ability to list apartments for sale with pictures (especially useful for FSBOs)"
+msgstr "Habilidade de listar apartamentos ou outros objetos de grande valor para venda (muito útil para quem quer vender sem corretor)"
 
 msgid ""
 "Why wait? It's much more affordable than you think. Register your condo "
@@ -837,7 +946,7 @@ msgid "For units in the first floor of tower A: UnitA11, UnitA12, UnitA13, etc."
 msgstr "Para aptos no primeiro piso da torre A: AptoA11, AptoA12, AptoA13, etc."
 
 msgid "For units in the third floor of tower B: UnitB31, UnitB32, UnitB33, etc."
-msgstr "Para apts no terceiro piso da torre B: AptoB31, AptoB32, AptoB33, etc."
+msgstr "Para aptos no terceiro piso da torre B: AptoB31, AptoB32, AptoB33, etc."
 
 msgid "The sections below marked with * are required to be filled."
 msgstr "As seções abaixo marcadas com * são de preenchimento obrigatório."

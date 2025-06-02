@@ -1,0 +1,177 @@
+{% extends "includes/layout_mtadmin.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home_root.css') }}">
+{% endblock %}
+
+{% block body %}
+
+<div class="main">
+
+  <nav id="sidebar">  
+      <div class="sidebar-logo-area">
+          <img class="logo-div" src="/img/bluelogo.png">
+          <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+      </div>
+      <ul class="list-unstyled components">
+          <li class="active"><a class="nav-link" href="home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
+
+          {% if info_data['is_authenticated'] == true %}
+            <li><a class="nav-link" href="logout" aria-selected="false"><i class="fa fa-fw fa-sign-out"></i> {{('Logout')}}</a></li>
+            <li class="menu-userid">[ {{current_user.userid}} ]</li>
+          {% else %}
+            <li><a class="nav-link" href="login" aria-selected="false"><i class="fa fa-fw fa-sign-in"></i> {{('Login')}}</a></li>
+          {% endif %}
+
+          {% include "includes/info_short.html" %}
+      </ul>
+  </nav>
+
+
+  <div class="content">
+      {% include "includes/mobile_menu_mtadmin.html" %}
+
+      <div class="section-title" data-aos="zoom-out">
+          <h2>{{_('Home')}}</h2>
+      </div>
+
+      <div class="upload-block d-flex center" style="width: 60%; height: 116px;">
+          <div class="container align-self-center">
+              <div class="row d-flex justify-content-center">
+                  <div class="d-flex flex-column align-items-center mt-3">
+                      <div>
+                          <img id="logo_image" style="border-radius: 6px; width=120px; height:80px;" src="branding/logo.jpg">
+                      </div>
+                      <div>
+                          <label for="logo_file" class="label-as-button">change</label>
+                          <input id="logo_file" type="file" style="display: none" onChange="handleLogoChange('logo_file', 'logo_image')">
+                      </div>
+                  </div>
+                  <div class="d-flex align-items-end" style="height: 95px;">
+                      <label id="company_name_header" style="margin-left: 10px; font-family: 'RussoOneRegular'; font-size: 19px; transform: scaleY(2.0);"></label>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <fieldset class="general-settings" style="margin-top: 10px;">
+          <legend>{{_("Company Info")}}</legend>
+          <div class="container">
+              <div class="row mb-2">
+                <span>{{_("Company Name")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-name" placeholder='{{_("Ex. Treetop Condominium Management")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("Email")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-email">
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("Phone")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-phone" placeholder='{{_("Ex. (11) 96711-6795)")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("Address")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-address" placeholder='{{_("Address of the company")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("Number")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-address-number" placeholder='{{_("Address number on the street")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("Complement")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-address-complement" placeholder='{{_("Address complement")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("ZIP")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-zip" placeholder='{{_("ZIP with 5 or 9 digits")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("City")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-city" placeholder='{{_("City of the company")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("State")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-state" placeholder='{{_("State of the company")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("Country")}}:</span>
+                <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-country" placeholder='{{_("Country of the company")}}'>
+              </div>
+
+              <div class="row mb-2">
+                <span>{{_("Language")}}:</span>
+                <select id="pref-language" class="form-control form-control-sm" name="pref-language" style="font-size: 13px;">
+                    {% if info_data['language'] == 'en' %}
+                        <option value="en" selected>English</option>
+                        <option value="pt">Português</option>
+                    {% elif info_data['language'] == 'pt' %}
+                        <option value="en">English</option>
+                        <option value="pt" selected>Português</option>
+                    {% endif %}
+                </select>
+              </div>
+
+              <div class="center">
+                  <button class="btn btn-primary" onClick="updateCompanyInfo()">{{_("Update")}}</button>
+              </div>
+          </div>
+      </fieldset>
+
+      <fieldset class="general-settings" style="margin-top: 10px;">
+          <legend>{{_("Condominiums")}}</legend>
+          <div class="row">
+              <div class="col">
+                  <div style="font-size: 12px; margin-left: 20px;">
+                      <div id="tenant_list">
+                          <ul>
+                          {% for tenant in info_data['tenants'] %}
+                              <li style="line-height: 8px; list-style-type: circle;"><a href="/{{tenant}}/home" target="_blank">https://condospace.app/{{tenant}}/home</a></li>
+                          {% endfor %}
+                          </ul>
+                      </div>
+                  </div>
+              </div>
+              <div class="col d-flex align-self-center">
+                  <a style="font-size: 18px;" href="/regis/registrar_portugues?company_id={{info_data['loggedin-userdata']['company_id']}}" target="_blank">{{_("Register a New Condominium")}}</a>
+              </div>
+          </div>
+      </fieldset>
+
+      <fieldset class="general-settings" style="margin-top: 10px;">
+          <legend>{{_("Administrators")}}</legend>
+          <div class="row">
+              <div class="col">
+                  <div style="font-size: 12px; margin-left: 20px;">
+                      <div>
+                          <ul>
+                              <div>{{_("Coming Soon!")}}</div>
+                          </ul>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </fieldset>
+
+  </div> <!-- closes content -->
+
+</div> <!-- closes main -->
+
+<input type="hidden" id="loggedin_user_user_id" value={{info_data['loggedin-userdata']['user_id']}}>
+<input type="hidden" id="loggedin_user_company_id" value={{info_data['loggedin-userdata']['company_id']}}>
+<input type="hidden" id="loggedin_user_language" value={{info_data['language']}}>
+
+{% endblock %}
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/mtadmin/home_mtadmin.js') }}"></script>
+{% endblock %}
+

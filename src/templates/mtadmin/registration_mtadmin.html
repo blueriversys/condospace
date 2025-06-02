@@ -1,18 +1,9 @@
-{% extends "layout_root.html" %}
+{% extends "includes/layout_mtadmin.html" %}
 
 
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home_root.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16694882041"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'AW-16694882041');
-    </script>
 {% endblock %}
 
 
@@ -37,7 +28,7 @@
     </nav>
 
     <div class="content">
-        {% include "mobile_root.html" %}
+        {% include "includes/mobile_menu_mtadmin.html" %}
 
         <div class="section-title" data-aos="zoom-out">
             <h2>Home</h2>
@@ -68,7 +59,7 @@
                                 <li>{{_("Communication between Association and Residents")}}</li>
                                 <li>{{_("Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.")}}</li>
                                 <li>{{_("Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be http://condospace.app/hilltop")}}</li>
-                                <li>{{_("Ability to list apartments for sale with pictures (especially useful for FSBOs) ($)")}}</li>
+                                <li>{{_("Ability to list apartments for sale with pictures (especially useful for FSBOs)")}}</li>
                             </ol>
                         </div>
                     </div>
@@ -78,144 +69,58 @@
                 <div class="spacer"></div>
 
                 <div class="" style="font-size: 12px;">
-                    <form id="regis-form">
-
-                        <div>
-                            <span class="form-label" for="name">{{_("Admin Name")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" style="width: 100%; height: 30px;" class="" id="name" placeholder='{{_("Your full name")}}'>
+                    <div class="container">
+                        <div class="row mb-2">
+                          <span>{{_("Company Id")}}:</span>
+                          <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-id" placeholder='{{_("Ex. treetop")}}'>
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div>
-                            <span class="form-label" for="email">{{_("Admin Email")}}:</span>
-                        </div>
-                        <div>
-                            <input type="text" style="width: 90%; height: 30px;" id="email" placeholder="Email">
-                            <span style="line-height: 40px; padding-left: 3px;" title='{{_("Email must exist because that is where we will send you the Login credentials.")}}'><i style="font-size: 20px; color: orange;" class="fa fa-question-circle-o"></i></span>
+                        <div class="row mb-2">
+                          <span>{{_("Company Name")}}:</span>
+                          <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-name" placeholder='{{_("Ex. Treetop Condominium Management")}}'>
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div>
-                            <span class="form-label" for="phone">{{_("Admin Phone")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" style="width: 100%; height: 30px;" class="" id="phone" placeholder='{{_("Ex. 508 891-3472")}}'>
+                        <div class="row mb-2">
+                            <span>{{_("Email")}}:</span>
+                            <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-email">
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div class="flexible-row">
-                            <div>
-                                <span class="form-label">{{_("Preferred Language")}}:</span>
-                            </div>
-                            <div>
-                                <select id="pref-language" name="pref-language" style="font-size: 18px; height: 28px;">
-                                {% if info_data['language'] == 'en' %}
-                                    <option value="en" selected>English</option>
-                                    <option value="pt">Português</option>
-                                {% elif info_data['language'] == 'pt' %}
-                                    <option value="en">English</option>
-                                    <option value="pt" selected>Português</option>
-                                {% endif %}
-                                </select>
-                            </div>
+                        <div class="row mb-2">
+                            <span>{{_("Phone")}}:</span>
+                            <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-phone" placeholder='{{_("Ex. (11) 96711-6795)")}}'>
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div>
-                            <span class="form-label">{{_("Condominium Name")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" style="width: 100%; height: 30px;" class="" id="condo-name" placeholder='{{_("Ex. Signature Heights Condominium")}}'>
+                        <div class="row mb-2">
+                            <span>{{_("Address")}}:</span>
+                            <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-address" placeholder='{{_("Address of the company")}}'>
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div class="">
-                            <span class="form-label">{{_("Tagline")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" class="" style="width: 100%; height: 30px;" id="condo-tagline" placeholder='{{_("Example: Peace of mind lives here")}}'>
+                        <div class="row mb-2">
+                            <span>{{_("Number")}}:</span>
+                            <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-address-number" placeholder='{{_("Address number on the street")}}'>
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div class="">
-                            <span class="form-label">{{_("Condominium Id")}}:</span>
-                        </div>
-                        <div class="flexible-row">
-                            <div>
-                                <input type="text" style="width: 320px; height: 30px;" id="condo-id" onBlur="condoIdOnBlur()" placeholder='{{_("Cannot have spaces in it")}}'>
-                            </div>
-                            <div style="margin-left: 10px; /*border: 1px solid blue;*/">
-                                <span style="height: 30px; transition-delay: 0s;" title="{{_('For example, if your condominium name is Bela Vista Condominium, this would be belavista')}}"><i style="font-size: 20px; color: orange;" class="fa fa-question-circle-o"></i></span>
-                            </div>
-                            <div style="margin-left: 10px; /*border: 1px solid blue;*/">
-                                <span style="height: 30px;"><i id="condo_id_group" style="font-size: 20px; display: none;" class="fa fa-check"></i></span>
-                            </div>
+                        <div class="row mb-2">
+                            <span>{{_("Complement")}}:</span>
+                            <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-address-complement" placeholder='{{_("Address complement")}}'>
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div class="">
-                            <span class="form-label">{{_("Condominium Address")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" class="" style="width: 100%; height: 30px;" id="condo-address" placeholder='{{_("Address of the condominium")}}'>
+                        <div class="row mb-2">
+                            <span>{{_("ZIP")}}:</span>
+                            <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-zip" placeholder='{{_("ZIP")}}'>
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div class="">
-                            <span class="form-label">{{_("Street Number")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" class="" style="width: 100%; height: 30px;" id="condo-address-number" placeholder='{{_("Home number on the street")}}'>
+                        <div class="row mb-2">
+                            <span>{{_("City")}}:</span>
+                            <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-city" placeholder='{{_("City")}}'>
                         </div>
 
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div class="">
-                            <span class="form-label">{{_("ZIP")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" style="width: 100%; height: 30px;" class="" id="condo-zip" placeholder='{{_("ZIP")}}'>
-                        </div>
-
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div class="">
-<!--                                <span style="line-height: 40px; padding-left: 3px;" title='{{_("For example, enter Syracuse, NY")}}'><i class="fa fa-question-circle-o"></i></span> -->
-                            <span class="form-label">{{_("City")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" class="" style="width: 280px; height: 30px;" id="condo-city" placeholder='{{_("City")}}'>
-                        </div>
-
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
-
-                        <div class="flexible-row">
+                        <div class="row mb-2">
                             <div style="height: 28px; /*border: 1px solid blue;*/">
                                 <span class="form-label">{{_("State")}}:</span>
                             </div>
                             <div style="margin-left: 6px;">
-                                <select id="condo-state" style="font-size: 14px; height: 28px;">
+                                <select id="company-state" style="font-size: 14px; height: 28px;">
                                 {% if info_data['language'] == 'en' %}
                                     <option value="AL">AL</option>
                                     <option value="AK">AK</option>
@@ -298,40 +203,33 @@
                                     <option value="TO">TO</option>
                                 {% endif %}
                                 </select>
-                             </div>
-                        </div>
-                        <div class="spacer"></div>
-<!--
-                        <div class="flex-d align-items-middle">
-                            <span class="form-label" style="width: auto;">{{_("Home Page Condo Picture")}}:</span>
-                            <input type="checkbox" style="margin-left: 7px;" id="use-default-img" onClick="useDefaultImgClicked()" name="use-default-img">
-                            <label for="use-default-img"  style="margin-left: 2px; font-size: 15px;">{{_("Use a default picture")}}</label>
-                            <input type="file" style="margin-left: 20px;" class="" id="condo-img-file" onChange="pictureSelectAction('condo-img-file', 'condo-img')">
-                            <img id="condo-img" src="" width="120" height="80" style="border-radius: 4px; left-margin: 10px; display: none;">
-                        </div>
--->
-                        <div>
-                            <span class="form-label" style="width: auto;">{{_("Home Page Condo Picture")}}:</span>
-                        </div>
-                        <div class="flexible-row">
-                            <div>
-                                <input type="checkbox" id="use-default-img" onClick="useDefaultImgClicked()" name="use-default-img">
-                                <label for="use-default-img"  style="margin-left: 2px; font-size: 15px;">{{_("Use a default picture")}}</label>
                             </div>
                         </div>
-                        <div>
-                            <input type="file" class="" id="condo-img-file" onChange="pictureSelectAction('condo-img-file', 'condo-img')">
+
+                        <div class="row mb-2">
+                            <span>{{_("Country")}}:</span>
+                            <input type="text" class="form-control form-control-sm" style="margin-right: 16px;" id="company-country" placeholder='{{_("Country")}}'>
                         </div>
-                        <div style="width: 100%; margin-top: 5px; margin-bottom: 5px;">
-                            <img id="condo-img" src="" width="120" height="80" style="margin: auto; border-radius: 4px; /*left-margin: 10px;*/ display: none;">
+
+                        <div class="row mb-2">
+                            <span>{{_("Language")}}:</span>
+                            <select id="pref-language" class="form-control form-control-sm" name="pref-language" style="font-size: 13px;">
+                                {% if info_data['language'] == 'en' %}
+                                    <option value="en" selected>English</option>
+                                    <option value="pt">Português</option>
+                                {% elif info_data['language'] == 'pt' %}
+                                    <option value="en">English</option>
+                                    <option value="pt" selected>Português</option>
+                                {% endif %}
+                            </select>
                         </div>
-                    </form>
+                    </div>
                 </div>
 
                 <div class="spacer"></div>
 
                 <div class="center">
-                    <button type="button" class="btn btn-primary" onClick="sendCondoRegistrationForm()">{{_("Register My Condo")}}</button>
+                    <button type="button" class="btn btn-primary" onClick="sendCompanyRegistrationForm()">{{_("Register My Company")}}</button>
                 </div>
 
                 <div style="margin: 40px;"></div>
@@ -352,11 +250,10 @@
 </div>
 
 <input type="hidden" id="loggedin-lang" value={{info_data['language']}}>
-<input type="hidden" id="company-id" value={{info_data['company_id']}}>
 
 {% endblock %}
 
 {% block afterbody %}
-   <script src="{{ url_for('static', filename='js/regis/home_root.js') }}"></script>
+   <script src="{{ url_for('static', filename='js/mtadmin/registration_mtadmin.js') }}"></script>
 {% endblock %}
 
