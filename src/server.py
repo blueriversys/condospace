@@ -1980,14 +1980,25 @@ def pics(tenant):
 
 @app.route('/<tenant>/logout', methods=['GET'])
 def logout(tenant):
-    print(f"logout(): session: {session}")
+    lock.acquire()
+    print(f"here in server.logout()")
 
     if not is_tenant_found(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
     if not current_user.is_authenticated:
+        lock.release()
         return redirect(f"/{tenant}/home")
+
+    # if logged-in user is of type company, return with an error message
+    if session['multi-condo']:
+        info_data = {
+            'user_id': current_user.userid,
+            'message': f"The log out process for this user must be done through the company page."
+        }
+        lock.release()
+        return render_template("condo_not_logged_in.html", info_data=info_data)
 
     # we need to gather some data to be shown in the logout.html view
     info_data = prepare_info_data(tenant)
@@ -1999,8 +2010,10 @@ def logout(tenant):
     userid = current_user.userid  # we need to save the userid BEFORE invoking logout_user()
     logout_user()
     session['tenant'] = None
-    info_data['company_id'] = session['company_id']
+    if session['multi-condo']:
+        info_data['company_id'] = session['company_id']
     session['company_id'] = None
+    lock.release()
     return render_template("logout.html", info_data=info_data)
 
 '''
@@ -2423,7 +2436,8 @@ def get_one_listing(tenant, unit, listing_id):
         return render_template("condo_not_found.html", tenant=tenant)
 
     listings = get_json_from_file(tenant, LISTINGS_FILE)
-    info_data = get_info_data(tenant)
+    info_data = prepare_info_data(tenant)
+    print(f"info_data: {info_data}")
     alisting = None
     pictures = None
 
@@ -2934,7 +2948,7 @@ def download_pdf(tenant):
 
 @app.route('/<tenant>/login', methods=['GET' , 'POST'])
 def login_tenant(tenant):
-    # print(f"here in login_tenant(), {request.path}")
+    print(f"here in login_tenant(), {request.path}")
     lock.acquire()
 
     # check to see if the tenant even exists in our database
@@ -2991,7 +3005,6 @@ def login_tenant(tenant):
         session['multi-condo'] = False
         session['user_id'] = user_id
         session['tenant'] = tenant # fill this var only when session['multi-condo'] is False
-        # print(f"login_tenant(): we just logged in {session['userid']} of tenant {session['tenant']}, session obj: {session}")
         customers = get_json_from_file_no_tenant(f"{INFO_FILE}")
         customers['config'][tenant]['last_login_date'] = get_epoch_from_now()
         save_json_to_file_no_tenant(INFO_FILE, customers)
@@ -3241,34 +3254,30 @@ def before_request():
     # logged_in_users[current_user] = current_user
 
 # callback to reload the user object
+# the logged-in user can be either "s-" or "m-"
 @login_manager.user_loader
-def load_user(user_internal_id):
-    ind = user_internal_id.find("@")
-    tenant = user_internal_id[ind+1:]
+def load_user(flask_user_id):
+    ind = flask_user_id.find("@")
+    tenant = flask_user_id[ind+1:]
 
     if tenant == 'root':
         return None
 
-    print(f"tenant {tenant},   user {user_internal_id}")
+    print(f"tenant {tenant},   user {flask_user_id}")
 
-    if user_internal_id.startswith("s-"):
+    if flask_user_id.startswith("s-"):
+        print(f"in load_user(): flask_user_id {flask_user_id}  tenant {tenant}")
         load_users(tenant)
-        user = users_repository.get_user_by_id(tenant, user_internal_id)
-        if user is None:
-            ret_user = None
-        else:
-            ret_user = user
+        user = users_repository.get_user_by_id(tenant, flask_user_id)
+        ret_user = user
     else:
-        company_id = user_internal_id[ind+1:]
-        user_id = user_internal_id[2:ind]
-        print(f"in load_user(): {company_id},   user_id {user_id}")
+        company_id = flask_user_id[ind+1:]
+        user_id = flask_user_id[2:ind]
+        print(f"in load_user(): company_id {company_id},   user_id {user_id}")
         load_company_users(company_id)
         print(f"all tenants: {users_repository_mtadmin.get_tenants(user_id)}")
-        user = users_repository_mtadmin.get_user_by_id(user_internal_id)
-        if user is None:
-            ret_user = None
-        else:
-            ret_user = user
+        user = users_repository_mtadmin.get_user_by_id(flask_user_id)
+        ret_user = user
 
     return ret_user
 

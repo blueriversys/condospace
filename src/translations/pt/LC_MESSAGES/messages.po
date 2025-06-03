@@ -196,8 +196,14 @@ msgstr "Entrar Data de Pagamento"
 
 
 #: templates/mtadmin
-msgid "Another Company Is Already Logged In"
-msgstr "Outra gestora já está logada"
+msgid "This company is already logged in"
+msgstr "Esta gestora já está logada"
+
+msgid "Another User Is Already Logged In"
+msgstr "Outro usuário já está logado"
+
+msgid "This condo user is already logged in"
+msgstr "Outro usuário já está logado"
 
 msgid "This user is already logged in to the system."
 msgstr "Este usuário já está logado no sistema."
@@ -226,11 +232,20 @@ msgstr "A partir daí você poderá gerir os seus condomínios com total privil�
 msgid "Why wait? It's very affordable for your company because much of our revenue comes from the condominium itself."
 msgstr "Por que esperar? É muito econômico para a sua companhia porque a maior parte da nossa renda vem dos próprios condomínios."
 
+msgid "Condo List"
+msgstr "Lista de Condos"
+
 msgid "Company Is Not Logged In"
 msgstr "Companhia Não Está Logada"
 
+msgid "Condo Is Not Logged In"
+msgstr "Condomínio Não Está Logado"
+
 msgid "This company that you requested to log out isn't the one logged in."
 msgstr "Esta gestora que você solicitou fazer logout não está logada."
+
+msgid "The log out process for this user must be done through the company page."
+msgstr "O processo de logout deste usuário deve ser feito na página da gestora."
 
 msgid "Company Info"
 msgstr "Info da Gestora"

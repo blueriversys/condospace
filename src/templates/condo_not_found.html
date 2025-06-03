@@ -1,68 +1,62 @@
 
 <html>
-  <head>
-      <link rel="icon" type="image/png" href="{{ url_for('static', filename='common/img/favicon.png') }}">
-  </head>
-<body>
-<div class="main">
+    <head>
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='common/img/favicon.png') }}">
+    </head>
 
-  <div class="content">
+    <body>
+        <div class="main">
+            <div class="content">
 
-    <div class="section-title" data-aos="zoom-out">
-      <h1 class="center">Condominium Not Found</h1>
-    </div>
+                <div class="section-title" data-aos="zoom-out">
+                    <h1 class="center">{{_("Condominium Not Found")}}</h1>
+                </div>
 
-    <div class="about-style">
-          <div class="about-body">
-            <div class="shadow p-3 mb-5 bg-white rounded">
-                    <!--
-                    <div class="center">
-                        <img style="width= 95%; max-width: 300px;" src="{{ url_for('static', filename='common/img/BlueRiverLogo.gif') }}">
-                    </div>
-                    -->
-                    <div>
-                        Condominium <b>{{tenant}}</b> not found in our system. Please verify the exact spelling and enter it in the browser's address field.
-                        It seems like you are not yet a customer. Please visit our Registration page to try the application out for 30 days: <a href="https://condospace.app/register_en">https://condospace.app/register_en</a> or
-                        <a href="https://condospace.app/regis/registrar_portugues">https://condospace.app/regis/registrar_portugues</a>
-                    </div>
-                    <p>
-                    <b>Here's how it works:</b>
-                    <div class="spacer"></div>
-                    <ol>
-                        <li>You can access the "demo" website right now <a href="https://condospace.app/monetalphaville" target="blank">https://condospace.app/monetalphaville</a>, no login required. Accessing it that way shows you what everyone
-                      in the public sees.</li>
-                        <li>But if you contact us, we'll provide you a couple of login credentials so you can experience what an "admin" user would be
-                      able to do, and what a "regular" resident would be able to do.</li>
-                        <li>Another way is to try the service for a month to see if it works for you.</li>
-                    </ol>
+                <div class="about-style">
+                    <div class="about-body">
+                        <div class="shadow p-3 mb-5 bg-white rounded">
+                            <!--
+                            <div class="center">
+                                <img style="width= 95%; max-width: 300px;" src="{{ url_for('static', filename='common/img/BlueRiverLogo.gif') }}">
+                            </div>
+                            -->
+                            <div>
+                                Condominium <b>{{tenant}}</b> not found in our system. Please verify the exact spelling and enter it in the browser's address field.
+                                It seems like you are not yet a customer. Please visit our Registration page to try the application out for 30 days: <a href="https://condospace.app/register_en">https://condospace.app/register_en</a> or
+                                <a href="https://condospace.app/regis/registrar_portugues">https://condospace.app/regis/registrar_portugues</a>
+                            </div>
+                            <p>
+                            <b>Here's how it works:</b>
+                            <div class="spacer"></div>
+                            <ol>
+                                <li>You can access the "demo" website right now <a href="https://condospace.app/monetalphaville" target="blank">https://condospace.app/monetalphaville</a>, no login required. Accessing it that way shows you what everyone
+                              in the public sees.</li>
+                                <li>But if you contact us, we'll provide you a couple of login credentials so you can experience what an "admin" user would be
+                              able to do, and what a "regular" resident would be able to do.</li>
+                                <li>Another way is to try the service for a month to see if it works for you.</li>
+                            </ol>
 
-                    <p>
+                            <p>
 
-                    <b>Some of the benefits:</b>
-                    <ol>
-                        <li>Sense of belonging and community</li>
-                        <li>Resident Census Card</li>
-                        <li>Communication between Association and Residents</li>
-                        <li>Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.</li>
-                        <li>Web presence: suppose your condominium is called Hill Top Condominium, you can choose the first portion of
-                            your domain; so a complete address could be http://condospace.app/hilltop</li>
-                        <li>Ability to list apartments for sale with pictures (especially useful for FSBOs)</li>
-                    </ol>
-                    <div class="spacer"></div>
-                    Why wait? It's much more affordable than you think. Contact us and we'll get you started.
+                            <b>Some of the benefits:</b>
+                            <ol>
+                                <li>Sense of belonging and community</li>
+                                <li>Resident Census Card</li>
+                                <li>Communication between Association and Residents</li>
+                                <li>Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.</li>
+                                <li>Web presence: suppose your condominium is called Hill Top Condominium, you can choose the first portion of
+                                    your domain; so a complete address could be http://condospace.app/hilltop</li>
+                                <li>Ability to list apartments for sale with pictures (especially useful for FSBOs)</li>
+                            </ol>
+                            <div class="spacer"></div>
+                            Why wait? It's much more affordable than you think. Contact us and we'll get you started.
 
-                    <div class="spacer"></div>
-                    <!--
-                    <div class="center">
-                        <img style="width= 95%; max-width: 360px;" src="{{ url_for('static', filename='common/img/contact.png') }}">
-                    </div>
-                    -->
-            </div>
-          </div> <!-- closes about-body box -->
-    </div> <!-- closes about-style box -->
+                            <div class="spacer"></div>
+                        </div>
+                    </div> <!-- closes about-body box -->
+                </div> <!-- closes about-style box -->
+            </div> <!-- close content -->
+        </div> <!-- close main -->
+    </body>
 
-  </div> 
-
-</div> <!-- close main -->
-</body>
 </html>

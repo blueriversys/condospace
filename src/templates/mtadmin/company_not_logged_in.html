@@ -1,29 +1,37 @@
 
 <html>
-  <head>
+    <head>
       <link rel="icon" type="image/png" href="{{ url_for('static', filename='common/img/favicon.png') }}">
-  </head>
-<body>
-<div class="main">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/additional.css') }}">
+      <title>{{_("Company Is Not Logged In")}}</title>
+    </head>
 
-  <div class="content">
+    <body>
+        <div class="main">
 
-    <div class="section-title" data-aos="zoom-out">
-      <h1 class="center">{{_("Company Is Not Logged In")}}</h1>
-    </div>
+          <nav id="sidebar" style="background: #f5b041;">
+              <div class="sidebar-logo-area">
+                  <img class="logo-div" src="/img/bluelogo.png">
+                  <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+              </div>
+          </nav>
 
-    <div class="about-style">
-          <div class="about-body">
-            <div class="shadow p-3 mb-5 bg-white rounded">
-                <div>
-                    <b>{{info_data['company_id']}}</b>: {{_("This company you requested to log out isn't the one logged in.")}}
-                </div>
-            </div>
-          </div> <!-- closes about-body box -->
-    </div> <!-- closes about-style box -->
+          <div class="content">
 
-  </div> 
+              <div class="error-body">
+                  <div>
+                      <h1 style="font-size: 18px;">{{_("Company Is Not Logged In")}}</h1>
+                  </div>
 
-</div> <!-- close main -->
-</body>
+                  <div style="margin-top: 20px; font-size: 16px; font-family: sans-serif; ">
+                      <span><b>{{info_data['company_id']}}</b></span>:
+                      <span style="color: grey;">{{_(info_data['message'])}}</span>
+                  </div>
+              </div> <!-- closes about-body box -->
+
+          </div>
+
+        </div> <!-- close main -->
+    </body>
+
 </html>

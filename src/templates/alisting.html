@@ -16,7 +16,7 @@
     <ul class="list-unstyled components">
         <li><a class="nav-link" href="../../home"><i class="fa fa-fw fa-home"></i> {{_('Home')}}</a></li>
 
-        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
             <li><a class="nav-link" href="../../setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
             <li><a class="nav-link" href="../../profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
             <li><a class="nav-link" href="../../reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
@@ -45,13 +45,13 @@
         {% endif %}
 
         {% include "includes/info_short.html" %}
-
     </ul>
+    {% include "includes/tenant_list.html" %}
   </nav>
 
   <div class="content">
 
-      {% include "includes/mobile-menu.html" %}
+      {% include "includes/mobile_menu.html" %}
 
       <div class="section-title" data-aos="zoom-out">
           <h2>{{_('Listings')}}</h2>

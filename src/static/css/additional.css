@@ -317,6 +317,15 @@ a[data-toggle="collapse"] {
   font-size: 28px;
 }
 
+.error-body {
+  padding: 18px 8px 18px 8px; /* top,right,bottom,left */
+/*  color: hsl(201, 54%, 46%);
+  font-family: "Federo";
+  font-size: 20px; */
+  margin: 12px;
+}
+
+
 /*--------------------------------------------------------------
 # about
 --------------------------------------------------------------*/
@@ -332,17 +341,6 @@ a[data-toggle="collapse"] {
 .about-style {
   margin: 12px;
 }
-
-/*
-.about-body p {
-   font-size: 28px;
-   padding-left: 6px;
-   border-radius: 6px;
-   color: hsl(201, 72%, 30%);
-   background-color: hsl(219, 90%, 92%);
-   min-height: 15px;
-}
-*/
 
 .about-body p {
   font-size: 28px;

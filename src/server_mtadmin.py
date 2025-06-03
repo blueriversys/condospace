@@ -180,10 +180,18 @@ def multi_condo_home(company):
         lock.release()
         return redirect(f"/multi-condo/{company}/login")
 
-    if company != session['company_id']:
-        user_id, company_id = get_user_id_and_company_id(current_user.id)
+    if not session['multi-condo']:
         info_data = {
-            'user_id': user_id, 'company_id': company_id
+            'user_id': session['user_id'],
+            'message': 'This condo user is already logged in'
+        }
+        lock.release()
+        return render_template(f"already_logged_in.html", info_data=info_data)
+
+    if company != session['company_id']:
+        info_data = {
+            'user_id': session['company_id'],
+            'message': 'This company is already logged in'
         }
         lock.release()
         return render_template(f"already_logged_in.html", info_data=info_data)
@@ -228,8 +236,8 @@ def multi_condo_login(company):
         lock.release()
         return render_template("login_mtadmin.html")
 
-    print(f"user: userid {registered_user.userid}   password: {registered_user.password}")
-    print(f"tenants: {users_repository_mtadmin.get_tenants(user_id)}")
+    #print(f"user: userid {registered_user.userid}   password: {registered_user.password}")
+    #print(f"tenants: {users_repository_mtadmin.get_tenants(user_id)}")
 
     if registered_user.password == password:
         print(f"password matches")
@@ -255,7 +263,7 @@ def multi_condo_login(company):
 @app.route('/<company>/logout', methods=['GET'])
 def multi_condo_logout(company):
     lock.acquire()
-    print(f"multi_condo_logout(): session: {session}")
+    print(f"here in multi_condo_logout()")
 
     if not is_company_found(company):
         lock.release()
@@ -265,12 +273,18 @@ def multi_condo_logout(company):
         lock.release()
         return redirect(f"/multi-condo/{company}/login")
 
+    if not session['multi-condo']:
+        lock.release()
+        info_data = {'message': 'Logged in user is not of a company'}
+        return render_template("company_not_logged_in.html", info_data=info_data)
+
     # from here on down we know the company is logged in
     if company != session['company_id']:
         user_id, company_id = get_user_id_and_company_id(current_user.id)
         info_data = {
             'user_id': user_id,
-            'company_id': company
+            'company_id': company,
+            'message': f"This company that you requested to log out isn't the one logged in."
         }
         lock.release()
         return render_template("company_not_logged_in.html", info_data=info_data)
@@ -535,22 +549,20 @@ def before_request():
 # callback to reload the user object
 # internal_id is the sequential number given to a user when it is added to the system
 @login_manager.user_loader
-def load_user(user_internal_id):
-    print(f"here in mtadmin load_user(): {user_internal_id}")
-    # ind = user_internal_id.find("@")
-    # company_id = user_internal_id[ind + 1:]
-    # user_id = user_internal_id[2:ind]
+def load_user(flask_user_id):
+    print(f"here in mtadmin load_user(): {flask_user_id}")
 
-    user_id, company_id = get_user_id_and_company_id(user_internal_id)
+    # we return None to force the user to login as "company"
+    if flask_user_id.startswith("s-"):
+        return None
+
+    user_id, company_id = get_user_id_and_company_id(flask_user_id)
     load_company_users(company_id)
     print(f"all tenants: {users_repository_mtadmin.get_tenants(user_id)}")
-    user = users_repository_mtadmin.get_user_by_id(user_internal_id)
-    if user is None:
-        ret_user = None
-    else:
-        ret_user = user
+    user = users_repository_mtadmin.get_user_by_id(flask_user_id)
+    ret_user = user
 
-    print(f"user id {user_internal_id} found!")
+    print(f"user id {flask_user_id} found!")
     return ret_user
 
 # This is invoked by Babel

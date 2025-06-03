@@ -1,9 +1,9 @@
         {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['SUPER_ADMIN']|int() %}
             {% if info_data['multi-condo'] %}
-                <label style="font-size: 12px; margin-left: 20px;" for="tenants_list">Condo List:</label>
+                <label style="font-size: 12px; margin-left: 20px;" for="tenants_list">{{_("Condo List")}}:</label>
                 <div style="font-size: 12px; margin-left: 20px;">
                     <select id="tenants_list" name="tenants_list" onClick="loadTenant()">
-                        <option value="none" selected disabled hidden>{{_("Select one")}}</option>
+                        <option value="none" selected disabled hidden>{{_("select one")}}</option>
                         {% for tenant in info_data['tenants'] %}
                             <option value="{{tenant}}">{{tenant}}</option>
                         {% endfor %}

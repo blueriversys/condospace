@@ -143,6 +143,11 @@ def login():
     load_users('adm')
     registered_user = users_adm_repository.get_user_by_userid('adm', userid)
 
+    if registered_user is None:
+        flash("Invalid user or password")
+        lock.release()
+        return render_template("login.html", info_data=get_info_data('adm'))
+
     if registered_user.password == password:
         next_page = request.args.get('next') if request.args.get('next') is not None else '/admin/customers'
         registered_user.authenticated = True
