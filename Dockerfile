@@ -30,6 +30,7 @@ COPY src/start_servers.py .
 COPY src/server.py .
 COPY src/server_admin.py .
 COPY src/server_regis.py .
+COPY src/server_mtadmin.py .
 COPY src/staticvars.py .
 COPY src/users.py .
 COPY src/users_adm.py .

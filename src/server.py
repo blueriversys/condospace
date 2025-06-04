@@ -524,7 +524,7 @@ def load_users(tenant):
     users_repository.load_users(tenant)
 
 def load_company_users(company_id):
-    print(f"load_company_users()")
+    print(f"load_company_users() company_id {company_id}")
     users_repository_mtadmin.load_users(company_id)
 
 ''' These are long running related functions '''
