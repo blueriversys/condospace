@@ -4,6 +4,7 @@
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/reservations.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    {% include "includes/settings.inc" %}
 {% endblock %}
 
 
@@ -206,7 +207,7 @@
                               {% for rsv in reservations[key|int()] %}
                               <tr>
                                   <td>
-                                  {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                  {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
                                       <button class="btn btn-danger small-btn" style="height: 20px;" id="del_rsv_button_{{ns.counter}}" onclick="deleteReservation('{{rsv['user_id']}}', '{{rsv['rsv_id']}}', '{{key|int()}}')">{{_('delete')}}</button>
                                   {% elif info_data['is_authenticated'] == true and current_user.userid == rsv['user_id'] %}
                                       <button class="btn btn-danger small-btn" style="height: 20px;" id="del_rsv_button{{ns.counter}}" onclick="deleteReservation('{{rsv['user_id']}}', '{{rsv['rsv_id']}}', '{{key|int()}}')">{{_('delete')}}</button>

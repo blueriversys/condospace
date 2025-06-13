@@ -38,10 +38,9 @@ from pdf import PDF
 from datetime import timedelta, datetime
 import time
 import calendar
-from flask import Flask, request, session, abort, redirect, Response, url_for, render_template, send_from_directory, flash, session
+from flask import Flask, request, session, abort, redirect, Response, url_for, render_template, send_from_directory, flash, session, jsonify
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 import os
-from glob import glob
 from werkzeug.utils import secure_filename
 import smtplib
 import cgitb
@@ -162,11 +161,10 @@ aws_mtadmin = AWS(COMPANIES_PREFIX, config['bucket_name'], config['aws_access_ke
 users_repository_mtadmin = UsersRepositoryMultiAdmin(aws_mtadmin)
 
 
-# global tenant var (used in some routines)
-tenant_global = ""
+# used in get_locale()
+global_condo_language = "en"
 
-# 'user' : user, 'last_active': datetime.now()
-logged_in_users = dict()
+global_tenant = None
 
 # to cache the content of any JSON file
 # the key is tenant + file name
@@ -185,75 +183,6 @@ doc_files_cache = {}
 # define the lock object
 lock = Lock()
 
-cgitb.enable()
-
-
-condo_not_found_text = """
-<html>
-<body>
-<div class="main">
-
-  <div class="content">
-
-    <div class="section-title" data-aos="zoom-out">
-      <h1 class="center">Condominium Not Found</h1>
-    </div>
-
-    <div class="about-style">
-          <div class="about-body">
-            <div class="shadow p-3 mb-5 bg-white rounded">
-                    <!--
-                    <div class="center">
-                        <img style="width= 95%; max-width: 300px;" src="{{ url_for('static', filename='common/img/BlueRiverLogo.gif') }}">
-                    </div>
-                    -->
-                    <div>
-                        Condominium <b>"{tenant}"</b> not found in our system. Please verify the exact spelling and enter it in the browser's address field.
-                        It seems like you are not yet a customer. Please visit our Registration page to try the application out for 30 days: <a href="https://condospace.app/regis/register_en">https://condospace.app/regis/register_en</a> or
-                        <a href="https://condospace.app/regis/registrar_portugues">https://condospace.app/regis/registrar_portugues</a>
-                    </div>
-                    <p>
-                    <b>Here's how it works:</b>
-                    <div class="spacer"></div>
-                    <ol>
-                        <li>You can access the "demo" website right now <a href="https://condospace.app/monetalphaville" target="blank">https://condospace.app/monetalphaville</a>, no login required. Accessing it that way shows you what everyone
-                      in the public sees.</li>
-                        <li>But if you contact us, we'll provide you a couple of login credentials so you can experience what an "admin" user would be
-                      able to do, and what a "regular" resident would be able to do.</li>
-                        <li>Another way is to try the service for a month to see if it works for you.</li>
-                    </ol>
-
-                    <p>
-
-                    <b>Some of the benefits:</b>
-                    <ol>
-                        <li>Sense of belonging and community</li>
-                        <li>Resident Census Card</li>
-                        <li>Communication between Association and Residents</li>
-                        <li>Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.</li>
-                        <li>Web presence: suppose your condominium is called Hill Top Condominium, you can choose the first portion of
-                            your domain; so a complete address could be http://condospace.app/hilltop</li>
-                        <li>Ability to list apartments for sale with pictures (especially useful for FSBOs)</li>
-                    </ol>
-                    <div class="spacer"></div>
-                    Why wait? It's much more affordable than you think. Contact us and we'll get you started.
-
-                    <div class="spacer"></div>
-                    <!--
-                    <div class="center">
-                        <img style="width= 95%; max-width: 360px;" src="{{ url_for('static', filename='common/img/contact.png') }}">
-                    </div>
-                    -->
-            </div>
-          </div> <!-- closes about-body box -->
-    </div> <!-- closes about-style box -->
-
-  </div> 
-
-</div> <!-- close main -->
-</body>
-</html>
-"""
 
 def get_super_admin_user(company_id, user_id):
     local_repository = UsersRepositoryMultiAdmin(aws)
@@ -273,24 +202,40 @@ def is_valid_graphic_file(file_name):
     return True
 
 def is_tenant_found(tenant):
+    global global_condo_language, global_tenant
     if not aws.is_file_found(f"{INFO_FILE}"):
+        global_tenant = TENANT_NOT_FOUND
+        global_condo_language = "en"  # pass a default value
         return False
     info_json = get_json_from_file_no_tenant(f"{INFO_FILE}")
-    if tenant in info_json['config']:
-        if not is_tenant_folder_found(tenant):
-            return False
-        global tenant_global
-        tenant_global = tenant
+    if tenant in info_json['config'] and aws.is_file_found(f"{tenant}/{RESIDENTS_FILE}"):
+        global_tenant = tenant
+        global_condo_language = info_json['config'][tenant]['language']
+        return True
+    global_condo_language = "en" # pass a default value
+    return False
+
+def is_company_found(company):
+    if not aws_mtadmin.is_file_found(f"{INFO_FILE}"):
+        return False
+    string_content = aws_mtadmin.read_text_obj(INFO_FILE)
+    info_json = json.loads(string_content)
+    if company in info_json['companies'] and aws_mtadmin.is_file_found(f"{company}"):
         return True
     return False
 
-def is_tenant_folder_found(tenant):
-    if not aws.is_file_found(f"{tenant}/{RESIDENTS_FILE}"):
-        return False
-    return True
+def get_all_files(tenant, folder):
+    files = aws.get_file_list_folder(tenant, folder)
+    print(f"in get_all_files(): tenant {tenant}  folder {folder}  {files}")
+    files_arr = []
+    for file in files:
+        files_arr.append(os.path.basename(file))
+    files_arr.sort()
+    return files_arr
 
 def get_doc_files_cache(tenant, path, pattern):
     key = f"{tenant}-{path}"
+    global doc_files_cache
     if key in doc_files_cache:
         print(f"key {key} found. return doc_files from cache")
         return doc_files_cache[key]
@@ -331,6 +276,7 @@ def save_json_to_file(tenant, file_path, content):
     global json_file_cache
     #print(f"cached to mem: {key}, {string_content}")
     json_file_cache[key] = string_content
+    print(f"updated mem cache, key {key}")
     return resp
 
 def get_json_from_file_no_tenant(file_path):
@@ -352,24 +298,29 @@ def save_json_to_file_no_tenant(file_path, content):
     json_file_cache_no_tenant[file_path] = str_content
 
 
-def get_tenant():
-    url = request.path
-    if url.count('/') == 1:
-        tenant = 'root'
-    else:
-        tenant = url[1:]
-        bar_pos = tenant.find('/')
-        tenant = tenant[0 : bar_pos]
+# TODO: review where this is used and improve it
+# def get_tenant():
+#     if current_user.is_authenticated and not session['multi-condo']:
+#         return session['tenant']
+#
+#     url = request.path
+#     if url.count('/') == 1:
+#         tenant = 'root'
+#     else:
+#         tenant = url[1:]
+#         bar_pos = tenant.find('/')
+#         tenant = tenant[0 : bar_pos]
+#
+#     tenant = tenant.lower()
+#
+#     if tenant == config['domain']:
+#         tenant = 'root'
+#
+#     if tenant != 'root' and not is_tenant_found(tenant):
+#         tenant = TENANT_NOT_FOUND
+#
+#     return tenant
 
-    tenant = tenant.lower()
-    #print(f"in get_tenant(): url {url}   tenant: {tenant}")
-
-    if tenant == config['domain']:
-        tenant = 'root'
-    if tenant != 'root' and not is_tenant_found(tenant):
-        tenant = TENANT_NOT_FOUND
-    #log(f"header host: {url},   tenant: {tenant},  domain: {config['domain']}")
-    return tenant
 
 # in info_data we return only that specific tenant's info data
 def get_info_data(tenant):
@@ -408,7 +359,7 @@ def get_current_user_data():
         'unit': current_user.unit,
         'name': current_user.name,
         'email': current_user.email,
-        'tenant': get_tenant()
+        'tenant': global_tenant
     }
     return user_data
 
@@ -428,49 +379,12 @@ def get_lat_long(address):
     long = None
 
     if addr_dict is not None and addr_dict['status'] != 'ZERO_RESULTS':
-        # print(f"api response: {addr_dict}")
-        if 'location' in addr_dict['results'][0]['geometry']:
-            lat = addr_dict['results'][0]['geometry']['location']['lat']
-            long = addr_dict['results'][0]['geometry']['location']['lng']
+        if len(addr_dict['results']) > 0 and 'geometry' in addr_dict['results'][0]:
+            if 'location' in addr_dict['results'][0]['geometry']:
+                lat = addr_dict['results'][0]['geometry']['location']['lat']
+                long = addr_dict['results'][0]['geometry']['location']['lng']
 
     return lat, long
-
-def add_to_logged_in_users(tenant, user):
-    print(f"here in add_to_logged_in_users()")
-    global logged_in_users
-    if user.id not in logged_in_users:
-        print(f"adding composite user id {user.id}")
-        logged_in_users[user.id] = { 'user': user, 'tenant': tenant, 'last_active': datetime.now() }
-    else:
-        logged_in_users[user.id]['last_active'] = datetime.now()
-
-def remove_from_logged_in_users(user):
-    print(f"here in remove_from_logged_in_users()")
-    if user.id in logged_in_users:
-        del logged_in_users[user.id]
-        print(f"deleted user {user.id} from logged_in_users")
-    return
-
-def is_user_logged_in(tenant, user):
-    if user.is_anonymous:
-        print("in is_user_logged_in(): user is anonymous")
-        return False
-    global logged_in_users
-    # print(f"is_user_logged_in(), step 1, user.id: {user.id}")
-    # print(f"is_user_logged_in(), logged_in_users: {logged_in_users}")
-    if user.id not in logged_in_users:
-        print(f"in is_user_logged_in(): {user.id} not in logged in users")
-        return False
-    if logged_in_users[user.id]['tenant'] != tenant:
-        print(f"in is_user_logged_in(): {user.id} for tenant {tenant} not in logged in users")
-        return False
-
-    time1 = logged_in_users[user.id]['last_active']
-    if (datetime.now() - time1) > timedelta(hours=2):
-        del logged_in_users[user.id]
-        return False
-    return True
-
 
 def image_to_byte_array(image: Image, img_format: str) -> bytes:
     # BytesIO is a file-like buffer stored in memory
@@ -485,7 +399,7 @@ def image_to_byte_array(image: Image, img_format: str) -> bytes:
 def get_format_and_size(img_bytes):
     cover_image = Image.open(BytesIO(img_bytes))
     w, h = cover_image.size
-    return (cover_image.format, w, h)
+    return cover_image.format, w, h
 
 def reduce_image_enh(img_bytes, nw, nh):
     cover_image = Image.open(BytesIO(img_bytes))
@@ -494,21 +408,20 @@ def reduce_image_enh(img_bytes, nw, nh):
     img_bytes = image_to_byte_array(resized_img, img_format)
     return img_format, img_bytes
 
-def get_unit_list(include_adm=True):
+def get_unit_list(tenant, include_adm=True):
     def sort_by_userid(obj):
         return obj['userid']
-    load_users(get_tenant())
+    load_users(tenant)
     unit_list = []
-    for user in users_repository.get_users(get_tenant()):
-        if user.type == staticvars.USER_TYPE_ADMIN and include_adm == False:
+    for user in users_repository.get_users(tenant):
+        if user.type == staticvars.USER_TYPE_ADMIN and not include_adm:
             continue
         unit_list.append({'unit': user.unit, 'userid': user.userid, 'res_name': user.name, 'contact': user.email, 'phone': user.phone})
     unit_list.sort(key=sort_by_userid)
     return unit_list
 
 def build_condo_not_found(tenant):
-    # return render_template("condo_not_found.html")
-    condo_not_found_html = condo_not_found_text.replace('{tenant}', tenant)
+    condo_not_found_html = render_template("condo_not_found.html", tenant=tenant)
     lock.release()
     return condo_not_found_html
 
@@ -565,6 +478,9 @@ def check_security(tenant):
 
 def prepare_info_data(tenant):
     info_data = get_info_data(tenant)
+
+    if info_data is None:
+        return None
 
     if current_user.is_authenticated:
         if session['multi-condo']:
@@ -649,19 +565,19 @@ def custom_static(tenant, filename):
 
 @app.route('/<tenant>/listings/<unit>/<listing_id>/pics/<filename>')
 def custom_static_listing(tenant, unit, listing_id, filename):
-    print(f"in custom_static_listing(): tenant: {tenant}, unit {unit}, filename {filename}")
+    #print(f"in custom_static_listing(): tenant: {tenant}, unit {unit}, filename {filename}")
     file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
 @app.route('/<tenant>/reservations/<amenity_id>/<filename>')
 def custom_static_amenity(tenant, amenity_id, filename):
-    print(f"in custom_static_amenity(): tenant: {tenant}, amenity_id {amenity_id}, filename {filename}")
+    #print(f"in custom_static_amenity(): tenant: {tenant}, amenity_id {amenity_id}, filename {filename}")
     file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/reservations/amenity_{amenity_id}.jpg")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
 @app.route('/<tenant>/announcs/<filename>')
 def custom_static_announc(tenant, filename):
-    print(f"in custom_static_announc(): tenant: {tenant}, filename {filename}")
+    #print(f"in custom_static_announc(): tenant: {tenant}, filename {filename}")
     _, file_ext = os.path.splitext(filename)
     if file_ext == '.jpg':
         mtype = "image/jpeg"
@@ -688,7 +604,7 @@ def custom_static_event(tenant, title, filename):
 @app.route('/<tenant>/branding/<filename>')
 def custom_static_branding(tenant, filename):
 #    return send_from_directory(UNPROTECTED_FOLDER + '/pics', filename)
-    print(f"custom_static_branding(): tenant {tenant}, filename {filename}")
+    #print(f"custom_static_branding(): tenant {tenant}, filename {filename}")
     file_obj = aws.read_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/branding/{filename}")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
@@ -701,34 +617,26 @@ def custom_logos(tenant, filename):
 
 @app.route('/common/<path:rel_path>')
 def common_static_images(rel_path):
-    print(f"in common_static_images(): rel_path: {rel_path}")
+    #print(f"in common_static_images(): rel_path: {rel_path}")
 #    return send_from_directory('static', rel_path)
     return send_from_directory('static', f"{rel_path}")
+
+
 
 '''
   These are GET request routes
 '''
-# @app.route('/<tenant>')
-# def tenant_only_home(tenant):
-#     lock.acquire()
-#     print(f"in tenant_only_home()  tenant: {tenant}")
-#     if not is_tenant_found(tenant):
-#         lock.release()
-#         return render_template("condo_not_found.html", tenant=tenant)
-#     info_data = get_info_data_tenant(tenant)
-# #    session[INFO_DATA_STRING] = None
-#     lock.release()
-#     return render_template("home.html", user_types=staticvars.user_types, info_data=info_data)
-
 @app.route('/')
 def home_root():
     print("here in server.home_root()")
     return redirect("/regis/registrar_portugues")
 
+
 @app.route('/health')
 def home_health():
     print("here in server.home_health()")
     return "OK"
+
 
 @app.route('/<tenant>')
 def home_tenant(tenant):
@@ -749,6 +657,10 @@ def home(tenant):
         return build_condo_not_found(tenant)
 
     info_data = prepare_info_data(tenant)
+
+    if info_data is None:
+        return build_condo_not_found(tenant)
+
     lock.release()
     return render_template("home.html", user_types=staticvars.user_types, info_data=info_data)
 
@@ -761,8 +673,17 @@ def setup(tenant):
     if not is_tenant_found(tenant):
         return build_condo_not_found(tenant)
 
+    if session['multi-condo']:
+        if tenant not in session['tenants']:
+            info_data = {
+                'user_id': tenant,
+                'message': f"Condominio not under the management of {session['company_id']}."
+            }
+            lock.release()
+            return render_template("condo_not_logged_in.html", info_data=info_data)
+
     info_data = prepare_info_data(tenant)
-    units = get_unit_list()
+    units = get_unit_list(tenant)
     lock.release()
     return render_template("setup.html", user_types=staticvars.user_types, tenant=tenant, units=units, info_data=info_data)
 
@@ -783,6 +704,15 @@ def get_reservations(tenant):
     if not is_tenant_found(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
+
+    if session['multi-condo']:
+        if tenant not in session['tenants']:
+            info_data = {
+                'user_id': tenant,
+                'message': f"Condominio not under the management of {session['company_id']}."
+            }
+            lock.release()
+            return render_template("condo_not_logged_in.html", info_data=info_data)
 
     info_data = prepare_info_data(tenant)
     amenities_dict = {}
@@ -827,7 +757,7 @@ def get_reservations(tenant):
         for amenity_id, reservations in rsv_dict.items():
             reservations.sort(key=sort_reservation)
 
-    units = get_unit_list()
+    units = get_unit_list(tenant)
     lock.release()
     return render_template("reservations.html", tenant=tenant, units=units, reservations=rsv_dict, amenities=amenities_dict, user_types=staticvars.user_types, info_data=info_data)
 
@@ -855,8 +785,6 @@ def save_amenity(tenant):
     use_default_img = True if request.form['use_default_img'] == 'yes' else False
     paid_amenity = request.form['paid_amenity']
     send_email = request.form['send_email']
-
-    print(f" paid: {paid_amenity},  send email: {send_email}")
 
     amenity_entry = {
         "descr": descr,
@@ -906,7 +834,7 @@ def save_amenity(tenant):
 
     data_to_persist = {"reservations": reservations, "amenities": amenities}
     save_json_to_file(tenant, RESERVATIONS_FILE, data_to_persist )
-    return_obj = json.dumps({'response': {'status': 'success'}})
+    return_obj = json.dumps({'response': {'status': 'success', 'amenity_id': amenity_id}})
     lock.release()
     return return_obj
 
@@ -1055,7 +983,7 @@ def make_reservation(tenant):
             rsv_id = 0
             rsv_data = { user_id: { "reservations": {rsv_id: rsv_entry} } }
     else:
-        # if file not found, there is no amenity, therefore way to make a reservation
+        # if file not found, there is no amenity, therefore no way to make a reservation
         return_obj = json.dumps({'response': {'status': 'error'}})
         lock.release()
         return return_obj
@@ -1075,7 +1003,8 @@ def make_reservation(tenant):
 
     data_to_persist = {"reservations": rsv_data, "amenities": amenities}
     save_json_to_file(tenant, RESERVATIONS_FILE, data_to_persist)
-    return_obj = json.dumps({'response': {'status': 'success'}})
+    print(f"rsv_id: {rsv_id}")
+    return_obj = json.dumps({'response': {'status': 'success', 'rsv_id': rsv_id}})
     lock.release()
     return return_obj
 
@@ -1145,6 +1074,7 @@ def delete_reservation(tenant):
         del rsv_data[user_id]['reservations'][rsv_id]
         print(f"reservation deleted")
     else:
+        print(f"rsv_id {rsv_id} not found, rsv_id type: {type(rsv_id)} ")
         return_obj = json.dumps({'response': {'status': 'rsv_not_found'}})
         lock.release()
         return return_obj
@@ -1169,6 +1099,19 @@ def payments(tenant):
     #     lock.release()
     #     return page
 
+    if not is_tenant_found(tenant):
+        lock.release()
+        return render_template("condo_not_found.html", tenant=tenant)
+
+    if session['multi-condo']:
+        if tenant not in session['tenants']:
+            info_data = {
+                'user_id': tenant,
+                'message': f"Condominio not under the management of {session['company_id']}."
+            }
+            lock.release()
+            return render_template("condo_not_logged_in.html", info_data=info_data)
+
     info_data = prepare_info_data(tenant)
     pay_json = get_json_from_file_no_tenant(f"{FINES_FILE}")
     fines_list = []
@@ -1190,10 +1133,16 @@ def payments(tenant):
                     entry['charge_type'] = fine['charge_type']
                 else:
                     entry['charge_type'] = 'fine'
-                entry['status'] = "unpaid" if fine['paid_date'] is None else f"paid {fine['paid_date']['d']}/{fine['paid_date']['m']}/{fine['paid_date']['y']}"
+                if fine['paid_date'] is None:
+                    entry['status'] = "unpaid"
+                else:
+                    if info_data['language'] == 'pt':
+                        entry['status'] = f"pago {fine['paid_date']['d']}-{fine['paid_date']['m']}-{fine['paid_date']['y']}"
+                    else:
+                        entry['status'] = f"paid {fine['paid_date']['m']}-{fine['paid_date']['d']}-{fine['paid_date']['y']}"
                 fines_list.append(entry)
 
-    units = get_unit_list(include_adm=False)
+    units = get_unit_list(tenant, include_adm=False)
     lock.release()
     return render_template("fines.html", tenant=tenant, units=units, fines=fines_list, user_types=staticvars.user_types, info_data=info_data)
 
@@ -1230,6 +1179,11 @@ def save_payment(tenant):
     due_date_m = json_obj['payment']['due_date']['m']
     due_date_d = json_obj['payment']['due_date']['d']
     charge_type = json_obj['payment']['charge_type']
+
+    if charge_type not in ('fine', 'pay'):
+        return_obj = json.dumps({'response': {'status': 'error', 'message': 'invalid input data'}})
+        lock.release()
+        return return_obj
 
     fine_entry = {
         "created_on": get_epoch_from_now(),
@@ -1287,7 +1241,7 @@ def save_payment(tenant):
         send_payment_notification(info_data, name, email, amount, descr, issue_date, fine_entry['due_date'],
                                   charge_type, payment_ref)
 
-    return_obj = json.dumps({'response': {'status': 'success'}})
+    return_obj = json.dumps({'response': {'status': 'success', 'fine_id': fine_id}})
     lock.release()
     return return_obj
 
@@ -1490,8 +1444,17 @@ def profile(tenant):
     if not is_tenant_found(tenant):
         return build_condo_not_found(tenant)
 
+    if session['multi-condo']:
+        if tenant not in session['tenants']:
+            info_data = {
+                'user_id': tenant,
+                'message': f"Condominio not under the management of {session['company_id']}."
+            }
+            lock.release()
+            return render_template("condo_not_logged_in.html", info_data=info_data)
+
     info_data = prepare_info_data(tenant)
-    units = get_unit_list()
+    units = get_unit_list(tenant)
     lock.release()
     return render_template("profile.html", units=units, user_types=staticvars.user_types, info_data=info_data)
 
@@ -1619,13 +1582,14 @@ def save_announc(tenant):
     user_id = request.form['created_by']
     text = request.form['text']
     file_name = request.form['attach_file_name']
+
     if file_name:
         attach_file = request.files['attach_file'].read()
     else:
         attach_file = None
 
-    save_announc_common(tenant, user_id, text, file_name, attach_file)
-    return_obj = json.dumps({'response': {'status': 'success'}})
+    announc_id = save_announc_common(tenant, user_id, text, file_name, attach_file)
+    return_obj = json.dumps({'response': {'status': 'success', 'announc_id': announc_id}})
     lock.release()
     return return_obj
 
@@ -1665,7 +1629,7 @@ def save_announc_common(tenant, user_id, text, file_name, attach_file):
     # save the JSON file
     resp = save_json_to_file(tenant, ANNOUNCS_FILE, announcs)
     print(f"aws resp: {resp}")
-
+    return key
 
 @app.route('/<tenant>/delete_announc', methods=["POST"])
 @login_required
@@ -1999,6 +1963,14 @@ def logout(tenant):
         }
         lock.release()
         return render_template("condo_not_logged_in.html", info_data=info_data)
+    else:
+        if tenant != session['tenant']:
+            info_data = {
+                'user_id': tenant,
+                'message': "This condominio is not the one currently logged in."
+            }
+            lock.release()
+            return render_template("condo_not_logged_in.html", info_data=info_data)
 
     # we need to gather some data to be shown in the logout.html view
     info_data = prepare_info_data(tenant)
@@ -2093,24 +2065,24 @@ def print_process(route, unit, newline=True):
     pass
 
 @app.route('/<tenant>/getresident', methods=["POST"])
+@login_required
 def get_resident_json(tenant):
     lock.acquire()
-    print(f"in get_resident_json(): tenant: {tenant}")
 
     page, check_code = check_security(tenant)
     if check_code != SECURITY_SUCCESS_CODE:
+        return_obj = jsonify({'response': {'status': 'error', 'message': 'not logged in'}})
         lock.release()
-        return page
+        return return_obj
 
     json_obj = request.get_json()
     tenant_json = json_obj['request']['tenant']
 
     if tenant != tenant_json:
-        return_obj = json.dumps({'response': {'status': 'error', 'pid': os.getpid()}})
+        return_obj = jsonify({'response': {'status': 'error', 'message': "tenant in the url doesn't match the one in payload"}})
         lock.release()
         return return_obj
 
-    #print_process("/getresident start", json_obj['request']['id'], False)
     load_users(tenant)
     if json_obj['request']['type'] == 'user':
         print(f"user id to retrieve: {json_obj['request']['id']}")
@@ -2121,7 +2093,7 @@ def get_resident_json(tenant):
         return return_obj
 
     if user is None:
-        return_obj = json.dumps({'response': {'status': 'not_found'}})
+        return_obj = jsonify({'response': {'status': 'not_found'}})
         lock.release()
         return return_obj
 
@@ -2159,12 +2131,12 @@ def get_resident_json(tenant):
         'notes': user.notes
     }
 
-    return_obj = json.dumps({'response': {'status': 'success', 'pid': os.getpid(), 'resident':resident}})
-    #print_process("/getresident finis", json_obj['request']['id'])
+    return_obj = jsonify({'response': {'status': 'success', 'pid': os.getpid(), 'resident':resident}})
     lock.release()
     return return_obj
 
 @app.route('/<tenant>/saveresident', methods=["POST"])
+@login_required
 def save_resident_json(tenant):
     lock.acquire()
     print(f"in save_resident_json(): tenant {tenant}")
@@ -2185,8 +2157,6 @@ def save_resident_json(tenant):
     db_user = users_repository.get_user_by_userid(tenant, json_obj['resident']['userid'])
 
     if db_user is None:
-        #id = users_repository.next_index()
-        print(f"id :  {id}")
         user = User(
             f"{tenant}-{json_obj['resident']['userid']}",
             users_repository.get_last_unit(tenant) + 1,
@@ -2221,6 +2191,7 @@ def save_resident_json(tenant):
             json_obj['resident']['notes'],
             False
         )
+        print(f"Going to insert resident: userid: {json_obj['resident']['userid']}  name: {json_obj['resident']['name']}")
     else:
         db_user.name = json_obj['resident']['name']
         db_user.email = json_obj['resident']['email']
@@ -2253,6 +2224,7 @@ def save_resident_json(tenant):
         db_user.last_update_date = json_obj['resident']['last_update_date']
         db_user.notes = json_obj['resident']['notes']
         user = db_user
+        print(f"Going to modify resident: userid: {json_obj['resident']['userid']}  name: {json_obj['resident']['name']}")
 
     # this assign the user object on the hash (dict), where the unit is key, user is value
     #users_repository.save_user(user)
@@ -2268,19 +2240,21 @@ def save_resident_json(tenant):
 
 
 @app.route('/deleteresident', methods=["POST"])
+@login_required
 def delete_resident_json():
     lock.acquire()
     json_obj = request.get_json()
     tenant = json_obj['resident']['tenant']
     load_users(tenant)
     user = users_repository.get_user_by_userid(tenant, json_obj['resident']['value'])
-    status = 'success' if users_repository.delete_user(tenant, user) == True else 'error'
+    status = 'success' if users_repository.delete_user(tenant, user) else 'error'
     users_repository.persist_users(tenant)
     return_obj = json.dumps({'response': {'status': status}})
     lock.release()
     return return_obj
 
 
+# TODO: check to see if it is possible to include the tenant in the POST payload to eliminate global_tenant
 @app.route('/saveresidentpartial', methods=["POST"])
 def save_resident_partial():
     lock.acquire()
@@ -2316,7 +2290,7 @@ def save_resident_partial():
     # save the entire list of users to a file
     #users_repository.save_users(get_tenant())
     
-    users_repository.save_user_and_persist(get_tenant(), user)
+    users_repository.save_user_and_persist(global_tenant, user)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -2365,6 +2339,15 @@ def upload_link(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
 
+    if session['multi-condo']:
+        if tenant not in session['tenants']:
+            info_data = {
+                'user_id': tenant,
+                'message': f"Condominio not under the management of {session['company_id']}."
+            }
+            lock.release()
+            return render_template("condo_not_logged_in.html", info_data=info_data)
+
     json_req = request.get_json()
     links = get_json_from_file(tenant, LINKS_FILE)
     if links is None:
@@ -2379,6 +2362,7 @@ def upload_link(tenant):
     return return_obj
 
 
+# TODO: check to see if it is possible to include the tenant in the POST payload to eliminate global_tenant
 @app.route('/resetpassword', methods=["POST"])
 @login_required
 def reset_password():
@@ -2390,14 +2374,7 @@ def reset_password():
     new_password = generate_password(db_user.userid)
     #print(f"new password: {new_password}")
     db_user.password = new_password
-
-    # save this user in an internal structure
-    #users_repository.save_user(db_user)
-
-    # save the entire list of users to a file
-    #users_repository.save_users(get_tenant())
-
-    users_repository.save_user_and_persist(get_tenant(), db_user)
+    users_repository.save_user_and_persist(global_tenant, db_user)
     
     # send email
     email_body = f"Dear resident, your login info has changed to this below:\n\nUser Id: {db_user.userid}\nPassword: {new_password}\n\nWebsite administrator."
@@ -2411,13 +2388,14 @@ def reset_password():
     return return_obj
 
 
+# TODO: check to see if it is possible to include the tenant in the POST payload to eliminate global_tenant
 @app.route('/changeuserid', methods=["POST"])
 def change_userid():
     lock.acquire()
     json_obj = request.get_json()
     db_user = users_repository.get_user_by_unit(json_obj['resident']['unit'])
     db_user.userid = json_obj['resident']['userid']
-    users_repository.save_user_and_persist(get_tenant(), db_user)
+    users_repository.save_user_and_persist(global_tenant, db_user)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
     return return_obj
@@ -2429,7 +2407,6 @@ def change_userid():
 @app.route('/<tenant>/listing/<unit>/<listing_id>')
 def get_one_listing(tenant, unit, listing_id):
     lock.acquire()
-    print(f"get_one_listing()")
 
     if not is_tenant_found(tenant):
         lock.release()
@@ -2437,7 +2414,6 @@ def get_one_listing(tenant, unit, listing_id):
 
     listings = get_json_from_file(tenant, LISTINGS_FILE)
     info_data = prepare_info_data(tenant)
-    print(f"info_data: {info_data}")
     alisting = None
     pictures = None
 
@@ -2446,7 +2422,10 @@ def get_one_listing(tenant, unit, listing_id):
         alisting['listing_id'] = listing_id
         alisting['date'] = get_string_from_epoch(alisting['date'], info_data['language'])
         alisting['price'] = format_decimal(alisting['price'])
-        pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics", '')
+        full_path = f"{UNPROTECTED_FOLDER}/listings/{unit}/{listing_id}/pics"
+        pictures = get_all_files(tenant, full_path)
+    else:
+        print(f"unit {unit} type {type(unit)} not found in listings: {listings['listings']}")
 
     lock.release()
     return render_template("alisting.html", unit=unit, listing=alisting, pics=pictures, user_types=staticvars.user_types, info_data=info_data)
@@ -2481,7 +2460,7 @@ def upload_listing(tenant):
             cover_found = True
             cover_name = file.filename
 
-    if cover_found is False:
+    if not cover_found:
         upload_files[0].stream.seek(0)
         img_bytes = upload_files[0].read()
         cover_image = Image.open(BytesIO(img_bytes))
@@ -2503,8 +2482,8 @@ def upload_listing(tenant):
     new_listing = { "title": request.form["title"], "email": request.form["email"], "phone": request.form["phone"],
                     "price": int(request.form["price"]), "cover_file": cover_name, "date": get_epoch_from_now() }
 
-    # read the LISTINGS_FILE to add an additional condo to it
-    if aws.is_file_found(f"{get_tenant()}/{LISTINGS_FILE}"):
+    # read the LISTINGS_FILE to add a condo to it
+    if aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
         listings = get_json_from_file(tenant, LISTINGS_FILE)
 
         # find the last listing_id for the user
@@ -2531,7 +2510,7 @@ def upload_listing(tenant):
             continue
         aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{user_id}/{listing_id}/pics/{file.filename}", file.read())
 
-    if cover_found is False and img_bytes is not None:
+    if not cover_found and img_bytes is not None:
         print(f"there is no cover, uploading the one we created: {cover_name}")
         aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/listings/{user_id}/{listing_id}/pics/{cover_name}", img_bytes)
     else:
@@ -2555,7 +2534,7 @@ def get_listings(tenant):
 
     if not aws.is_file_found(f"{tenant}/{LISTINGS_FILE}"):
         lock.release()
-        return render_template("listings.html", units=get_unit_list(), listings=None,
+        return render_template("listings.html", units=get_unit_list(tenant), listings=None,
                                user_types=staticvars.user_types, info_data=info_data)
 
     listings = get_json_from_file(tenant, LISTINGS_FILE)
@@ -2571,7 +2550,7 @@ def get_listings(tenant):
 
     lock.release()
     return render_template("listings.html",
-                           units=get_unit_list(include_adm=False), listings=listings_arr,
+                           units=get_unit_list(tenant, include_adm=False), listings=listings_arr,
                            user_types=staticvars.user_types, info_data=info_data)
 
 
@@ -2614,7 +2593,7 @@ def get_event_pics(tenant, title):
 
     pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/eventpics/{title}/pics", '')
     events = get_json_from_file(tenant, EVENT_PICS_FILE)
-    info_data = get_info_data(tenant)
+    info_data = prepare_info_data(tenant)
     if title not in events['event_pictures']:
         event = None
         pictures = None
@@ -2676,7 +2655,7 @@ def upload_event_pics(tenant):
         else:
             aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/eventpics/{folder_name}/pics/{file.filename}", file.read())
 
-    if cover_found is False:
+    if not cover_found:
         upload_files[0].stream.seek(0)
         img_bytes = upload_files[0].read()
         cover_image = Image.open(BytesIO(img_bytes))
@@ -2734,9 +2713,6 @@ def delete_event_pics(tenant):
     for pic_name in pictures:
         aws.delete_object(pic_name[10:])
 
-    #aws.delete_object(f"{get_tenant()}/{UNPROTECTED_FOLDER}/listings/{unit}/pics")
-    #aws.delete_object(f"{get_tenant()}/{UNPROTECTED_FOLDER}/listings/{unit}")
-
     events = get_json_from_file(tenant, EVENT_PICS_FILE)
     events['event_pictures'].pop(title, None)
     save_json_to_file(tenant, EVENT_PICS_FILE, events)
@@ -2763,7 +2739,7 @@ def delete_link(tenant):
     lock.release()
     return return_obj
 
-
+# TODO: check to see if it is possible to include the tenant in the POST payload to eliminate global_tenant
 @app.route('/upload_event', methods=['POST'])
 def upload_event():
     print("here in upload_event()")
@@ -2776,9 +2752,8 @@ def upload_event():
         for file in upload_files:
             print(f'file name: {file.filename}')
 
-    tenant = get_tenant()
-    pictures = get_files(tenant, f"{UNPROTECTED_FOLDER}/pics", '')
-    return render_template("pics.html", pics=pictures, info_data=get_info_data(tenant))
+    pictures = get_files(global_tenant, f"{UNPROTECTED_FOLDER}/pics", '')
+    return render_template("pics.html", pics=pictures, info_data=get_info_data(global_tenant))
 
 
 @app.route('/<tenant>/upload_financial', methods=['GET' , 'POST'])
@@ -2818,6 +2793,15 @@ def upload(tenant):
     if not is_tenant_found(tenant):
         lock.release()
         return render_template("condo_not_found.html", tenant=tenant)
+
+    if session['multi-condo']:
+        if tenant not in session['tenants']:
+            info_data = {
+                'user_id': tenant,
+                'message': f"Condominio not under the management of {session['company_id']}."
+            }
+            lock.release()
+            return render_template("condo_not_logged_in.html", info_data=info_data)
 
     info_data = prepare_info_data(tenant)
 
@@ -2860,9 +2844,8 @@ def upload(tenant):
         elif uploaded_convname == 'homepic':
             fullpath = f"{UNPROTECTED_FOLDER}/branding/home.jpg"
             aws.upload_binary_obj(f"{tenant}/{fullpath}", uploaded_file.read())
-            info_data['default_home_pic'] = False
             info_obj = get_json_from_file_no_tenant(f"{INFO_FILE}")
-            info_obj['config'][tenant] = info_data
+            info_obj['config'][tenant]['default_home_pic'] = False
             save_json_to_file_no_tenant(INFO_FILE, info_obj)
         else:
             fullpath = f"{partial_path}/{filename}"
@@ -2921,9 +2904,9 @@ def gen_pdf(tenant):
 
     # update the info.json file
     date = datetime.today().strftime('%d-%b-%Y')
-    info_data[CENSUS_FORMS_DATE_STRING] = date
+    #info_data[CENSUS_FORMS_DATE_STRING] = date
     info_obj = get_json_from_file_no_tenant(f"{INFO_FILE}")
-    info_obj['config'][tenant] = info_data
+    info_obj['config'][tenant][CENSUS_FORMS_DATE_STRING] = date
     save_json_to_file_no_tenant(INFO_FILE, info_obj)
     return_obj = json.dumps({'response': {'status': 'success'}})
     lock.release()
@@ -2946,6 +2929,36 @@ def download_pdf(tenant):
     return return_obj
 
 
+@app.route('/<tenant>/login_required', methods=["GET", "POST"])
+@login_required
+def login_required_test(tenant):
+    lock.acquire()
+    print(f"here in login_required_test()")
+    json_input = request.get_json()
+
+    print(f"tenant {tenant}  condo id: {json_input['condo_id']}   field1: {json_input['field1']}    field2: {json_input['field2']}")
+
+    if not is_tenant_found(tenant):
+        print(f"tenant not found")
+        status = {'status': "error", 'message': 'condo not found' }
+        json_ret = jsonify(status)
+        lock.release()
+        return json_ret
+
+    status = {'status': "success", 'message': '' }
+    json_ret = jsonify(status)
+    print(f"------------------------------------- returning success --------------------------------------\n")
+    lock.release()
+    return json_ret
+
+@app.route('/<tenant>/login_not_required', methods=["GET", "POST"])
+def login_not_required_test(tenant):
+    lock.acquire()
+    print(f"here in login_not_required_test(): tenant {tenant}")
+    lock.release()
+    return Response()
+
+
 @app.route('/<tenant>/login', methods=['GET' , 'POST'])
 def login_tenant(tenant):
     print(f"here in login_tenant(), {request.path}")
@@ -2959,18 +2972,17 @@ def login_tenant(tenant):
 
     if request.method == 'GET':
         if current_user.is_authenticated:
-            # print(f"login_tenant(): there is a user already logged in: {current_user.id}")
             next_page = request.args.get('next') if request.args.get('next') is not None else f'/{tenant}/home'
             lock.release()
             return redirect(next_page)
         else:
+            print(f"GET request but user not authenticated")
             info_data = get_info_data(tenant)
             lock.release()
             return render_template('login.html', info_data=info_data)
 
     # from here on down, it's a POST request
     if current_user.is_authenticated:
-        # print(f"login_tenant(): there is a user already logged in: {current_user.id}")
         next_page = request.args.get('next') if request.args.get('next') is not None else f'/{tenant}/home'
         lock.release()
         return redirect(next_page)
@@ -2978,6 +2990,7 @@ def login_tenant(tenant):
     # print(f"login_tenant(): current_user {current_user} is not authenticated")
     user_id = request.form['userid']
     password = request.form['password']
+    print(f"in login_tenant(): {user_id}   {password}")
     load_users(tenant)
 
     # if 'tenant' in session and session['tenant'] == tenant:
@@ -3001,7 +3014,7 @@ def login_tenant(tenant):
         log(tenant, msg)
         registered_user.authenticated = True
         login_user(registered_user)
-        # add_to_logged_in_users(tenant, registered_user)
+        #session['language'] = info_data[tenant]['language']
         session['multi-condo'] = False
         session['user_id'] = user_id
         session['tenant'] = tenant # fill this var only when session['multi-condo'] is False
@@ -3011,7 +3024,6 @@ def login_tenant(tenant):
         lock.release()
         return redirect(next_page)
     else:
-        #return abort(401)
         flash("Invalid userid or password")
         lock.release()
         return render_template("login.html", info_data=info_data)
@@ -3243,15 +3255,29 @@ def page_not_found(e):
 
 @app.before_request
 def before_request():
-    # tenant_s = session['tenant'] if 'tenant' in session else None
-    # if tenant_s is None:
-    #     tenant_s = get_tenant_from_url()
-    # print(f"before_request(): tenant: {tenant_s}, path: {request.path}")
     session.permanent = True # doesn't destroy the session when the browser window is closed
     app.permanent_session_lifetime = timedelta(hours=2)
     session.modified = True  # resets the session timeout timer
-    # global logged_in_users
-    # logged_in_users[current_user] = current_user
+    # global global_tenant
+    # if current_user.is_authenticated and not session['multi-condo']:
+    #     global_tenant = session['tenant']
+    #     return
+    # url = request.path
+    # if url.count('/') == 1:
+    #     tenant = 'root'
+    # else:
+    #     tenant = url[1:]
+    #     bar_pos = tenant.find('/')
+    #     tenant = tenant[0 : bar_pos]
+    #
+    # tenant = tenant.lower()
+    #
+    # if tenant == config['domain']:
+    #     tenant = 'root'
+    #
+    # if tenant != 'root' and not is_tenant_found(tenant):
+    #     tenant = TENANT_NOT_FOUND
+    # global_tenant = tenant
 
 # callback to reload the user object
 # the logged-in user can be either "s-" or "m-"
@@ -3259,32 +3285,31 @@ def before_request():
 def load_user(flask_user_id):
     ind = flask_user_id.find("@")
     tenant = flask_user_id[ind+1:]
-
-    if tenant == 'root':
-        return None
-
-    print(f"tenant {tenant},   user {flask_user_id}")
+    print(f"load_user(): user: {flask_user_id}  tenant: {tenant}  request: {request.url}")
 
     if flask_user_id.startswith("s-"):
-        print(f"in load_user(): flask_user_id {flask_user_id}  tenant {tenant}")
+        if not is_tenant_found(tenant):
+            return None
         load_users(tenant)
         user = users_repository.get_user_by_id(tenant, flask_user_id)
         ret_user = user
     else:
+        # check if company is found
         company_id = flask_user_id[ind+1:]
+        if not is_company_found(company_id):
+            return None
         user_id = flask_user_id[2:ind]
-        print(f"in load_user(): company_id {company_id},   user_id {user_id}")
         load_company_users(company_id)
-        print(f"all tenants: {users_repository_mtadmin.get_tenants(user_id)}")
         user = users_repository_mtadmin.get_user_by_id(flask_user_id)
         ret_user = user
 
+    print(f"load_user(): returning user: {ret_user}")
     return ret_user
 
 def get_files(tenant, folder, pattern):
     files = aws.get_file_list_folder(tenant, folder)
     if pattern:
-        arr = [x for x in files if x.startswith(f"{BUCKET_PREFIX}/{get_tenant()}/{folder}/{pattern}")]
+        arr = [x for x in files if x.startswith(f"{BUCKET_PREFIX}/{tenant}/{folder}/{pattern}")]
     else:
         arr = files
     files_arr = []
@@ -3296,15 +3321,11 @@ def get_files(tenant, folder, pattern):
 
 # This is invoked by Babel
 def get_locale():
-    if request.path == '/register_pt' or request.path == '/about_pt':
+    if request.path == '/registrar_portugues' or request.path == '/sobre_portugues':
         return "pt"
     if request.path == '/register_en' or request.path == '/about_en':
         return "en"
-    #print(f"get_locale(): tenant {tenant_global}")
-    if not is_tenant_found(tenant_global):
-        return "en"
-    info_data = get_info_data(tenant_global)
-    return info_data['language']
+    return global_condo_language
 
 """Translate text.
 Returns:

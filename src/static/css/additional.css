@@ -4,6 +4,8 @@
 /* root definitions */
 :root {
   --sidebar-width: 200px;
+  --sidebar-color: rgb(11, 83, 69);
+  --error-sidebar-color: rgb(241, 196, 15); 
   --radius: 10px;
   --padding: 10px;
   --height-vh: 95vh;
@@ -131,6 +133,19 @@ li:not(:last-child) {
   margin-bottom: 8px;
 }
 
+#error-sidebar {
+  width: var(--sidebar-width);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 999;
+  background-color: var(--error-sidebar-color);
+  color: #fff;
+  transition: all 0.3s;
+  font-size: 13px;
+  font-family: sans-serif;
+}
 
 /*--------------------------------------------------------------
 # sidebar and its child elements
@@ -142,7 +157,7 @@ li:not(:last-child) {
   left: 0;
   height: 100vh;
   z-index: 999;
-  background-color: #444;
+  background-color: var(--sidebar-color);
   color: #fff;
   transition: all 0.3s;
 }
@@ -319,9 +334,9 @@ a[data-toggle="collapse"] {
 
 .error-body {
   padding: 18px 8px 18px 8px; /* top,right,bottom,left */
-/*  color: hsl(201, 54%, 46%);
-  font-family: "Federo";
-  font-size: 20px; */
+  color: #515a5a;
+  font-size: 13px;
+  font-family: sans-serif;
   margin: 12px;
 }
 
@@ -959,6 +974,9 @@ img {
     border-width: 3px;
   }
   #sidebar {
+    margin-left: -200px;
+  }
+  #error-sidebar {
     margin-left: -200px;
   }
   #sidebar.active {

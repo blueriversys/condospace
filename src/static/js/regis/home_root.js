@@ -78,7 +78,13 @@ function sendCondoRegistrationForm() {
     condo_name = document.getElementById('condo-name').value.trim();
     condo_tagline = document.getElementById('condo-tagline').value.trim();
     condo_address = document.getElementById('condo-address').value.trim();
-    condo_address_number = document.getElementById('condo-address-number').value.trim();
+
+    var condo_address_number = '';
+
+    if ( document.getElementById('condo-address-number') != null) {
+        condo_address_number = document.getElementById('condo-address-number').value.trim();
+    }
+
     condo_zip = document.getElementById('condo-zip').value.trim();
     condo_city = document.getElementById('condo-city').value.trim();
     condo_state = document.getElementById('condo-state').value.trim();

@@ -135,9 +135,11 @@ def about_self_pt():
 @app.route('/register_en')
 def home_en():
     lock.acquire()
+    company_id = request.args.get('company_id', default='', type=str)
     info_data = {
         "condo_name": "CondoSpace App",
-        "language": "en"
+        "language": "en",
+        "company_id": company_id
     }
     lock.release()
     return render_template("home_root.html", user_types=staticvars.user_types, info_data=info_data)
@@ -265,6 +267,22 @@ O valor desta cobrança pode ser pago via PIX cuja chave recebedora é {pix}.
 Muito obrigado.
 
 Administração, {condo_name}."""
+        home_message = {
+            "title": "Olá Pessoal.",
+            "lines": [
+                f"Bem-vindo ao lindo {condo_name} em {condo_city}, {condo_state}.",
+                "Nós mal podemos esperar ver você aqui e, ao mesmo tempo, te fornecer informações muito úteis.",
+                "Se você já for um residente aqui, documentos e informações estão a apenas alguns clicks."
+            ]
+        }
+        about_message = {
+            "title": "Tudo Sobre Nós.",
+            "lines": [
+                f"Nós somos uma pequena e vibrante associação localizada em {condo_city}, {condo_state}.",
+                "A nossa região proporciona o que há de melhor em qualidade de vida e segurança.",
+                "Estamos localizados numa área nobre da cidade, rodeados pelo que há de melhor em gastronomia e compras de nível internacional, além de fácil acesso por ótimas estradas da região."
+            ]
+        }
     elif pref_language == 'en':
         pix_key = ""
         fine_title = "Notification of Condominium Fine"
@@ -292,6 +310,22 @@ Thank you.
 
 Board of Directors of {condo_name}.
 """
+        home_message = {
+            "title": "Hello Everyone.",
+            "lines": [
+                f"Welcome to the beautiful {condo_name} in {condo_city}, {condo_state}.",
+                "We can barely wait to see you here and, at the same time, provide you very useful info.",
+                "If you are already a resident here, documents and info are a just a few clicks away."
+            ]
+        }
+        about_message = {
+            "title": "All About Us.",
+            "lines": [
+                f"We are a vibrant and engaged condominium association located at {condo_city}, {condo_state}.",
+                "Our region provides the very best in quality of living and safety.",
+                "We're located in a prime region of town, surrounded by the best in gastronomy and world class shopping experience, besides easy access through excellent roads."
+            ]
+        }
     else:
         pix_key = ''
         fine_title = ''
@@ -299,6 +333,8 @@ Board of Directors of {condo_name}.
         pay_pix_key = ''
         pay_title = ''
         pay_template = ''
+        home_message = { "title": "", "lines": [] }
+        about_message = { "title": "", "lines": [] }
 
     admin_pass = f"{condo_id}@{epoch_timestamp}"
 
@@ -326,22 +362,8 @@ Board of Directors of {condo_name}.
         "domain": condo_id,
         "tagline": condo_tagline,
         "geo": {"lat": lat, "long": long},
-        "home_message": {
-            "title": "Olá Pessoal.",
-            "lines": [
-                f"Bem-vindo ao lindo {condo_name} em {condo_city}, {condo_state}.",
-                "Nós mal podemos esperar ver você aqui e, ao mesmo tempo, te fornecer informações muito úteis.",
-                "Se você já for um residente aqui, documentos e informações estão a apenas alguns clicks."
-            ]
-        },
-        "about_message": {
-            "title": "Tudo Sobre Nós.",
-            "lines": [
-                f"Nós somos uma pequena e vibrante associação localizada em {condo_city}, {condo_state}.",
-                "A nossa região proporciona o que há de melhor em qualidade de vida e segurança.",
-                "Estamos localizados numa área nobre da cidade, rodeados pelo que há de melhor em gastronomia e compras de nível internacional, além de fácil acesso por ótimas estradas da região."
-            ]
-        },
+        "home_message": home_message,
+        "about_message": about_message,
         'pix_key': pix_key,
         'fine_title': fine_title,
         'fine_template': fine_template,

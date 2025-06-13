@@ -65,10 +65,17 @@
                                 <li>{{_("Resident Census Card")}}</li>
                                 <li>{{_("Ability to issue Fines and Request Payments ($)")}}</li>
                                 <li>{{_("Make reservations of common areas ($)")}}</li>
-                                <li>{{_("Communication between Association and Residents")}}</li>
+                                <li>{{_("Better communication between Association and Residents")}}</li>
                                 <li>{{_("Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.")}}</li>
-                                <li>{{_("Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be http://condospace.app/hilltop")}}</li>
+                                <li>{{_("Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be ")}}
+                                {% if info_data['language'] == 'en' %}
+                                    http://condospace.app/hilltopcondo
+                                {% else %}
+                                    http://condospace.app/monetalphaville
+                                {% endif %}
+                                </li>
                                 <li>{{_("Ability to list apartments for sale with pictures (especially useful for FSBOs) ($)")}}</li>
+                                <li>{{_("And much, much more!")}}</li>
                             </ol>
                         </div>
                     </div>
@@ -159,7 +166,7 @@
                                 <input type="text" style="width: 320px; height: 30px;" id="condo-id" onBlur="condoIdOnBlur()" placeholder='{{_("Cannot have spaces in it")}}'>
                             </div>
                             <div style="margin-left: 10px; /*border: 1px solid blue;*/">
-                                <span style="height: 30px; transition-delay: 0s;" title="{{_('For example, if your condominium name is Bela Vista Condominium, this would be belavista')}}"><i style="font-size: 20px; color: orange;" class="fa fa-question-circle-o"></i></span>
+                                <span style="height: 30px; transition-delay: 0s;" title="{{_('For example, if your condominium name is Hill Top Condominium, this would be')}} hilltopcondo"><i style="font-size: 20px; color: orange;" class="fa fa-question-circle-o"></i></span>
                             </div>
                             <div style="margin-left: 10px; /*border: 1px solid blue;*/">
                                 <span style="height: 30px;"><i id="condo_id_group" style="font-size: 20px; display: none;" class="fa fa-check"></i></span>
@@ -179,15 +186,16 @@
                         <div class="spacer"></div>
                         <div class="spacer"></div>
 
-                        <div class="">
-                            <span class="form-label">{{_("Street Number")}}:</span>
-                        </div>
-                        <div class="" style="width: 100%;">
-                            <input type="text" class="" style="width: 100%; height: 30px;" id="condo-address-number" placeholder='{{_("Home number on the street")}}'>
-                        </div>
-
-                        <div class="spacer"></div>
-                        <div class="spacer"></div>
+                        {% if info_data['language'] == 'pt' %}
+                            <div class="">
+                                <span class="form-label">{{_("Street Number")}}:</span>
+                            </div>
+                            <div class="" style="width: 100%;">
+                                <input type="text" class="" style="width: 100%; height: 30px;" id="condo-address-number" placeholder='{{_("Home number on the street")}}'>
+                            </div>
+                            <div class="spacer"></div>
+                            <div class="spacer"></div>
+                        {% endif %}
 
                         <div class="">
                             <span class="form-label">{{_("ZIP")}}:</span>

@@ -141,7 +141,11 @@
                   </div>
               </div>
               <div class="col d-flex align-self-center">
-                  <a style="font-size: 18px;" href="/regis/registrar_portugues?company_id={{info_data['loggedin-userdata']['company_id']}}" target="_blank">{{_("Register a New Condominium")}}</a>
+                  {% if info_data['language'] == 'en' %}
+                      <a style="font-size: 18px;" href="/regis/register_en?company_id={{info_data['loggedin-userdata']['company_id']}}" target="_blank">{{_("Register a New Condominium")}}</a>
+                  {% else %}
+                      <a style="font-size: 18px;" href="/regis/registrar_portugues?company_id={{info_data['loggedin-userdata']['company_id']}}" target="_blank">{{_("Register a New Condominium")}}</a>
+                  {% endif %}
               </div>
           </div>
       </fieldset>

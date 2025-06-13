@@ -20,32 +20,33 @@ class AWS():
 
     """Get a list of files for a given customer Id"""
     def get_file_list(self, customer_id):
-        objects_list = self.s3.list_objects_v2(Bucket=self.bucket_name).get("Contents")
-        if objects_list is None:
-            return []
+        objects_list = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=f"{self.prefix}/{customer_id}").get("Contents")
         obj_list = []
+        print(objects_list)
         for obj in objects_list:
             obj_name = obj["Key"]
-            if obj_name == f"{self.prefix}/{customer_id}/":
-                continue
-            if obj_name.startswith(f"{self.prefix}/{customer_id}"):
-                obj_list.append(obj_name)
-        return obj_list
-
-    """Get a list of files for a given customer Id"""
-    def get_folder_list(self, customer_id, folder):
-        objects_list = self.s3.list_objects_v2(Bucket=self.bucket_name).get("Contents")
-        obj_list = []
-        for obj in objects_list:
-            obj_name = obj["Key"]
-            if not obj_name.startswith(f"{self.prefix}/{customer_id}/{folder}/"):
+            if obj_name.endswith("/"):
                 continue
             obj_list.append(obj_name)
         return obj_list
 
+    """Get a list of folders for a given customer_id + folder"""
+    def get_folder_list(self, customer_id, folder):
+        prefix = f"{self.prefix}/{customer_id}/{folder}"
+        objects_list = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=prefix).get("Contents")
+        folder_dict = {}
+        for obj in objects_list:
+            obj_name = obj["Key"]
+            folder_name = obj_name[:obj_name.rfind("/")] # search for the last occur of "/"
+            folder_dict[folder_name] = ''
+        return folder_dict.keys()
 
+
+    """ Get a list of files for a given customer Id and folder. WARNING: list_objects_v2() returns frst 1000 objects only """
     def get_file_list_folder(self, customer_id, folder):
-        objects_list = self.s3.list_objects_v2(Bucket=self.bucket_name).get("Contents")
+        objects_list = self.s3.list_objects_v2(Bucket=self.bucket_name, Prefix=f"{self.prefix}/{customer_id}/{folder}").get("Contents")
+        if objects_list is None:
+            return []
         obj_list = []
         for obj in objects_list:
             obj_name = obj["Key"]

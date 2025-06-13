@@ -57,7 +57,13 @@
                     <ol>
                         <li>{{_("The best way is to register your condominium with us right now by going to the home page.")}}</li>
                         <li>{{_("That way you can have full access to all features to see if it works for you.")}}</li>
-                        <li>{{_("Alternatively, you can go to the 'demo' website <a href='https://condospace.app/ametista' target='blank'>https://condospace.app/ametista</a>, with limited experience because, that way, you will only see what everyone in the public sees.")}}</li>
+                        <li>{{_("If you don't want to enjoy a 30-day trial period, visit our 'demo' website")}}
+                            {% if info_data['language'] == 'en' %}
+                              <a href='/hilltopcondo' target='blank'>https://condospace.app/hilltopcondo</a>
+                            {% else %}
+                              <a href='/monetalphaville' target='blank'>https://condospace.app/monetalphaville</a>
+                            {% endif %}
+                        </li>
                     </ol>
 
                     <div class="spacer"></div>
@@ -69,11 +75,11 @@
                         <li>{{_("Make reservations of common areas ($)")}}</li>
                         <li>{{_("Communication between Association and Residents")}}</li>
                         <li>{{_("Easy access to documents in PDF format such as Bylaws, Rules and Regulations, Financial Statements, etc.")}}</li>
-                        <li>{{_("Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be http://condospace.app/hilltop")}}</li>
+                        <li>{{_("Web presence: suppose your condominium is called Hill Top Condominium, your complete web address could be ")}} http://condospace.app/hilltopcondo</li>
                         <li>{{_("Ability to list apartments for sale with pictures (especially useful for FSBOs) ($)")}}</li>
                     </ol>
                     <div class="spacer"></div>
-                    {{_("Why wait? It's much more affordable than you think. Register your condo today and start using the app.")}}
+                    {{_("Why wait? It's much more affordable than you think. Register your condo today and start using the application.")}}
 
                     <div class="spacer"></div>
                     <div class="center">

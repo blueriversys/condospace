@@ -15,25 +15,13 @@ from flask_babel import Babel, lazy_gettext, _
 
 from threading import Lock
 
-from server import reduce_image_enh, send_email_redmail, get_epoch_from_now, load_company_users
+from server import reduce_image_enh, send_email_redmail, get_epoch_from_now, load_company_users, is_company_found
 from datetime import timedelta, datetime
 
 # these are import of variables
 from server import config, users_repository_mtadmin, aws_mtadmin, COVER_PREF_WIDTH, COVER_PREF_HEIGHT, UNPROTECTED_FOLDER
 
-
 INFO_FILE = "info.json"
-
-# for PROD, change the file serverfiles/config-prod.dat
-# with open(CONFIG_FILE, 'r') as f:
-#     config_file_content = f.read()
-#     config = json.loads(config_file_content)['config']
-#     print(f"\nSome of the config vars:")
-#     print(f"API Url: {config['api_url']}")
-#     print(f"API app type: {config['api_app_type']}")
-#     print(f"AWS bucket name: {config['bucket_name']}")
-#     print(f"Domain name: {config['domain']}")
-#     print(f"Version #: {config['version']['number']},  version date: {config['version']['date']}")
 
 app = Flask(
             __name__,
@@ -46,23 +34,14 @@ app.config['SECRET_KEY'] = config['flask_secret_key']
 app.url_map.strict_slashes = False
 
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-login_manager.refresh_view = 'login'
+login_manager.login_view = 'multi_condo_login'
+login_manager.refresh_view = 'multi_condo_login'
 login_manager.needs_refresh_message = u'Due to inactivity, you have been logged out. Please login again'
 login_manager.login_message = 'Login is required to access the page you want'
 login_manager.needs_refresh_message_category = 'info'
 
 # define the lock object
 lock = Lock()
-
-def is_company_found(company):
-    if not aws_mtadmin.is_file_found(f"{INFO_FILE}"):
-        return False
-    string_content = aws_mtadmin.read_text_obj(INFO_FILE)
-    info_json = json.loads(string_content)
-    if company in info_json['companies']:
-        return True
-    return False
 
 # in company_data we return only data specific to that company
 def get_company_data(company_id):
@@ -103,7 +82,10 @@ def static_image_files(filename):
 @app.route('/<company>/branding/<filename>')
 def custom_static_branding(company, filename):
     print(f"custom_static_branding(): tenant {company}, filename {filename}")
-    file_obj = aws_mtadmin.read_binary_obj(f"{company}/{UNPROTECTED_FOLDER}/branding/{filename}")
+    if aws_mtadmin.is_file_found(f"{company}/{UNPROTECTED_FOLDER}/branding/{filename}"):
+        file_obj = aws_mtadmin.read_binary_obj(f"{company}/{UNPROTECTED_FOLDER}/branding/{filename}")
+    else:
+        file_obj = open(f"{app.static_folder}/img/coml_building.png", "rb")
     return Response(response=file_obj, status=200, mimetype="image/jpg")
 
 
@@ -167,6 +149,7 @@ def multi_condo_root(company):
     return redirect(f"/multi-condo/{company}/home")
 
 @app.route('/<company>/home', methods=['GET'])
+@login_required
 def multi_condo_home(company):
     lock.acquire()
     print(f"here in multi_condo_home()")
@@ -175,10 +158,6 @@ def multi_condo_home(company):
         lock.release()
         info_data = {'company_id': company}
         return render_template("company_not_found.html", info_data=info_data)
-
-    if not current_user.is_authenticated:
-        lock.release()
-        return redirect(f"/multi-condo/{company}/login")
 
     if not session['multi-condo']:
         info_data = {
@@ -251,6 +230,7 @@ def multi_condo_login(company):
         session['company_id'] = company
         session['language'] = users_repository_mtadmin.get_language()
         session['tenants'] = users_repository_mtadmin.get_tenants(user_id)
+        #print(f"multi_condo_login(): tenants: {users_repository_mtadmin.get_tenants(user_id)}")
         print(f"current_user (just logged in): {current_user}")
         lock.release()
         return redirect(f"/multi-condo/{company}/home")
@@ -554,6 +534,8 @@ def load_user(flask_user_id):
 
     # we return None to force the user to login as "company"
     if flask_user_id.startswith("s-"):
+        # this signal to flask-login that that kind of user isn't authorized, forcing a redirection to multi-condo/login
+        print(f"user {flask_user_id} logged in but not authorized to view company data")
         return None
 
     user_id, company_id = get_user_id_and_company_id(flask_user_id)
@@ -561,7 +543,6 @@ def load_user(flask_user_id):
     print(f"all tenants: {users_repository_mtadmin.get_tenants(user_id)}")
     user = users_repository_mtadmin.get_user_by_id(flask_user_id)
     ret_user = user
-
     print(f"user id {flask_user_id} found!")
     return ret_user
 

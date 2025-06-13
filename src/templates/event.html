@@ -3,6 +3,7 @@
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/lightbox.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/listings.css') }}">
+    {% include "includes/settings.inc" %}
 {% endblock %}
 
 
@@ -16,14 +17,14 @@
     <ul class="list-unstyled components">
         <li><a class="nav-link" href="../home"><i class="fa fa-fw fa-home"></i> {{_("Home")}}</a></li>
 
-        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
-            <li><a class="nav-link" href="setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
-            <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
-            <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
-            <li><a class="nav-link" href="fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
+        {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
+            <li><a class="nav-link" href="../setup"><i class="fa fa-fw fa-keyboard-o"></i> {{_('Setup')}}</a></li>
+            <li><a class="nav-link" href="../profile"><i class="fa fa-fw fa-pencil"></i> {{_('Update')}}</a></li>
+            <li><a class="nav-link" href="../reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+            <li><a class="nav-link" href="../fines"><i class="fa fa-fw fa-dollar"></i> {{_('Fines & Charges')}}</a></li>
         {% elif info_data['is_authenticated'] == true %}
-            <li><a class="nav-link" href="profile"><i class="fa fa-fw fa-pencil"></i> {{_('My Profile')}}</a></li>
-            <li><a class="nav-link" href="reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
+            <li><a class="nav-link" href="../profile"><i class="fa fa-fw fa-pencil"></i> {{_('My Profile')}}</a></li>
+            <li><a class="nav-link" href="../reservations"><i class="fa fa-fw fa-calendar"></i> {{_('Reservations')}}</a></li>
         {% endif %}
 
         <li><a class="nav-link" href="../announcs"><i class="fa fa-fw fa-bullhorn"></i> {{_("Announcements")}}</a></li>

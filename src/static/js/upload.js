@@ -14,7 +14,8 @@ function onLoadAction() {
 
 function fillSystemSettings() {
     var request = new XMLHttpRequest()
-    get_url = "/" + window.loggedin_tenant_global + "/get_system_settings";
+    console.log('tenant global: ${window.loggedin_tenant_global}');
+    get_url = `/${window.loggedin_tenant_global}/get_system_settings`;
     request.open('GET', get_url, true)
 
     request.onload = function () {

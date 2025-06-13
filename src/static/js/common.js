@@ -578,7 +578,7 @@ function loadTenant() {
     }
     const selOption = document.getElementById("tenants_list").options[selIndex];
     const condo_id = selOption.value;
-    window.location = `http://localhost:5000/${condo_id}/home`;
+    window.location = `/${condo_id}/home`;
 }
 
 function saveResident(pageName) {

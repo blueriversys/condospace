@@ -14,7 +14,12 @@ function onLoadAction() {
 }
 
 function handleUnitSelected() {
-    user_id = document.getElementById('unit').value;
+    const selIndex = document.getElementById("unit").selectedIndex;
+    if (selIndex == 0) {
+        return;
+    }
+    const selOption = document.getElementById("unit").options[selIndex];
+    const user_id = selOption.value;
     request = retrieveUser(user_id);
 
     request.onload = function () {

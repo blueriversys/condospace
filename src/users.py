@@ -394,8 +394,9 @@ class UsersRepositoryMultiAdmin:
         pass
 
     def get_tenants(self, user_id):
-        print(f"in get_tenants(): user_id {user_id}")
-        return self.user_dict[user_id]['tenants']
+        condos = self.user_dict[user_id]['tenants']
+        print(f"in get_tenants(): user_id {user_id}  condos: {condos}")
+        return condos
 
     def load_users(self, company_id):
         string_content = self.aws.read_text_obj(f"info.json")
