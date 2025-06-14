@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+
+{% block insidehead %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='../css/common.css') }}">
+    <title>Condo Admin</title>
+{% endblock %}
+
+
+{% block body %}
+    <div class="main">
+
+      <nav id="sidebar">
+        <div class="sidebar-logo-area">
+            <img class="logo-div" src="{{ url_for('static', filename='../img/bluelogo.png') }}">
+            <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
+        </div>
+        <ul class="list-unstyled components">
+            <li class="active"><a class="nav-link" href="condo"><i class="fa fa-fw fa-dollar"></i> Customers</a></li>
+            {% if info_data['is_authenticated'] == true %}
+                <li><a class="nav-link" href="logout" aria-selected="false"><i class="fa fa-fw fa-sign-out"></i> Logout</a></li>
+                <li class="menu-userid">[{{current_user.userid}}]</li>
+            {% else %}
+                <li><a class="nav-link" href="login" aria-selected="false"><i class="fa fa-fw fa-sign-in"></i> Login</a></li>
+            {% endif %}
+        </ul>
+      </nav>
+
+      <div class="content">
+        {% include "mobile-menu.html" %}
+
+        <div class="section-title" data-aos="zoom-out">
+          <h2>LIST OF ALL CONDO CUSTOMERS</h2>
+        </div>
+
+        <div class="spacer"></div>
+
+        <button class="button larger-button center" data-toggle="collapse" data-target="#editing_section" aria-expanded="false" aria-controls="collapseExample">
+          <i class="fa fa-user"></i>&nbsp;&nbsp;{{('Edit a Customer (open/close)')}}
+        </button>
+
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+
+
+        <div class="app-container collapse" id="editing_section">
+            <div class="profile-block">
+
+                <fieldset id="fieldset_id">
+                  <legend id="legend_id">Edit a customer</legend>
+                  <div class="row" style="margin-left: 12px;">
+                      <div id="dropdown_container_id">
+                          <label for="customer_id">Customer:</label>
+                          <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="customer_id" name="customer_id" onChange="retrieveCondoCustomer();">
+                            <option value="none" selected disabled hidden>{{("select one")}}</option>
+                            {% for customer in customers %}
+                                <option value="{{customer['domain']}}">{{customer['domain']}}</option>
+                            {% endfor %}
+                          </select>
+                      </div>
+                      <label class="separator-spacer"></label>
+                      <div>
+                          <label for="adm_userid">Adm User:</label>
+                          <input class="name-input" type="text" id="adm_userid" name="adm_userid" readonly>
+                      </div>
+                      <label class="separator-spacer"></label>
+                      <div>
+                          <label for="adm_pass">Adm Pass:</label>
+                          <input class="name-input" type="text" id="adm_pass" name="name">
+                      </div>
+                      <label class="separator-spacer"></label>
+                      <div>
+                          <label for="adm_email">Email:</label>
+                          <input class="email-input" type="email" id="adm_email" name="adm_email" onBlur="emailOnBlur()" >
+                      </div>
+                      <label class="separator-spacer"></label>
+                      <div>
+                          <label for="adm_phone">{{('Phone')}}:</label>
+                          <input class="phone-input" id="adm_phone" name="adm_phone">
+                      </div>
+                      <label class="separator-spacer"></label>
+                      <div>
+                          <label for="lic_date">Lic. Date:</label>
+                          <input class="phone-input" id="lic_date" type="date" format="dd-mm-yyyy" name="lic_date">
+                      </div>
+                      <label class="separator-spacer"></label>
+                      <div>
+                          <label for="lic_amount">Lic. Amount:</label>
+                          <input class="amount-input" type="number" onBlur="amountOnBlur()" min="1" step="1" id="lic_amount" name="lic_amount">
+                      </div>
+                      <label class="separator-spacer"></label>
+                      <div>
+                          <label for="lic_term">Term (months):</label>
+                          <input class="amount-input" type="number" id="lic_term" name="lic_term">
+                      </div>
+                  </div>
+                </fieldset>
+
+                <div class="spacer"></div>
+
+                <div class="center">
+                  <button class="button larger-button" id="save_payment_btn" onClick="saveCondoCustomer();"><i class="fa fa-database"></i>
+                      <span id="save_btn_text">Save Customer</span>
+                  </button>
+                </div>
+
+            </div> <!-- closes profile-block -->
+        </div> <!-- close app-container -->
+
+
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+
+        <div style="margin-left: 5px; font-size: 14px;">
+            <label for="regis_date_id" style="margin-left: 12px;">Registration Date: </label>
+            <input id="regis_date_id" type="date">
+            <label style="margin-left: 20px;">Page Number: </label>
+            <input id="page_number_id" type="text" size="2">
+            <button class="button larger-button" id="retrieve_btn" onClick="retrieveCustomersByParams();">Retrieve</button>
+        </div>
+
+        <fieldset style="margin-left: 5px; margin-right: 5px;">
+            <legend>All Customers</legend>
+            <div style="width: 98%; margin: auto;">
+                <table class="table table-sm" id="customers_table_id">
+                  <tr>
+                    <th style="width: 2%;"></th>
+                    <th style="width: 6%;">{{('Customer')}}</th>
+                    <th style="width: 12%;">{{("Adm user")}}</th>
+                    <th style="width: 12%;">{{("Adm pass")}}</th>
+                    <th style="width: 12%;">{{("Email")}}</th>
+                    <th style="width: 10%;">{{("Reg Date")}}</th>
+                    <th style="width: 10%;">{{("Last login")}}</th>
+                    <th style="width: 10%;">{{("Orig")}}</th>
+                    <th style="width: 10%;">{{("Lic Date")}}</th>
+                    <th style="width: 10%;">{{("Lic Pay Amt")}}</th>
+                    <th style="width: 10%;">{{("Term")}}</th>
+                  </tr>
+                  {% for customer in customers %}
+                  <tr>
+                      <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteCondoCustomer({{loop.index-1}});">delete</button></td>
+                      <td>{{customer['domain']}}</td>
+                      <td>{{customer['admin_userid']}}</td>
+                      <td>{{customer['admin_pass']}}</td>
+                      <td>{{customer['admin_email']}}</td>
+                      <td>{{customer['registration_date']}}</td>
+                      <td>{{customer['last_login_date']}}</td>
+                      <td>{{customer['origin']}}</td>
+                      <td>{{customer['license_pay_date']}}</td>
+                      <td>{{customer['license_pay_amount']}}</td>
+                      <td>{{customer['license_term']}}</td>
+                  </tr>
+                  {% endfor %}
+                </table>
+            </div>
+        </fieldset>
+
+        <div class="spacer"></div>
+
+        <div class="center">
+            <button class="button larger-button" id="previous_page_btn" onClick="retrievePreviousPage();"><i class="fa fa-arrow-left"></i> Previous Page</button>
+            <button class="button larger-button" id="next_page_btn" onClick="retrieveNextPage();">Next Page <i class="fa fa-arrow-right"></i></button>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+
+      </div> <!-- closes content -->
+    </div> <!-- closes main -->
+
+    {% for customer in customers %}
+      <input type="hidden" id="{{loop.index-1}}_customer_id" value="{{customer['domain']}}">
+    {% endfor %}
+
+    <input type="hidden" id="current_page" value="1">
+
+{% endblock %}
+
+
+{% block afterbody %}
+   <script src="{{ url_for('static', filename='js/admin/customers.js') }}"></script>
+{% endblock %}

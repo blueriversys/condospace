@@ -2,6 +2,7 @@
 
 {% block insidehead %}
     <link rel="stylesheet" href="{{ url_for('static', filename='../css/common.css') }}">
+    <title>Company Admin</title>
 {% endblock %}
 
 
@@ -10,11 +11,11 @@
 
       <nav id="sidebar">
         <div class="sidebar-logo-area">
-            <img class="logo-div" src="common/img/bluelogo.png">
+            <img class="logo-div" src="{{ url_for('static', filename='../img/bluelogo.png') }}">
             <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
         </div>
         <ul class="list-unstyled components">
-            <li class="active"><a class="nav-link" href="customers"><i class="fa fa-fw fa-dollar"></i> Customers</a></li>
+            <li class="active"><a class="nav-link" href="company"><i class="fa fa-fw fa-dollar"></i> Customers</a></li>
             {% if info_data['is_authenticated'] == true %}
                 <li><a class="nav-link" href="logout" aria-selected="false"><i class="fa fa-fw fa-sign-out"></i> Logout</a></li>
                 <li class="menu-userid">[{{current_user.userid}}]</li>
@@ -28,7 +29,7 @@
         {% include "mobile-menu.html" %}
 
         <div class="section-title" data-aos="zoom-out">
-          <h2>List of all customers</h2>
+          <h2>LIST OF ALL COMPANY CUSTOMERS</h2>
         </div>
 
         <div class="spacer"></div>
@@ -49,7 +50,7 @@
                   <div class="row" style="margin-left: 12px;">
                       <div id="dropdown_container_id">
                           <label for="customer_id">Customer:</label>
-                          <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="customer_id" name="customer_id" onChange="retrieveCustomer();">
+                          <select class="unit-dropdown" style="width: 120px; height: 24px; margin-right: 12px;" id="customer_id" name="customer_id" onChange="retrieveCompanyCustomer();">
                             <option value="none" selected disabled hidden>{{("select one")}}</option>
                             {% for customer in customers %}
                                 <option value="{{customer['domain']}}">{{customer['domain']}}</option>
@@ -59,7 +60,7 @@
                       <label class="separator-spacer"></label>
                       <div>
                           <label for="adm_userid">Adm User:</label>
-                          <input class="name-input" type="text" id="adm_userid" name="adm_userid">
+                          <input class="name-input" type="text" id="adm_userid" name="adm_userid" readonly>
                       </div>
                       <label class="separator-spacer"></label>
                       <div>
@@ -97,7 +98,7 @@
                 <div class="spacer"></div>
 
                 <div class="center">
-                  <button class="button larger-button" id="save_payment_btn" onClick="saveCustomer();"><i class="fa fa-database"></i>
+                  <button class="button larger-button" id="save_payment_btn" onClick="saveCompanyCustomer();"><i class="fa fa-database"></i>
                       <span id="save_btn_text">Save Customer</span>
                   </button>
                 </div>
@@ -136,7 +137,7 @@
                   </tr>
                   {% for customer in customers %}
                   <tr>
-                      <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteCustomer({{loop.index-1}});">delete</button></td>
+                      <td><button id="delete" class="btn btn-danger small-btn" style="height: 20px;" onclick="deleteCompanyCustomer({{loop.index-1}});">delete</button></td>
                       <td>{{customer['domain']}}</td>
                       <td>{{customer['admin_userid']}}</td>
                       <td>{{customer['admin_pass']}}</td>

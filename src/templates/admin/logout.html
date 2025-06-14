@@ -5,11 +5,10 @@
 
   <nav id="sidebar">  
     <div class="sidebar-logo-area">
-        <img class="logo-div" src="common/img/bluelogo.png">
+        <img class="logo-div" src="{{ url_for('static', filename='../img/bluelogo.png') }}">
         <button id="menuButtonClose" type="button" class="sidebar-close-btn init-hidden close" aria-label="Close">x</button>
     </div>
     <ul class="list-unstyled components">
-        <li><a class="nav-link" href="customers"><i class="fa fa-fw fa-info"></i> Customers</a></li>
         <li><a class="nav-link" href="login" aria-selected="false"><i class="fa fa-fw fa-sign-in"></i> Login</a></li>
     </ul>
   </nav>

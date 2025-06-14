@@ -165,14 +165,51 @@ function recreateCustomersDropdown(json) {
     selectList.addEventListener("change", retrieveCustomer);
 }
 
-function retrieveCustomer() {
+function retrieveCondoCustomer() {
     if ( document.getElementById("customer_id").selectedIndex == 0 ) {
         alert('Customer is a required field.');
         return;
     }
 
     var request = new XMLHttpRequest();
-    request.open('POST', "/admin/retrieve_customer", true);
+    request.open('POST', "/admin/customers/condo/retrieve_customer", true);
+
+    request.onload = function () {
+      // Begin accessing JSON data here
+      var json = JSON.parse(this.response);
+
+      if (request.status >= 200 && request.status < 400) {
+          if (json.response.status == 'success') {
+              populateScreen(json.response);
+          }
+          else
+          if (json.response.status == 'not_found') {
+              showMsgBox( 'Customer not found' );
+          }
+          else {
+              showMsgBox( 'Error getting record from database' );
+          }
+      }
+      else {
+          showMsgBox( 'Error getting record from database' );
+      }
+    }
+
+    var requestObj = new Object();
+    requestObj.tenant = document.getElementById('customer_id').value;
+    jsonStr = '{ "customer": ' + JSON.stringify(requestObj) + '}';
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.send(jsonStr);
+}
+
+function retrieveCompanyCustomer() {
+    if ( document.getElementById("customer_id").selectedIndex == 0 ) {
+        alert('Customer is a required field.');
+        return;
+    }
+
+    var request = new XMLHttpRequest();
+    request.open('POST', "/admin/customers/company/retrieve_customer", true);
 
     request.onload = function () {
       // Begin accessing JSON data here
@@ -213,7 +250,7 @@ function populateScreen(json) {
     document.getElementById('lic_term').value = json.license_term;
 }
 
-function saveCustomer() {
+function saveCondoCustomer() {
     if ( document.getElementById("customer_id").selectedIndex == 0 ) {
         alert('Customer is a required field.');
         return;
@@ -228,7 +265,7 @@ function saveCustomer() {
 
 
     var request = new XMLHttpRequest();
-    request.open('POST', "/admin/save_customer", true);
+    request.open('POST', "/admin/customers/condo/save_customer", true);
 
     request.onload = function () {
       // Begin accessing JSON data here
@@ -248,12 +285,54 @@ function saveCustomer() {
     }
 
     var requestObj = new Object();
-//    date = new Date(date_str);
-//    date = document.getElementById('lic_date').valueAsDate;
-//    date_y = date.getFullYear();
-//    date_m = date.getMonth()+1;
-//    date_d = date.getDate();
+    requestObj.tenant = document.getElementById('customer_id').value;
+    requestObj.user_id = document.getElementById('adm_userid').value;
+    requestObj.date = date_str;  // in the format YYYY-MM-DD
+    requestObj.user_pass = document.getElementById('adm_pass').value;
+    requestObj.user_email = document.getElementById('adm_email').value;
+    requestObj.user_phone = document.getElementById('adm_phone').value;
+    requestObj.lic_amount = document.getElementById('lic_amount').value;
+    requestObj.lic_term = document.getElementById('lic_term').value;
+    jsonStr = '{ "customer": ' + JSON.stringify(requestObj) + '}';
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.send(jsonStr);
+}
 
+function saveCompanyCustomer() {
+    if ( document.getElementById("customer_id").selectedIndex == 0 ) {
+        alert('Customer is a required field.');
+        return;
+    }
+
+    date_str = document.getElementById('lic_date').value;
+
+    if (date_str === '') {
+        alert( "Please choose a Payment Date" );
+        return;
+    }
+
+
+    var request = new XMLHttpRequest();
+    request.open('POST', "/admin/customers/company/save_customer", true);
+
+    request.onload = function () {
+      // Begin accessing JSON data here
+      var json = JSON.parse(this.response);
+
+      if (request.status >= 200 && request.status < 400) {
+          if (json.response.status == 'success') {
+              showMsgBoxSuccess( 'Record saved to database' );
+          }
+          else {
+              showMsgBox( 'Error saving record to database' );
+          }
+      }
+      else {
+          showMsgBox( 'Error saving record to database' );
+      }
+    }
+
+    var requestObj = new Object();
     requestObj.tenant = document.getElementById('customer_id').value;
     requestObj.user_id = document.getElementById('adm_userid').value;
     requestObj.date = date_str;  // in the format YYYY-MM-DD
