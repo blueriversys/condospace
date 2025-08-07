@@ -46,10 +46,123 @@
       {% include "includes/mobile_menu.html" %}
 
       <div class="section-title" data-aos="zoom-out">
-          <h2>{{_('Announcements')}}</h2>
+          <h2>{{_('Services')}}</h2>
+      </div>
+
+      {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
+          <div class="spacer"></div>
+
+          <div class="center button-var-width">
+              <button class="button larger-button col-lg-10" style="height:28px;" type="button" data-toggle="collapse" data-target="#add_new_ad" aria-expanded="false" aria-controls="collapseExample">
+                {{_("Create a New Service Ad (open/close)")}}
+              </button>
+          </div>
+
+          <div class="app-container collapse" id="add_new_ad">
+              <div class="spacer"></div>
+
+              <div class="profile-block">
+                  <fieldset>
+                      <legend>{{_('New Service Ad')}}</legend>
+                      <div class="container">
+                          <div class="row flex">
+                              <div style="width: 100%; /*width: 400px; border: 1px solid blue;*/">
+                                  <label for="ad_text">{{_('Text')}}:</label>
+                                  <textarea class="form-control" rows="6" id="ad_text"></textarea>
+                              </div>
+                          </div>
+
+                          <div class="spacer"></div>
+
+                          <div class="row">
+                              <div id="ad-button-div" class="align-self-center" style="/*border: 1px solid blue;*/">
+                                  <span class="btn btn-primary btn-file">
+                                      {{_("Attach a File (optional)")}} <input id="ad_file" type="file" onChange="pictureSelectAction('ad_file', 'ad_img')">
+                                  </span>
+                              </div>
+                          </div>
+
+                          <div class="spacer"></div>
+
+                          <div class="row flex">
+                              <div id="ad_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                  <img id="ad_img" src="" style="margin-left: 5px; width: 60px; height: 80px; border-radius: 4px; display: none;">
+                              </div>
+                              <div id="ad_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
+                                  <span id="ad_file_name" style="margin-left: 5px;"></span>
+                              </div>
+                          </div>
+                      </div>
+                  </fieldset>
+
+                  <div class="spacer"></div>
+
+                  <div class="center">
+                      <button class="button larger-button" id="save_ad_btn" onClick="saveAnnounc('1');"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Save This Ad')}}</button>
+                  </div>
+
+                  <div class="spacer"></div>
+              </div> <!-- closes closes profile-block -->
+          </div> <!-- app-container -->
+      {% endif %}
+
+      <div class="spacer"></div>
+
+      <div class="app-container">
+        {% if ads %}
+            {% for ad in ads %}
+                    <div class="row flex align-self-center">
+                        <div class="col d-flex align-self-center shadow pt-1 pb-1 mb-3 ml-2 mr-2 rounded" style="background: #def6fb; /*border: solid 1px lightgray;*/">
+                            <div class="align-self-center" style="margin-right: 20px; /*border: solid 1px #555;*/">
+                                {% if ad['file_ext'] == 'pdf' %}
+                                   <a href="announcs/{{ad['file_name']}}" target="_blank"><img class="attach_cover_pic" src="announcs/{{ad['cover_name']}}"></a>
+                                {% elif ad['file_ext'] == 'jpg' %}
+                                   <a href="announcs/{{ad['file_name']}}" target="_blank"><img class="attach_cover_pic" src="announcs/{{ad['cover_name']}}"></a>
+                                {% elif ad['file_ext'] == 'png' %}
+                                   <a href="announcs/{{ad['file_name']}}" target="_blank"><img class="attach_cover_pic" src="announcs/{{ad['cover_name']}}"></a>
+                                {% elif ad['file_ext'] == 'txt' %}
+                                   <a href="announcs/{{ad['file_name']}}" target="_blank"><img class="attach_cover_pic" src="{{ url_for('static', filename='img/file_format_sm_txt_black.png') }}"></a>
+                                {% elif ad['file_ext'] == 'doc' %}
+                                   <a href="announcs/{{ad['file_name']}}" target="_blank"><img class="attach_cover_pic" src="{{ url_for('static', filename='img/file_format_sm_doc_blue.png') }}"></a>
+                                {% else %}
+                                   <img class="attach_cover_pic" src="{{ url_for('static', filename='img/file_format_sm_bullhorn.png') }}">
+                                {% endif %}
+                            </div>
+                            <div class="flex align-self-center">
+                                <div class="row">
+                                    <div class="ms-4 align-self-center" style="font-size: 14px; font-weight: bold; color: #716262;">
+                                        {{ ad['timestamp'] }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="ms-4 align-self-center" style="font-size: 16px; color: #716262;">
+                                        {{ ad['text'] }}
+                                    </div>
+                                </div>
+
+                                {% if info_data['is_authenticated'] == true and current_user.get_type()|int() == user_types['ADMIN']|int() %}
+                                  <div class="row">
+                                    <div>
+                                        <button class="btn btn-danger btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="deleteAnnounc('{{ad['key']}}');">{{_('delete')}}</button>
+                                        <button class="btn btn-success btn-sm d-inline-flex align-items-center" style="margin-top: 4px; height: 20px; text-align: center;" onclick="sendEmailToResidents('{{ad['key']}}');">{{_('send email to residents')}}</button>
+                                    </div>
+                                  </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+            {% endfor %}
+        {% else %}
+            <div>{{_('No service ads yet.')}}</div>
+        {% endif %}
       </div>
 
       <p class="spacer"></p>
+      <p class="spacer"></p>
+
+      <div class="section-title" data-aos="zoom-out">
+          <h2>{{_('Announcements')}}</h2>
+      </div>
 
       {% if info_data['is_authenticated'] == true and current_user.get_type()|int() in (user_types['ADMIN']|int(), user_types['SUPER_ADMIN']|int()) %}
           <div class="spacer"></div>
@@ -59,8 +172,6 @@
                 {{_("Create a New Announcement (open/close)")}}
               </button>
           </div>
-
-          <div class="spacer"></div>
 
           <div class="app-container collapse" id="add_new_announcement">
               <div class="spacer"></div>
@@ -90,7 +201,7 @@
 
                           <div class="row flex">
                               <div id="img_div_group_1" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
-                                  <img id="announc_img" src="" style="margin-left: 5px; width: 120px; height: 80px; border-radius: 4px; display: none;">
+                                  <img id="announc_img" src="" style="margin-left: 5px; width: 60px; height: 80px; border-radius: 4px; display: none;">
                               </div>
                               <div id="img_div_group_2" class="align-self-center" style="padding-top: 1px; padding-bottom: 1px; text-align: left; /*border: 1px solid blue;*/">
                                   <span id="announc_file_name" style="margin-left: 5px;"></span>
@@ -102,7 +213,7 @@
                   <div class="spacer"></div>
 
                   <div class="center">
-                      <button class="button larger-button" id="save_amenity_btn" onClick="saveAnnounc();"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Save This Announcement')}}</button>
+                      <button class="button larger-button" id="save_amenity_btn" onClick="saveAnnounc('0');"><i class="fa fa-database"></i>&nbsp;&nbsp;{{_('Save This Announcement')}}</button>
                   </div>
 
                   <div class="spacer"></div>
@@ -111,27 +222,25 @@
       {% endif %}
 
       <div class="spacer"></div>
-      <div class="spacer"></div>
 
-
-    <div class="app-container">
+      <div class="app-container">
         {% if announcs %}
             {% for announc in announcs %}
                     <div class="row flex align-self-center">
-                        <div class="col d-flex align-self-center shadow p-3 mb-5 ml-2 mr-2 rounded" style="background: #def6fb; /*border: solid 1px lightgray;*/">
-                            <div class="align-self-center" style="width: 80px; height: 80px; margin-right: 20px; border-radius: 4px; /*border: solid 1px #555;*/">
+                        <div class="col d-flex align-self-center shadow pt-1 pb-1  mb-3 ml-2 mr-2 rounded" style="background: #def6fb; /*border: solid 1px lightgray;*/">
+                            <div class="align-self-center" style="margin-right: 20px; /*border: solid 1px #555;*/">
                                 {% if announc['file_ext'] == 'pdf' %}
-                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_pdf_red.png') }}"  width="80" height="80"></a>
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img class="attach_cover_pic" src="announcs/{{announc['cover_name']}}"></a>
                                 {% elif announc['file_ext'] == 'jpg' %}
-                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_jpg_green.png') }}" width="80" height="80"></a>
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img class="attach_cover_pic" src="announcs/{{announc['cover_name']}}"></a>
                                 {% elif announc['file_ext'] == 'png' %}
-                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_png_blue.png') }}" width="80" height="80"></a>
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img class="attach_cover_pic" src="announcs/{{announc['cover_name']}}"></a>
                                 {% elif announc['file_ext'] == 'txt' %}
-                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_orange.png') }}" width="80" height="80"></a>
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img class="attach_cover_pic" src="{{ url_for('static', filename='img/file_format_sm_txt_black.png') }}"></a>
                                 {% elif announc['file_ext'] == 'doc' %}
-                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img src="{{ url_for('static', filename='img/file_format_sm_doc_blue.png') }}" width="80" height="80"></a>
+                                   <a href="announcs/{{announc['file_name']}}" target="_blank"><img class="attach_cover_pic" src="{{ url_for('static', filename='img/file_format_sm_doc_blue.png') }}"></a>
                                 {% else %}
-                                   <img src="{{ url_for('static', filename='img/file_format_sm_bullhorn.png') }}" width="80" height="80">
+                                   <img class="attach_cover_pic" src="{{ url_for('static', filename='img/file_format_sm_bullhorn.png') }}">
                                 {% endif %}
                             </div>
                             <div class="flex align-self-center">
@@ -163,11 +272,11 @@
         {% else %}
             <div>{{_('No announcements yet.')}}</div>
         {% endif %}
-    </div>
+      </div>
 
 
-    <p class="spacer"></p>
-    <p class="spacer"></p>
+      <p class="spacer"></p>
+      <p class="spacer"></p>
 
   </div>
 

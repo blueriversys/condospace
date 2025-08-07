@@ -458,18 +458,31 @@ msgstr "Cadastrar"
 msgid "My Profile"
 msgstr "Meu Perfil"
 
+
 #: templates/announcs.html
 msgid "Create a New Announcement (open/close)"
 msgstr "Criar Um Novo Anúncio (abrir/fechar)"
 
+msgid "Create a New Service Ad (open/close)"
+msgstr "Criar Um Novo Anúncio de Serviço (abrir/fechar)"
+
+msgid "New Service Ad"
+msgstr "Novo Anúncio de Serviço"
+
 msgid "send email to residents"
 msgstr "enviar email aos moradores"
+
+msgid "Services"
+msgstr "Serviços"
 
 msgid "New Announcement"
 msgstr "Novo Anúncio"
 
 msgid "Attach a File (optional)"
 msgstr "Anexar Um Arquivo (opcional)"
+
+msgid "Save This Ad"
+msgstr "Adicionar Este Anúncio"
 
 msgid "Save This Announcement"
 msgstr "Adicionar Este Anúncio"
@@ -488,6 +501,9 @@ msgstr "Fotos"
 
 msgid "No announcements yet."
 msgstr "Nenhum anúncio ainda."
+
+msgid "No service ads yet."
+msgstr "Nenhum anúncio de serviço ainda."
 
 
 #: templates/alisting.html

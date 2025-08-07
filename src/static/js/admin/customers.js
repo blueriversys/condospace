@@ -55,10 +55,11 @@ function retrieveCustomersPage(reg_input_date, page) {
         regis_date_str = "00000000";
     }
 
-    console.log('page '+page);
+    console.log(`reg input date: ${reg_input_date}   page: ${page}`);
+
     var request = new XMLHttpRequest();
-    console.log(`/admin/customers/${regis_date_str}/${page}`);
-    request.open('POST', `/admin/customers/${regis_date_str}/${page}`, true);
+    console.log(`/admin/customers/condo/${regis_date_str}/${page}`);
+    request.open('POST', `/admin/customers/condo/${regis_date_str}/${page}`, true);
 
     request.onload = function () {
         // Begin accessing JSON data here

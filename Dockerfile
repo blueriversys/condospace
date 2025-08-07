@@ -21,6 +21,7 @@ COPY requirements.txt .
 
 # Install any dependencies using /app/requirements.txt
 RUN pip install -r requirements.txt
+RUN apk add --no-cache openssl ncurses-libs libstdc++
 
 # Copy the content of the local src directory to the working directory
 COPY src/aws.py .
@@ -50,4 +51,5 @@ RUN cat ./config/config.json
 # Specify the command to run on container start
 # --error-logfile FILE (if flag not used, it spits to stderr by default)
 # --log-level LEVEL (LEVEL can be 'debug', 'info', 'warning', 'error' or 'critical')
+# gunicorn --workers=1 --threads=4 --keep-alive=65 --bind=0.0.0.0:5000 start_servers:app
 CMD ["gunicorn", "--workers=1", "--threads=4", "--keep-alive=65", "--bind=0.0.0.0:5000", "start_servers:app"]

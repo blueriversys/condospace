@@ -43,11 +43,21 @@ function loadAnnouncs() {
 */
 
 
-function saveAnnounc() {
+function saveAnnounc(type) {
     user_id = loggedin_userid_global;
-    announc_text = document.getElementById("announc_text").value.trim();
-    //file_name = document.getElementById("announc_file_name").textContent;  // textContent because this is a span tag
-    attach_file = document.getElementById('announc_file').files[0];
+    if (type == '1') {
+        announc_text = document.getElementById("ad_text").value.trim();
+        attach_file = document.getElementById('ad_file').files[0];
+    }
+    else
+    if (type == '0') {
+        announc_text = document.getElementById("announc_text").value.trim();
+        attach_file = document.getElementById('announc_file').files[0];
+    }
+    else {
+        showMsgBox( gettext('Announcement type is unrecognized') );
+        return;
+    }
 
     if ( announc_text.length == 0) {
         showMsgBox( gettext('Text is a required field') );
@@ -62,8 +72,7 @@ function saveAnnounc() {
     }
 
     var request = new XMLHttpRequest();
-    post_url = "/" + window.loggedin_tenant_global + "/save_announc";
-    request.open('POST', post_url, true);
+    request.open('POST', `/${window.loggedin_tenant_global}/save_announc`, true);
 
     showSpinner();
 
@@ -93,6 +102,7 @@ function saveAnnounc() {
     formData.append('text', announc_text);
     formData.append("attach_file_name", file_name); // will be empty if no file was chosen
     formData.append("attach_file", attach_file);
+    formData.append("announc_type", type);
 
     // send request to the server
     request.send(formData);
@@ -138,7 +148,7 @@ function pictureSelectAction(img_file_control, img_control) {
         }
         else
         if ( file_ext == '.txt' ) {
-            file_name = '/common/img/file_format_sm_orange.png';
+            file_name = '/common/img/file_format_sm_txt_black.png';
         }
         else
         if ( file_ext == '.doc' ) {
@@ -154,8 +164,7 @@ function pictureSelectAction(img_file_control, img_control) {
 function deleteAnnounc(announc_id) {
     // here we make a request to "delete_announc"
     var request = new XMLHttpRequest();
-    post_url = "/" + window.loggedin_tenant_global + "/delete_announc";
-    request.open('POST', post_url, true);
+    request.open('POST', `/${window.loggedin_tenant_global}/delete_announc`, true);
 
     showSpinner();
 
@@ -186,8 +195,7 @@ function deleteAnnounc(announc_id) {
 function sendEmailToResidents(announc_id) {
     // here we make a request to "delete_announc"
     var request = new XMLHttpRequest();
-    post_url = "/" + window.loggedin_tenant_global + "/email_announc";
-    request.open('POST', post_url, true);
+    request.open('POST', `/${window.loggedin_tenant_global}/email_announc`, true);
 
     showSpinner();
 

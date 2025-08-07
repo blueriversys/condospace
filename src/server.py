@@ -61,6 +61,7 @@ import pytz
 ''' for simulation of long running tasks '''
 from threading import Thread, Lock
 from time import sleep
+import fitz
 
 #import logging
 # https://realpython.com/python-logging/
@@ -1495,7 +1496,6 @@ def get_system_settings(tenant):
 @login_required
 def update_settings(tenant):
     lock.acquire()
-    print(f"here in upload_settings()")
 
     if not is_tenant_found(tenant):
         lock.release()
@@ -1551,20 +1551,63 @@ def get_announcs(tenant):
     else:
         announcs = {}
 
+    #print(f"file name: {tenant}/{ANNOUNCS_FILE}")
+    #print(f"file content: {announcs}")
+
     announcs_list = []
+    ads_list = []
 
     for key, announc in announcs.items():
         announc['timestamp'] = get_string_from_epoch(announc['created_on'], info_data['language'])
         file_name, file_ext = os.path.splitext( announc['file_name'] )
         announc['file_ext'] = file_ext[1:] # 1 to skip the "."
         announc['key'] = key
-        announcs_list.append(announc)
+
+        if 'announc_type' not in announc:
+            announc['announc_type'] = '0'
+
+        if announc['file_name']:
+            cover_name = f"{file_name}_cover.jpg"
+        else:
+            cover_name = ''
+
+        if 'cover_name' not in announc:
+            announc['cover_name'] = cover_name
+
+        if cover_name and not aws.is_file_found(f"{tenant}/uploadedfiles/unprotected/announcs/{cover_name}"):
+            attach_bytes = aws.read_binary_obj(f"{tenant}/uploadedfiles/unprotected/announcs/{announc['file_name']}")
+            create_cover_file(tenant, file_ext, cover_name, attach_bytes.getvalue())
+
+        if announc['announc_type'] == '0':
+            announcs_list.append(announc)
+        else:
+            ads_list.append(announc)
 
     # sort in descending order by date
     announcs_list.sort(key=sort_announcs_descend)
+    ads_list.sort(key=sort_announcs_descend)
 
     lock.release()
-    return render_template("announcs.html", announcs=announcs_list, user_types=staticvars.user_types, info_data=info_data)
+    return render_template("announcs.html", announcs=announcs_list, ads=ads_list, user_types=staticvars.user_types, info_data=info_data)
+
+def create_cover_file(tenant, file_ext, cover_name, attach_bytes):
+    dest_cover_file = f"{tenant}/{UNPROTECTED_FOLDER}/announcs/{cover_name}"
+    # if attachment is a PDF, we find the first page and persist it to disk
+    if file_ext == ".pdf":
+        doc = fitz.open(stream=attach_bytes, filetype="pdf")
+        # Get the first page (index 0)
+        page = doc[0]
+        # Render the page to a pixmap (e.g., at 300 DPI)
+        pix = page.get_pixmap(dpi=72)
+        img_format, new_img_bytes = reduce_image_enh(pix.tobytes(), 80, 120)
+        # Save the pixmap as a PNG image
+        aws.upload_binary_obj(dest_cover_file, new_img_bytes)
+        # Close the document
+        doc.close()
+    elif file_ext in (".jpg", ".jpeg", ".png"):
+        img_format, new_img_bytes = reduce_image_enh(attach_bytes, 80, 120)
+        # Save the pixmap as a PNG image
+        aws.upload_binary_obj(dest_cover_file, new_img_bytes)
 
 def sort_announcs_descend(obj):
     return -obj['created_on'] # the "-" sign reverses the order
@@ -1582,20 +1625,19 @@ def save_announc(tenant):
     user_id = request.form['created_by']
     text = request.form['text']
     file_name = request.form['attach_file_name']
+    announc_type = request.form['announc_type']
 
     if file_name:
         attach_file = request.files['attach_file'].read()
     else:
         attach_file = None
 
-    announc_id = save_announc_common(tenant, user_id, text, file_name, attach_file)
+    announc_id = save_announc_common(tenant, user_id, text, file_name, attach_file, announc_type)
     return_obj = json.dumps({'response': {'status': 'success', 'announc_id': announc_id}})
     lock.release()
     return return_obj
 
-def save_announc_common(tenant, user_id, text, file_name, attach_file):
-    print(f"tenant {tenant},  created_by {user_id},  file_name: {file_name},  text: {text}")
-
+def save_announc_common(tenant, user_id, text, file_name, attach_file, announc_type):
     if aws.is_file_found(f"{tenant}/{ANNOUNCS_FILE}"):
         announcs = get_json_from_file(tenant, ANNOUNCS_FILE)
     else:
@@ -1618,24 +1660,31 @@ def save_announc_common(tenant, user_id, text, file_name, attach_file):
         aws.upload_binary_obj(f"{tenant}/{UNPROTECTED_FOLDER}/announcs/{mod_file_name}", attach_file)
     else:
         mod_file_name = ''
+        file_ext = ''
+
+    if file_ext in (".pdf", ".jpg", ".jpeg", ".png"):
+        cover_name = f"{key}_cover.jpg"
+        create_cover_file(tenant, file_ext, cover_name, attach_file)
+    else:
+        cover_name = ''
 
     announcs['announcs'][key] = {
         "created_on": epoch,
         "created_by": user_id,
         "file_name": mod_file_name,
-        "text": text
+        "cover_name": cover_name,
+        "text": text,
+        "announc_type": announc_type
     }
 
-    # save the JSON file
-    resp = save_json_to_file(tenant, ANNOUNCS_FILE, announcs)
-    print(f"aws resp: {resp}")
+    # save the ANNOUNCS_FILE JSON file
+    save_json_to_file(tenant, ANNOUNCS_FILE, announcs)
     return key
 
 @app.route('/<tenant>/delete_announc', methods=["POST"])
 @login_required
 def delete_announc(tenant):
     lock.acquire()
-    print(f"here in delete_announc()")
 
     if not is_tenant_found(tenant):
         lock.release()
@@ -2838,8 +2887,8 @@ def upload(tenant):
         if uploaded_convname == 'logopic':
             img_bytes = uploaded_file.read()
             img_format, new_img_bytes = reduce_image_enh(img_bytes, COVER_PREF_WIDTH, COVER_PREF_HEIGHT)
-            logo_name = "logo.jpg" if img_format == 'JPEG' else "logo.png"
-            fullpath = f"{UNPROTECTED_FOLDER}/branding/{logo_name}"
+            fullpath = f"{UNPROTECTED_FOLDER}/branding/logo.jpg"
+            print(f"logo full path: {fullpath}")
             aws.upload_binary_obj(f"{tenant}/{fullpath}", new_img_bytes)
         elif uploaded_convname == 'homepic':
             fullpath = f"{UNPROTECTED_FOLDER}/branding/home.jpg"
