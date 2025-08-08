@@ -298,6 +298,9 @@ msgstr "Em Breve!"
 msgid "Register My Company"
 msgstr "Registrar Esta Gestora"
 
+msgid "Register Your Property Management Company"
+msgstr "Registrar Uma Gestora Condominial"
+
 msgid "Web presence: suppose your condominium is called Condominium Monet de Alphaville, you can choose a part of your domain; so a complete address could be "
 msgstr "Presença na web: suponha que seu condomínio chama-se Condomínio Monet de Alphaville, você pode escolher uma parte do domínio; de forma que o endereço completo seria "
 
@@ -330,7 +333,7 @@ msgstr "Registrar Um Novo Condomínio"
 
 
 
-#: templates/home-root.html
+#: templates/home_root.html
 msgid "Street Number"
 msgstr "Número"
 
@@ -339,6 +342,9 @@ msgstr "Número"
 
 msgid "Welcome to the CondoSpace App"
 msgstr "Bem-vindo ao CondoSpace App"
+
+msgid "Register Your Condominium"
+msgstr "Registrar o Seu Condominium"
 
 msgid "Some of the Benefits of Using CondoSpace?"
 msgstr "Alguns dos Benefícios de Usar o CondoSpace?"

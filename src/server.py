@@ -547,7 +547,7 @@ def protected(tenant, rel_path):
 @app.route('/favicon.ico')
 def favicon_request():
     #print(f"here in favicon_request()")
-    return send_from_directory('static/img', 'favicon.png')
+    return send_from_directory('static/img', 'blueriver_logo.png')
 
 @app.route('/<tenant>/opendocs/<path:rel_path>')
 def unprotected(tenant, rel_path):
